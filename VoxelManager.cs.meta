@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: d889bbf6644426b48b65a87dc0762757
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - DefaultMaterial: {fileID: 2100000, guid: 94a3f69f175f81c458a0afa4ff6409ab, type: 2}
+  - DefaultMaterialTransparent: {fileID: 2100000, guid: 6916ec5c864c2fc4ea6e73489af6da1e, type: 2}
+  - TextureArrayData: {instanceID: 0}
+  - BaseTextureArray: {instanceID: 0}
+  - CubeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  - LODMaterial: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

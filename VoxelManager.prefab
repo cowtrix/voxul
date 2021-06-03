@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5347860549036953163
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5347860549036953161}
+  - component: {fileID: 5347860549036953162}
+  - component: {fileID: 4835769895250583146}
+  m_Layer: 0
+  m_Name: VoxelManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5347860549036953161
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5347860549036953163}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5347860549036953162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5347860549036953163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d889bbf6644426b48b65a87dc0762757, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultMaterial: {fileID: 2100000, guid: 94a3f69f175f81c458a0afa4ff6409ab, type: 2}
+  DefaultMaterialTransparent: {fileID: 2100000, guid: 6916ec5c864c2fc4ea6e73489af6da1e, type: 2}
+  TextureArrayData: {fileID: 11400000, guid: 9be8cfdbd6a942c4da3eb7c7e009f818, type: 2}
+  BaseTextureArray: {fileID: 18700000, guid: c784014695385364aad8ffb5d4c103ee, type: 2}
+  Sprites:
+  - {fileID: 2800000, guid: f052a0cdfa382e846853d5f7404f63e0, type: 3}
+  - {fileID: 2800000, guid: 5d8ba0626ebc53146bb45344d5410b1d, type: 3}
+  - {fileID: 2800000, guid: 9017e91f1c5ce234c8e21bbefe60e289, type: 3}
+  - {fileID: 2800000, guid: b14a5dbf8b34c0642a941ef8967ec37a, type: 3}
+  - {fileID: 2800000, guid: e02c115d94abbd54b9c6eea6c7338d5c, type: 3}
+  - {fileID: 2800000, guid: cf52858de98f0a54d9b4990be3346b60, type: 3}
+  - {fileID: 2800000, guid: 88502d6e222a0274da34cecf9b574367, type: 3}
+  - {fileID: 2800000, guid: f96339c24197bd74fa063dec8ae4656b, type: 3}
+  - {fileID: 2800000, guid: 809bf41eb010a674eb3d058df39c00b2, type: 3}
+  - {fileID: 2800000, guid: c80cc95441cda374b80ea0d1f0c48b29, type: 3}
+  - {fileID: 2800000, guid: acc4b98f1e4a6d649925228a0b4b360d, type: 3}
+  - {fileID: 2800000, guid: 6fd042c71f1a0cd4ebfb648a23ac8710, type: 3}
+  - {fileID: 2800000, guid: 19410a63efda5d741b39aae1a4c120d8, type: 3}
+  - {fileID: 2800000, guid: 81dc07d52498ce54f97427b5022eea84, type: 3}
+  - {fileID: 2800000, guid: 845671bf3999e92428a71623dbf3e355, type: 3}
+  - {fileID: 2800000, guid: 3c26e6bf4b4085b41a444a3adc030ecb, type: 3}
+  - {fileID: 2800000, guid: acdc2799e8160e24489654d5f84ef296, type: 3}
+  CubeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  LODMaterial: {fileID: 2100000, guid: abb38daf2c120b441bd2e41190f22701, type: 2}
+--- !u!114 &4835769895250583146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5347860549036953163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc5df454e314f59499c5a02cfe37f7df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultGravity: {x: 0, y: -1, z: 0}
+  GravitySources: []
+  LevelVoxelMaterial: {fileID: 2100000, guid: eba84a3d0c212a2449b163ece73f92c7, type: 2}
