@@ -115,11 +115,11 @@ namespace Voxul
 			{
 				if (Mesh.Voxels.Any(v => v.Value.Material.MaterialMode == EMaterialMode.Transparent))
 				{
-					MeshRenderer.sharedMaterials = new[] { VoxelManager.DefaultMaterial, VoxelManager.DefaultMaterialTransparent, };
+					MeshRenderer.sharedMaterials = new[] { VoxelManager.DefaultMaterial.Value, VoxelManager.DefaultMaterialTransparent.Value, };
 				}
 				else if (MeshRenderer)
 				{
-					MeshRenderer.sharedMaterials = new[] { VoxelManager.DefaultMaterial, };
+					MeshRenderer.sharedMaterials = new[] { VoxelManager.DefaultMaterial.Value, };
 				}
 			}
 			m_lastMeshHash = Mesh.Hash;
