@@ -1,0 +1,3 @@
+[submodule ".\\UnityTexture2DArrayImportPipeline"]
+	path = .\\UnityTexture2DArrayImportPipeline
+	url = https://github.com/pschraut/UnityTexture2DArrayImportPipeline.git
