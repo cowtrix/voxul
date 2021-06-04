@@ -1,5 +1,4 @@
 ﻿using JetBrains.Annotations;
-using Common;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +6,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace VoxulEngine.Painter
+namespace Voxul.Edit
 {
 	internal abstract class VoxelPainterTool
 	{
@@ -68,6 +67,7 @@ namespace VoxulEngine.Painter
 		{
 			if(!renderer.Mesh|| !renderer.Collider)
 			{
+				renderer.SetupComponents(true);
 				Debug.LogWarning("Editor is enabled, but either the mesh is null or the collider is null", voxelPainter);
 				return;
 			}

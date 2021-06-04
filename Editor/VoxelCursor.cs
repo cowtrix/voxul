@@ -1,11 +1,12 @@
-﻿using Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Voxul.Meshing;
+using Voxul.Utilities;
 
-namespace VoxulEngine
+namespace Voxul.Edit
 {
 	internal class VoxelCursor
 	{

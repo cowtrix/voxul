@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 
-[Serializable]
-public struct Voxel
+namespace Voxul
 {
-	public VoxelMaterial Material;
-	public VoxelCoordinate Coordinate;
-
-	public Voxel(VoxelCoordinate coord, VoxelMaterial surfaces)
+	[Serializable]
+	public struct Voxel
 	{
-		Coordinate = coord;
-		Material = surfaces;
+		public VoxelMaterial Material;
+		public VoxelCoordinate Coordinate;
+
+		public Voxel(VoxelCoordinate coord, VoxelMaterial surfaces)
+		{
+			Coordinate = coord;
+			Material = surfaces;
+		}
 	}
 }

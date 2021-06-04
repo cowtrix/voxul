@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace VoxulEngine.Painter
+namespace Voxul.Edit
 {
 	[Serializable]
 	internal class RemoveTool : VoxelPainterTool

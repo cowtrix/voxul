@@ -1,12 +1,12 @@
-﻿using Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using UnityEditor;
 using UnityEngine;
+using Voxul.Utilities;
 
-namespace VoxulEngine.Painter
+namespace Voxul.Edit
 {
 	[Serializable]
 	internal class SelectTool : VoxelPainterTool

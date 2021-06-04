@@ -1,11 +1,12 @@
-using Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Voxul.Edit;
+using Voxul.Meshing;
 
-namespace VoxulEngine.Painter
+namespace Voxul.Edit
 {
 	internal enum EPaintingTool
 	{
@@ -144,24 +145,24 @@ namespace VoxulEngine.Painter
 		public override void OnInspectorGUI()
 		{
 			Renderer.Mesh = (VoxelMesh)EditorGUILayout.ObjectField("Voxel Mesh", Renderer.Mesh, typeof(VoxelMesh), true);
-			if(Renderer.Mesh == null)
+			if (Renderer.Mesh == null)
 			{
-				if(GUILayout.Button("Create In-Scene Mesh"))
+				if (GUILayout.Button("Create In-Scene Mesh"))
 				{
 					Renderer.Mesh = CreateInstance<VoxelMesh>();
 				}
 			}
-			else if(!AssetDatabase.Contains(Renderer.Mesh) && GUILayout.Button("Save In-Scene Mesh"))
+			else if (!AssetDatabase.Contains(Renderer.Mesh) && GUILayout.Button("Save In-Scene Mesh"))
 			{
 				var path = EditorUtility.SaveFilePanelInProject("Save Voxel Mesh", Renderer.name, "asset", "");
-				if(!string.IsNullOrEmpty(path))
+				if (!string.IsNullOrEmpty(path))
 				{
 					AssetDatabase.CreateAsset(Renderer.Mesh, path);
 					AssetDatabase.SaveAssets();
 					AssetDatabase.Refresh();
 				}
 			}
-			else if(GUILayout.Button("Clone Mesh"))
+			else if (GUILayout.Button("Clone Mesh"))
 			{
 				Renderer.Mesh = Instantiate(Renderer.Mesh);
 			}
@@ -219,7 +220,7 @@ namespace VoxulEngine.Painter
 			var tran = Renderer.transform;
 
 			Tools.current = Tool.Custom;
-			Handles.color = Color.white.WithAlpha(.1f);
+			Handles.color = new Color(1, 1, 1, .1f);
 			Handles.DrawLine(tran.position - tran.up * 100, tran.position + tran.up * 100);
 			Handles.DrawLine(tran.position - tran.right * 100, tran.position + tran.right * 100);
 			Handles.DrawLine(tran.position - tran.forward * 100, tran.position + tran.forward * 100);
