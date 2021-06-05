@@ -35,9 +35,9 @@ namespace Voxul
 	{
 		public const string RESOURCES_FOLDERS = "voxul";
 		public static LazyReference<Material> DefaultMaterial = new LazyReference<Material>(
-			() => Resources.Load<Material>($"{RESOURCES_FOLDERS}/{DefaultMaterial}"));
+			() => Resources.Load<Material>($"{RESOURCES_FOLDERS}/{nameof(DefaultMaterial)}"));
 		public static LazyReference<Material> DefaultMaterialTransparent => new LazyReference<Material>(
-			() => Resources.Load<Material>($"{RESOURCES_FOLDERS}/{DefaultMaterialTransparent}"));
+			() => Resources.Load<Material>($"{RESOURCES_FOLDERS}/{nameof(DefaultMaterialTransparent)}"));
 		public Texture2DArray BaseTextureArray;
 		public List<Texture2D> Sprites;
 		public Mesh CubeMesh;

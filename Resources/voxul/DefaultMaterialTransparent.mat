@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: DefaultVoxel
-  m_Shader: {fileID: -6465566751694194690, guid: 4c1aa02729a75e54591655d670f9a041, type: 3}
+  m_Name: DefaultMaterialTransparent
+  m_Shader: {fileID: -6465566751694194690, guid: 693e2c204b9a71f4baa1ba9d4b847aef, type: 3}
   m_ShaderKeywords: _ALPHATEST_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1

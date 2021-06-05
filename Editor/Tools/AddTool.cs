@@ -55,12 +55,26 @@ namespace Voxul.Edit
 					selection.Add(new VoxelCoordinate(singleCoord.X, singleCoord.Y, -singleCoord.Z, singleCoord.Layer));
 					break;
 			}
+
+			if(m_previewMesh == null)
+			{
+				m_previewMesh = ScriptableObject.CreateInstance<VoxelMesh>();
+			}
+			m_previewMesh.Voxels.Clear();
+			foreach(var s in selection)
+			{
+				m_previewMesh.Voxels.Add(s, new Voxel { Coordinate = s, Material = CurrentBrush });
+			}
+			m_previewMesh.Invalidate();
+			m_previewMesh.GenerateMeshInstance();
+
 			return true;
 		}
 
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer,
 			Event currentEvent, List<VoxelCoordinate> selection, EVoxelDirection hitDir)
 		{
+			Graphics.DrawMesh(m_previewMesh.Mesh, renderer.transform.localToWorldMatrix, VoxelManager.DefaultMaterialTransparent.Value, renderer.gameObject.layer, null);
 			if (currentEvent.isMouse && currentEvent.type == EventType.MouseDown && currentEvent.button == 0)
 			{
 				if (EditorApplication.timeSinceStartup < m_lastAdd + .5f)

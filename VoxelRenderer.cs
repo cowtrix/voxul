@@ -86,6 +86,7 @@ namespace Voxul
 		[ContextMenu("Force Redraw")]
 		public void ForceRedraw()
 		{
+			SetupComponents(false);
 			Mesh.Invalidate();
 			Invalidate(false);
 #if UNITY_EDITOR

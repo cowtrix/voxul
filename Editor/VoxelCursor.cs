@@ -64,7 +64,7 @@ namespace Voxul.Edit
 				m_cursorRenderer = go.AddComponent<VoxelRenderer>();
 				m_cursorRenderer.Mesh = m_tempVoxelData;
 				m_cursorRenderer.CustomMaterials = true;
-				m_cursorRenderer.gameObject.AddComponent<MeshRenderer>().sharedMaterial = Resources.Load<Material>("VoxelEngine/DefaultMaterialDebug");
+				m_cursorRenderer.gameObject.AddComponent<MeshRenderer>().sharedMaterial = Resources.Load<Material>("voxul/VoxelSelection");
 				m_cursorRenderer.GenerateCollider = false;
 			}
 			m_keepAlive?.KeepAlive();

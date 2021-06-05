@@ -149,7 +149,6 @@ namespace Voxul.Edit
 				renderer.Mesh.Hash = System.Guid.NewGuid().ToString();
 				EditorUtility.SetDirty(renderer.Mesh);
 				Event.current.Use();
-				Debug.LogWarning("Used event");
 			}
 		}
 
