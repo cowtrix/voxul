@@ -19,6 +19,12 @@ namespace Voxul.Edit
 			float rowHeight = position.height - 17;
 
 			var vm = VoxelManager.Instance;
+			if(vm == null)
+			{
+				EditorGUI.LabelField(
+					new Rect(new Vector2(position.min.x, position.max.y - rowHeight), new Vector2(position.width, rowHeight)),
+					"ERROR: No VoxelManager found in project.");
+			}
 			var prop = property.FindPropertyRelative("Index");
 			var tex = vm.Sprites.ElementAtOrDefault(prop.intValue);
 			if (tex)
@@ -26,25 +32,23 @@ namespace Voxul.Edit
 				EditorGUI.DrawPreviewTexture(
 				   new Rect(position.min, new Vector2(32, 32)),
 				   tex);
-				var newTex = EditorGUI.ObjectField(
-					new Rect(new Vector2(position.min.x, position.max.y - rowHeight), new Vector2(position.width, rowHeight)),
-					tex, typeof(Texture2D), false) as Texture2D;
-
-				if (tex != newTex && newTex)
-				{
-					if (!vm.Sprites.Contains(newTex))
-					{
-						vm.Sprites.Add(newTex);
-						vm.RegenerateSpritesheet();
-						//EditorUtility.SetDirty(vm.TextureArrayData);
-					}
-					var index = vm.Sprites.IndexOf(newTex);
-					prop.intValue = index;
-				}
 			}
-			else
+			var newTex = EditorGUI.ObjectField(
+				new Rect(new Vector2(position.min.x, position.max.y - rowHeight), new Vector2(position.width, rowHeight)),
+				tex, typeof(Texture2D), false) as Texture2D;
+
+			if (tex != newTex && newTex)
 			{
-				prop.intValue = 0;
+				if (!vm.Sprites.Contains(newTex))
+				{
+					vm.Sprites.Add(newTex);
+					vm.RegenerateSpritesheet();
+					EditorUtility.SetDirty(vm);
+					GUIUtility.ExitGUI();
+					return;
+				}
+				var index = vm.Sprites.IndexOf(newTex);
+				prop.intValue = index;
 			}
 
 			EditorGUI.EndProperty();

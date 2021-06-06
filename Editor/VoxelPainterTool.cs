@@ -68,7 +68,6 @@ namespace Voxul.Edit
 			if(!renderer.Mesh|| !renderer.Collider)
 			{
 				renderer.SetupComponents(true);
-				Debug.LogWarning("Editor is enabled, but either the mesh is null or the collider is null", voxelPainter);
 				return;
 			}
 

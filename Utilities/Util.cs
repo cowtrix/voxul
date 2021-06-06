@@ -6,6 +6,10 @@ namespace Voxul.Utilities
 	{
 		public static void SafeDestroy(this Object obj)
 		{
+			if(obj == null || !obj)
+			{
+				return;
+			}
 			if (Application.isPlaying)
 			{
 				Object.Destroy(obj);

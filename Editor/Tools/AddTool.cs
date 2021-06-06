@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Meshing;
+using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
@@ -12,18 +13,27 @@ namespace Voxul.Edit
 	internal class AddTool : VoxelPainterTool
 	{
 		private double m_lastAdd;
-		private VoxelMesh m_previewMesh;
+		[SerializeField]
+		private VoxelRenderer m_renderer;
 
 		public override void OnEnable()
 		{
-			m_previewMesh = ScriptableObject.CreateInstance<VoxelMesh>();
+			if (!m_renderer)
+			{
+				m_renderer = new GameObject("AddTool_Cursor").AddComponent<VoxelRenderer>();
+				m_renderer.gameObject.hideFlags = HideFlags.DontSave;
+				m_renderer.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
+			}
 			base.OnEnable();
 		}
 
 		public override void OnDisable()
 		{
-			GameObject.DestroyImmediate(m_previewMesh);
-			m_previewMesh = null;
+			if (m_renderer)
+			{
+				m_renderer.gameObject.SafeDestroy();
+				m_renderer = null;
+			}
 		}
 
 		protected override EPaintingTool ToolID => EPaintingTool.Add;
@@ -56,17 +66,21 @@ namespace Voxul.Edit
 					break;
 			}
 
-			if(m_previewMesh == null)
+			if(!m_renderer || !m_renderer.Mesh)
 			{
-				m_previewMesh = ScriptableObject.CreateInstance<VoxelMesh>();
+				OnEnable();
 			}
-			m_previewMesh.Voxels.Clear();
-			foreach(var s in selection)
+			m_renderer.transform.SetParent(renderer.transform);
+			if (!m_renderer.Mesh.Voxels.Keys.SequenceEqual(selection))
 			{
-				m_previewMesh.Voxels.Add(s, new Voxel { Coordinate = s, Material = CurrentBrush });
+				m_renderer.Mesh.Voxels.Clear();
+				foreach (var s in selection)
+				{
+					m_renderer.Mesh.Voxels.AddSafe(new Voxel { Coordinate = s, Material = CurrentBrush });
+				}
+				m_renderer.Mesh.Invalidate();
+				m_renderer.Invalidate(false);
 			}
-			m_previewMesh.Invalidate();
-			m_previewMesh.GenerateMeshInstance();
 
 			return true;
 		}
@@ -74,12 +88,12 @@ namespace Voxul.Edit
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer,
 			Event currentEvent, List<VoxelCoordinate> selection, EVoxelDirection hitDir)
 		{
-			Graphics.DrawMesh(m_previewMesh.Mesh, renderer.transform.localToWorldMatrix, VoxelManager.DefaultMaterialTransparent.Value, renderer.gameObject.layer, null);
+			
 			if (currentEvent.isMouse && currentEvent.type == EventType.MouseDown && currentEvent.button == 0)
 			{
 				if (EditorApplication.timeSinceStartup < m_lastAdd + .5f)
 				{
-					Debug.LogWarning($"Swallowed double event");
+					//Debug.LogWarning($"Swallowed double event");
 					return false;
 				}
 				m_lastAdd = EditorApplication.timeSinceStartup;
