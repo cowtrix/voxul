@@ -14,25 +14,29 @@ namespace Voxul.Edit
 	{
 		private double m_lastAdd;
 		[SerializeField]
-		private VoxelRenderer m_renderer;
+		private VoxelRenderer m_cursor;
 
 		public override void OnEnable()
 		{
-			if (!m_renderer)
+			if (!m_cursor)
 			{
-				m_renderer = new GameObject("AddTool_Cursor").AddComponent<VoxelRenderer>();
-				m_renderer.gameObject.hideFlags = HideFlags.DontSave;
-				m_renderer.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
+				m_cursor = new GameObject("AddTool_Cursor").AddComponent<VoxelRenderer>();
+				m_cursor.gameObject.hideFlags = HideFlags.HideAndDontSave;
+				m_cursor.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
+				m_cursor.GenerateCollider = false;
+				m_cursor.enabled = false;
+				m_cursor.SetupComponents(false);
+				m_cursor.gameObject.AddComponent<AutoDestroyer>();
 			}
 			base.OnEnable();
 		}
 
 		public override void OnDisable()
 		{
-			if (m_renderer)
+			if (m_cursor)
 			{
-				m_renderer.gameObject.SafeDestroy();
-				m_renderer = null;
+				m_cursor.gameObject.SafeDestroy();
+				m_cursor = null;
 			}
 		}
 
@@ -66,20 +70,23 @@ namespace Voxul.Edit
 					break;
 			}
 
-			if(!m_renderer || !m_renderer.Mesh)
+			if(!m_cursor || !m_cursor.Mesh)
 			{
 				OnEnable();
 			}
-			m_renderer.transform.SetParent(renderer.transform);
-			if (!m_renderer.Mesh.Voxels.Keys.SequenceEqual(selection))
+			m_cursor.gameObject.SetActive(true);
+			m_cursor.GetComponent<AutoDestroyer>().KeepAlive();
+			m_cursor.transform.ApplyTRSMatrix(renderer.transform.localToWorldMatrix);
+			//m_cursor.transform.SetParent(renderer.transform);
+			if (!m_cursor.Mesh.Voxels.Keys.SequenceEqual(selection))
 			{
-				m_renderer.Mesh.Voxels.Clear();
+				m_cursor.Mesh.Voxels.Clear();
 				foreach (var s in selection)
 				{
-					m_renderer.Mesh.Voxels.AddSafe(new Voxel { Coordinate = s, Material = CurrentBrush });
+					m_cursor.Mesh.Voxels.AddSafe(new Voxel { Coordinate = s, Material = CurrentBrush });
 				}
-				m_renderer.Mesh.Invalidate();
-				m_renderer.Invalidate(false);
+				m_cursor.Mesh.Invalidate();
+				m_cursor.Invalidate(false);
 			}
 
 			return true;
@@ -108,6 +115,10 @@ namespace Voxul.Edit
 					}
 				}
 				voxelPainter.SetSelection(CreateVoxel(creationList, renderer).ToList());
+				if (m_cursor)
+				{
+					m_cursor.SafeDestroy();
+				}
 			}
 			return false;
 		}
@@ -121,6 +132,7 @@ namespace Voxul.Edit
 					yield return brushCoord;
 				}
 			}
+			renderer.Mesh.Invalidate();
 			renderer.Invalidate(true);
 		}
 	}

@@ -15,9 +15,8 @@ MonoBehaviour:
   SpriteResolution: 32
   DefaultMaterial: {fileID: 2100000, guid: 4e4fd6ec9145a3440873deb1b231bb30, type: 2}
   DefaultMaterialTransparent: {fileID: 2100000, guid: 89618a3c5cc4391429c8dcb314b8eb09, type: 2}
-  BaseTextureArray: {fileID: 0}
+  BaseTextureArray: {fileID: 18700000, guid: c784014695385364aad8ffb5d4c103ee, type: 2}
   Sprites:
-  - {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
   CubeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   LODMaterial: {fileID: 0}

@@ -64,7 +64,12 @@ namespace Voxul.Edit
 				m_cursorRenderer = go.AddComponent<VoxelRenderer>();
 				m_cursorRenderer.Mesh = m_tempVoxelData;
 				m_cursorRenderer.CustomMaterials = true;
-				m_cursorRenderer.gameObject.AddComponent<MeshRenderer>().sharedMaterial = Resources.Load<Material>("voxul/VoxelSelection");
+				var debugMat = Resources.Load<Material>($"{VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
+				if (!debugMat)
+				{
+					Debug.LogError($"Failed to load debug selection material at {VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
+				}
+				m_cursorRenderer.gameObject.AddComponent<MeshRenderer>().sharedMaterial = debugMat;
 				m_cursorRenderer.GenerateCollider = false;
 			}
 			m_keepAlive?.KeepAlive();

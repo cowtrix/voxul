@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,6 +25,8 @@ namespace Voxul.Edit
 				EditorGUI.LabelField(
 					new Rect(new Vector2(position.min.x, position.max.y - rowHeight), new Vector2(position.width, rowHeight)),
 					"ERROR: No VoxelManager found in project.");
+				EditorGUI.EndProperty();
+				return;
 			}
 			var prop = property.FindPropertyRelative("Index");
 			var tex = vm.Sprites.ElementAtOrDefault(prop.intValue);
@@ -39,6 +42,10 @@ namespace Voxul.Edit
 
 			if (tex != newTex && newTex)
 			{
+				if(vm.Sprites == null)
+				{
+					vm.Sprites = new List<Texture2D>();
+				}
 				if (!vm.Sprites.Contains(newTex))
 				{
 					vm.Sprites.Add(newTex);

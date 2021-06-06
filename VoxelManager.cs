@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Utilities;
@@ -9,17 +11,39 @@ namespace Voxul
 {
 	public class VoxelManager : ScriptableObject
 	{
-		public const string RESOURCES_FOLDERS = "voxul";
+		public const string RESOURCES_FOLDER = "voxul";
 		public static VoxelManager Instance => m_instance.Value;
-		private static LazyReference<VoxelManager> m_instance = new LazyReference<VoxelManager>(
-			() => Resources.Load<VoxelManager>($"{RESOURCES_FOLDERS}/{nameof(VoxelManager)}"));
+		private static LazyReference<VoxelManager> m_instance = new LazyReference<VoxelManager>(BuildVoxelManager);
+
+		static VoxelManager BuildVoxelManager()
+		{
+			var path = $"{RESOURCES_FOLDER}/{nameof(VoxelManager)}";
+			var vm = Resources.Load<VoxelManager>(path);
+			if (!vm)
+			{
+#if UNITY_EDITOR
+				var scriptPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets($"{nameof(VoxelManager)} t:script").First());
+				var rootPath = Application.dataPath.Replace("/Assets", "/");
+				var rscPath = Regex.Replace(scriptPath, $"\\/{nameof(VoxelManager)}.cs$", $"/Resources/{RESOURCES_FOLDER}");
+				if (!Directory.Exists(rootPath + rscPath))
+				{
+					Directory.CreateDirectory(rootPath + rscPath);
+				}
+				AssetDatabase.CreateAsset(CreateInstance<VoxelManager>(), $"{rscPath}/{nameof(VoxelManager)}.asset");
+				vm = Resources.Load<VoxelManager>(path);
+#else
+				throw new Exception($"Could not find VoxelManager resource at {path}");
+#endif
+			}
+			return vm;
+		}
 
 		[Range(8, 1024)]
 		public int SpriteResolution = 32;
 		public Material DefaultMaterial;
 		public Material DefaultMaterialTransparent;
 		public Texture2DArray BaseTextureArray;
-		public List<Texture2D> Sprites;
+		public List<Texture2D> Sprites = new List<Texture2D>();
 		public Mesh CubeMesh;
 		public Material LODMaterial;
 
