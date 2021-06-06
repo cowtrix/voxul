@@ -12,6 +12,7 @@ namespace Voxul.Edit
 	{
 		private Editor m_cachedBrushEditor;
 		private bool m_cachedEditorNeedsRefresh = true;
+		private List<string> m_brushes = new List<string>();
 		protected static VoxelMaterial DefaultMaterial => new VoxelMaterial { Default = new SurfaceData { Albedo = Color.white } };
 
 		protected static VoxelMaterialAsset m_asset;
@@ -149,27 +150,23 @@ namespace Voxul.Edit
 				EditorUtility.SetDirty(renderer.Mesh);
 				Event.current.Use();
 			}
+			
 		}
 
 		public virtual bool DrawInspectorGUI(VoxelPainter voxelPainter)
 		{
-			var brushes = AssetDatabase.FindAssets($"t: {nameof(VoxelMaterialAsset)}")
-				.Select(b => AssetDatabase.GUIDToAssetPath(b));
 			bool dirty = false;
 			GUILayout.BeginVertical("Box");
 			GUILayout.Label("Presets");
 			var selIndex = GUILayout.SelectionGrid(-1,
-				brushes.Select(b => new GUIContent(Path.GetFileNameWithoutExtension(b))).ToArray(), 3);
+				m_brushes.Select(b => new GUIContent(Path.GetFileNameWithoutExtension(b))).ToArray(), 3);
 			if (selIndex >= 0)
 			{
 				dirty = true;
-				CurrentBrush = AssetDatabase.LoadAssetAtPath<VoxelMaterialAsset>(brushes.ElementAt(selIndex)).Data;
-				Debug.Log($"Loaded brush from {brushes.ElementAt(selIndex)}");
+				CurrentBrush = AssetDatabase.LoadAssetAtPath<VoxelMaterialAsset>(m_brushes.ElementAt(selIndex)).Data;
+				Debug.Log($"Loaded brush from {m_brushes.ElementAt(selIndex)}");
 			}
 			GUILayout.EndVertical();
-
-
-
 			if (dirty || m_cachedBrushEditor == null || !m_cachedBrushEditor || m_cachedEditorNeedsRefresh || Event.current.alt)
 			{
 				if (m_cachedBrushEditor)
@@ -189,6 +186,9 @@ namespace Voxul.Edit
 
 		public virtual void OnEnable()
 		{
+			m_brushes = AssetDatabase.FindAssets($"t: {nameof(VoxelMaterialAsset)}")
+				.Select(b => AssetDatabase.GUIDToAssetPath(b))
+				.ToList();
 		}
 
 		public virtual void OnDisable()

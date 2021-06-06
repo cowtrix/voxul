@@ -25,7 +25,7 @@ namespace Voxul.Edit
 				EditorGUI.LabelField(
 					new Rect(new Vector2(position.min.x, position.max.y - rowHeight), new Vector2(position.width, rowHeight)),
 					"ERROR: No VoxelManager found in project.");
-				EditorGUI.EndProperty();
+				GUIUtility.ExitGUI();
 				return;
 			}
 			var prop = property.FindPropertyRelative("Index");
@@ -50,9 +50,6 @@ namespace Voxul.Edit
 				{
 					vm.Sprites.Add(newTex);
 					vm.RegenerateSpritesheet();
-					EditorUtility.SetDirty(vm);
-					GUIUtility.ExitGUI();
-					return;
 				}
 				var index = vm.Sprites.IndexOf(newTex);
 				prop.intValue = index;

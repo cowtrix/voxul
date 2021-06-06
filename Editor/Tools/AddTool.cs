@@ -48,6 +48,7 @@ namespace Voxul.Edit
 		{
 			if (Event.current.alt)
 			{
+				m_cursor?.gameObject.SetActive(false);
 				return base.GetVoxelDataFromPoint(painter, renderer, hitPoint, hitNorm, triIndex, layer, out selection, out hitDir);
 			}
 

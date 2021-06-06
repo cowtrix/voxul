@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using UnityEditor;
 using UnityEngine;
 using Voxul.Utilities;
 
@@ -22,14 +20,14 @@ namespace Voxul
 			if (!vm)
 			{
 #if UNITY_EDITOR
-				var scriptPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets($"{nameof(VoxelManager)} t:script").First());
-				var rootPath = Application.dataPath.Replace("/Assets", "/");
-				var rscPath = Regex.Replace(scriptPath, $"\\/{nameof(VoxelManager)}.cs$", $"/Resources/{RESOURCES_FOLDER}");
-				if (!Directory.Exists(rootPath + rscPath))
+				var rscPath = $"{Application.dataPath}/Resources/{RESOURCES_FOLDER}";
+				if (!Directory.Exists(rscPath))
 				{
-					Directory.CreateDirectory(rootPath + rscPath);
+					Directory.CreateDirectory(rscPath);
+					UnityEditor.AssetDatabase.Refresh();
 				}
-				AssetDatabase.CreateAsset(CreateInstance<VoxelManager>(), $"{rscPath}/{nameof(VoxelManager)}.asset");
+				UnityEditor.AssetDatabase.CreateAsset(CreateInstance<VoxelManager>(), $"Assets/Resources/{RESOURCES_FOLDER}/{nameof(VoxelManager)}.asset");
+				UnityEditor.AssetDatabase.Refresh();
 				vm = Resources.Load<VoxelManager>(path);
 #else
 				throw new Exception($"Could not find VoxelManager resource at {path}");
@@ -53,15 +51,24 @@ namespace Voxul
 #if UNITY_EDITOR
 			var texArray = BaseTextureArray;
 			var newArray = GenerateArray(Sprites, TextureFormat.ARGB32, SpriteResolution);
-			newArray.filterMode = FilterMode.Point;
-			newArray.wrapMode = TextureWrapMode.Repeat;
-			var currentPath = texArray ? AssetDatabase.GetAssetPath(texArray) : $"{AssetDatabase.GetAssetPath(this)}_spritesheet";
-			var tmpPath = AssetCreationHelper.CreateAssetInCurrentDirectory(newArray, "tmp.asset");
-			File.WriteAllBytes(currentPath, File.ReadAllBytes(tmpPath));
-			AssetDatabase.DeleteAsset(tmpPath);
-			AssetDatabase.ImportAsset(currentPath);
-			DefaultMaterial.SetTexture("AlbedoSpritesheet", texArray);
-			DefaultMaterialTransparent.SetTexture("AlbedoSpritesheet", texArray);
+			if(newArray != null)
+			{
+				newArray.filterMode = FilterMode.Point;
+				newArray.wrapMode = TextureWrapMode.Repeat;
+				var currentPath = texArray ? UnityEditor.AssetDatabase.GetAssetPath(texArray) : $"Assets/Resources/{RESOURCES_FOLDER}/spritesheet.asset";
+				var tmpPath = AssetCreationHelper.CreateAssetInCurrentDirectory(newArray, "tmp.asset");
+				File.WriteAllBytes(currentPath, File.ReadAllBytes(tmpPath));
+				UnityEditor.AssetDatabase.DeleteAsset(tmpPath);
+				UnityEditor.AssetDatabase.ImportAsset(currentPath);
+
+
+				BaseTextureArray = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2DArray>(currentPath);
+				DefaultMaterial.SetTexture("Texture2DArray_8875E265", BaseTextureArray);
+				UnityEditor.EditorUtility.SetDirty(DefaultMaterial);
+				DefaultMaterialTransparent.SetTexture("AlbedoSpritesheet", BaseTextureArray);
+				UnityEditor.EditorUtility.SetDirty(DefaultMaterialTransparent);
+				UnityEditor.EditorUtility.SetDirty(this);
+			}
 #endif
 		}
 
@@ -78,6 +85,10 @@ namespace Voxul
 
 		static Texture2DArray GenerateArray(IList<Texture2D> textures, TextureFormat format, int size)
 		{
+			if (!textures.Any())
+			{
+				return null;
+			}
 			var texture2DArray = new Texture2DArray(size, size, textures.Count, format, false);
 			for (int i = 0; i < textures.Count; i++)
 			{

@@ -23,6 +23,7 @@ namespace Voxul.Edit
 				{
 					renderer.Mesh.Voxels.Remove(brushCoord);
 				}
+				voxelPainter.SetSelection(null);
 				return true;
 			}
 			return false;
