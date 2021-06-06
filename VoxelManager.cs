@@ -33,7 +33,6 @@ namespace Voxul
 				throw new Exception($"Could not find VoxelManager resource at {path}");
 #endif
 			}
-			vm.RegenerateSpritesheet();
 			return vm;
 		}
 
