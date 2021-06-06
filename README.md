@@ -10,4 +10,4 @@ voxul is a voxel system and editor tool for [Unity 3D.](https://unity.com/) It i
 
 ## Features
 
-<img src="https://www.lrtw.net/Blog/img/voxul/paintingSurfaces.gif" alt="Painting surfaces">
+![paintingSurfaces](https://user-images.githubusercontent.com/5094696/120931430-676fec80-c6e9-11eb-8b4d-e78bb99ba272.gif)
