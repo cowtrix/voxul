@@ -50,7 +50,6 @@ namespace Voxul.Edit
 				{
 					vm.Sprites.Add(newTex);
 					vm.RegenerateSpritesheet();
-					EditorUtility.SetDirty(vm);
 					GUIUtility.ExitGUI();
 					return;
 				}

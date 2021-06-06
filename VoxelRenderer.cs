@@ -97,7 +97,7 @@ namespace Voxul
 
 		public void Invalidate(bool forceCollider)
 		{
-			Debug.Log($"Invalidated {this}", this);
+			//Debug.Log($"Invalidated {this}", this);
 			m_isDirty = false;
 			SetupComponents(forceCollider);
 			if (!Mesh)

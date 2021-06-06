@@ -832,7 +832,7 @@
     },
     "m_Name": "AlbedoSpritesheet",
     "m_DefaultReferenceName": "Texture2DArray_8875E265",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "AlbedoSpritesheet",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
