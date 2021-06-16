@@ -150,6 +150,7 @@ namespace Voxul.Edit
 				if (GUILayout.Button("Create In-Scene Mesh"))
 				{
 					Renderer.Mesh = CreateInstance<VoxelMesh>();
+					Renderer.Mesh.name = Guid.NewGuid().ToString();
 				}
 			}
 			else if (!AssetDatabase.Contains(Renderer.Mesh) && GUILayout.Button("Save In-Scene Mesh"))
@@ -165,6 +166,8 @@ namespace Voxul.Edit
 			else if (GUILayout.Button("Clone Mesh"))
 			{
 				Renderer.Mesh = Instantiate(Renderer.Mesh);
+				Renderer.Mesh.name = Guid.NewGuid().ToString();
+				Renderer.Mesh.Mesh = null;
 			}
 
 			Tab = GUILayout.Toolbar(Tab, Tabs);

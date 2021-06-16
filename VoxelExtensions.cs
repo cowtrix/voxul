@@ -78,6 +78,14 @@ namespace Voxul
 			return b;
 		}
 
+		public static bool Raycast(this VoxelRenderer renderer, Ray ray)
+		{
+			var origin = renderer.transform.worldToLocalMatrix.MultiplyPoint3x4(ray.origin);
+			var dir = renderer.transform.worldToLocalMatrix.MultiplyVector(ray.direction);
+			var localRay = new Ray(origin, dir);
+			return renderer.Mesh.Voxels.Any(v => v.Key.ToBounds().IntersectRay(localRay));
+		}
+
 		public static IEnumerable<Voxel> Optimise(this IEnumerable<Voxel> voxels)
 		{
 			var allVoxels = voxels.ToList();

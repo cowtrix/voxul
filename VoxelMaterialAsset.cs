@@ -67,6 +67,39 @@ namespace Voxul
 		public EUVMode UVMode;
 		[Range(0, 1)]
 		public float TextureFade;
+
+		public override bool Equals(object obj)
+		{
+			return obj is SurfaceData data &&
+				   Albedo.Equals(data.Albedo) &&
+				   Metallic == data.Metallic &&
+				   Smoothness == data.Smoothness &&
+				   EqualityComparer<TextureIndex>.Default.Equals(Texture, data.Texture) &&
+				   UVMode == data.UVMode &&
+				   TextureFade == data.TextureFade;
+		}
+
+		public override int GetHashCode()
+		{
+			int hashCode = 188875543;
+			hashCode = hashCode * -1521134295 + Albedo.GetHashCode();
+			hashCode = hashCode * -1521134295 + Metallic.GetHashCode();
+			hashCode = hashCode * -1521134295 + Smoothness.GetHashCode();
+			hashCode = hashCode * -1521134295 + Texture.GetHashCode();
+			hashCode = hashCode * -1521134295 + UVMode.GetHashCode();
+			hashCode = hashCode * -1521134295 + TextureFade.GetHashCode();
+			return hashCode;
+		}
+
+		public static bool operator ==(SurfaceData left, SurfaceData right)
+		{
+			return left.Equals(right);
+		}
+
+		public static bool operator !=(SurfaceData left, SurfaceData right)
+		{
+			return !(left == right);
+		}
 	}
 
 	[Serializable]
@@ -90,6 +123,16 @@ namespace Voxul
 			}
 
 			return Default;
+		}
+
+		public IEnumerable<(EVoxelDirection, SurfaceData)> GetSurfaces()
+		{
+			yield return (EVoxelDirection.XNeg, GetSurface(EVoxelDirection.XNeg));
+			yield return (EVoxelDirection.XPos, GetSurface(EVoxelDirection.XPos));
+			yield return (EVoxelDirection.YNeg, GetSurface(EVoxelDirection.YNeg));
+			yield return (EVoxelDirection.YPos, GetSurface(EVoxelDirection.YPos));
+			yield return (EVoxelDirection.ZNeg, GetSurface(EVoxelDirection.ZNeg));
+			yield return (EVoxelDirection.ZPos, GetSurface(EVoxelDirection.ZPos));
 		}
 
 		public VoxelMaterial Copy()
