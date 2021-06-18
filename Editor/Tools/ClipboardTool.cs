@@ -90,6 +90,20 @@ namespace Voxul.Edit
 					Offset = Vector3.zero;
 					return true;
 				}
+				else if (GUILayout.Button("Cut Selection To Clipboard") ||
+				(Event.current.isKey && Event.current.control && Event.current.keyCode == KeyCode.X))
+				{
+					CurrentClipboard = new Snippet(voxelPainter.CurrentSelection.Select(c => voxelPainter.Renderer.Mesh.Voxels[c]));
+					Cursor.SetData(voxelPainter.Renderer.transform.localToWorldMatrix, CurrentClipboard.Data.Values);
+					foreach(var v in CurrentClipboard.Data.Values)
+					{
+						voxelPainter.Renderer.Mesh.Voxels.Remove(v.Coordinate);
+					}
+					voxelPainter.Renderer.Mesh.Invalidate();
+					voxelPainter.SetSelection(null);
+					Offset = Vector3.zero;
+					return true;
+				}
 			}
 			else
 			{

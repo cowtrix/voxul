@@ -36,6 +36,8 @@ namespace Voxul
 			return vm;
 		}
 
+		[Range(2, 10)]
+		public int LayerRatio = 3;
 		[Range(8, 1024)]
 		public int SpriteResolution = 32;
 		public Material DefaultMaterial;

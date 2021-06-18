@@ -49,7 +49,7 @@ namespace Voxul
 			return voxels.Select(v =>
 			{
 				v.Material = v.Material.Copy();
-				for (int i = 0; i < v.Material.Overrides.Length; i++)
+				for (int i = 0; i < v.Material.Overrides?.Length; i++)
 				{
 					var o = v.Material.Overrides[i];
 					var oAxis = o.Direction.ToString()[0];

@@ -8,7 +8,7 @@ namespace Voxul
 	[Serializable]
 	public struct VoxelCoordinate
 	{
-		public const int LayerRatio = 3;
+		public static int LayerRatio => VoxelManager.Instance.LayerRatio;
 		public sbyte Layer;
 		public int X, Y, Z;
 
@@ -103,14 +103,14 @@ namespace Voxul
 		public Vector3 ToVector3()
 		{
 			var scale = GetScale();
-			return new Vector3(X, Y, Z) * scale;// + Vector3.one * .5f * scale;
+			return new Vector3(X, Y, Z) * scale;// - Vector3.one * .5f * scale;
 		}
 
 		public static VoxelCoordinate FromVector3(Vector3 point, sbyte layer)
 		{
 			var scale = LayerToScale(layer);
-			point *= 1 / scale;
-			//point -= Vector3.one * .5f * scale;
+			//point += Vector3.one * .5f * scale;
+			point *= 1 / scale;			
 			return new VoxelCoordinate(Mathf.RoundToInt(point.x), Mathf.RoundToInt(point.y), Mathf.RoundToInt(point.z), layer);
 		}
 
@@ -180,12 +180,14 @@ namespace Voxul
 		public IEnumerable<VoxelCoordinate> Subdivide()
 		{
 			var newLayer = (sbyte)(Layer + 1);
-			var centerCoord = ChangeLayer(newLayer) - new VoxelCoordinate(0, 0, -1, newLayer);
-			for (var x = -1; x <= 1; ++x)
+			var centerCoord = ChangeLayer(newLayer);
+			var res = Mathf.RoundToInt(LayerRatio / 2f);
+			var evenPump = Mathf.RoundToInt(1 - LayerRatio % 2);
+			for (var x = -res + 1; x < res + evenPump; ++x)
 			{
-				for (var y = -1; y <= 1; ++y)
+				for (var y = -res + 1; y < res + evenPump; ++y)
 				{
-					for (var z = -2; z <= 0; ++z)
+					for (var z = -res + 1; z < res + evenPump; ++z)
 					{
 						var coord = centerCoord + new VoxelCoordinate(x, y, z, newLayer);
 						yield return coord;
