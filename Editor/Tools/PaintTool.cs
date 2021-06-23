@@ -12,6 +12,8 @@ namespace Voxul.Edit
 	{
 		private double m_lastAdd;
 		private VoxelMesh m_previewMesh;
+		private Color LerpColor { get => EditorPrefUtility.GetPref("voxul_lerpcolor", Color.white); set => EditorPrefUtility.SetPref("voxul_lerpcolor", value); }
+		public bool LerpEnabled { get => EditorPrefUtility.GetPref("voxul_lerpenabled", false); set => EditorPrefUtility.SetPref("voxul_lerpenabled", value); }
 
 		public override void OnEnable()
 		{
@@ -23,6 +25,13 @@ namespace Voxul.Edit
 		{
 			GameObject.DestroyImmediate(m_previewMesh);
 			m_previewMesh = null;
+		}
+
+		public override bool DrawInspectorGUI(VoxelPainter voxelPainter)
+		{
+			LerpEnabled = EditorGUILayout.Toggle("Enable color lerp", LerpEnabled);
+			LerpColor = EditorGUILayout.ColorField("Lerp Color", LerpColor);
+			return base.DrawInspectorGUI(voxelPainter);
 		}
 
 		protected override bool GetVoxelDataFromPoint(VoxelPainter voxelPainterTool, VoxelRenderer renderer,
@@ -103,6 +112,12 @@ namespace Voxul.Edit
 				{
 					Debug.Log($"Set voxel at {brushCoord} ({dir})");
 					var surface = CurrentBrush.GetSurface(dir);
+
+					if (LerpEnabled)
+					{
+						surface.Albedo = Color.Lerp(surface.Albedo, LerpColor, UnityEngine.Random.value);
+					}
+
 					if (vox.Material.Overrides == null)
 					{
 						vox.Material.Overrides = new DirectionOverride[0];

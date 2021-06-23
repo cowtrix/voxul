@@ -104,6 +104,25 @@ namespace Voxul.Edit
 					Offset = Vector3.zero;
 					return true;
 				}
+				else if (GUILayout.Button("Cut Selection To New Voxel Object"))
+				{
+					var newObj = new GameObject(voxelPainter.Renderer.gameObject.name + "_submesh")
+						.AddComponent<VoxelRenderer>();
+					newObj.transform.SetParent(voxelPainter.Renderer.transform);
+					newObj.transform.localPosition = Vector3.zero;
+					newObj.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
+					foreach (var v in voxelPainter.CurrentSelection)
+					{
+						var vox = voxelPainter.Renderer.Mesh.Voxels[v];
+						voxelPainter.Renderer.Mesh.Voxels.Remove(v);
+						newObj.Mesh.Voxels.AddSafe(vox);
+					}
+					voxelPainter.Renderer.Mesh.Invalidate();
+					voxelPainter.SetSelection(null);
+					newObj.Mesh.Invalidate();
+					Offset = Vector3.zero;
+					return true;
+				}
 			}
 			else
 			{

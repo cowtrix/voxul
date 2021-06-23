@@ -178,6 +178,7 @@ namespace Voxul.Edit
 				return;
 			}
 
+			Enabled = EditorGUILayout.Toggle("Painting Enabled", Enabled);
 			if (!Renderer.Mesh)
 			{
 				EditorGUILayout.HelpBox("Mesh (Voxel Mesh) asset cannot be null", MessageType.Info);
@@ -185,7 +186,6 @@ namespace Voxul.Edit
 			}
 			EditorGUILayout.LabelField("Painter", EditorStyles.whiteLargeLabel);
 			EditorGUILayout.BeginVertical("Box");
-			Enabled = EditorGUILayout.Toggle("Enabled", Enabled);
 			GUI.enabled = Enabled;
 
 			MirrorMode = (eMirrorMode)EditorGUILayout.EnumPopup("Mirror Mode", MirrorMode);
@@ -215,7 +215,7 @@ namespace Voxul.Edit
 
 		void OnSceneGUI()
 		{
-			if (!Enabled)
+			if (!Enabled || !Renderer || !Renderer.Mesh)
 			{
 				return;
 			}

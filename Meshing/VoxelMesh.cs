@@ -182,7 +182,8 @@ namespace Voxul.Meshing
 				data.Color1.AddRange(Enumerable.Repeat(surface.Albedo, 4));
 
 				// UV2 extra data
-				var uv2 = new Vector4(surface.Smoothness, surface.Texture.Index, surface.Metallic, 1 - surface.TextureFade);
+				var uv2 = new Vector4(surface.Smoothness, surface.Texture.Index, surface.Metallic, 1 - surface.TextureFade)
+					.RemoveNans();
 				data.UV2.AddRange(Enumerable.Repeat(uv2, 4));
 
 				var endTri = tris.Count / 3;

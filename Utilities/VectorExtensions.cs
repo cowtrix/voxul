@@ -135,6 +135,20 @@ namespace Voxul.Utilities
 			return new Vector3(obj.x, 0, obj.z);
 		}
 
+		public static Vector2 RemoveNans(this Vector2 n)
+		{
+			return new Vector2(float.IsNaN(n.x) ? 0 : n.x, float.IsNaN(n.y) ? 0 : n.y);
+		}
+
+		public static Vector4 RemoveNans(this Vector4 n)
+		{
+			return new Vector4(
+				float.IsNaN(n.x) ? 0 : n.x, 
+				float.IsNaN(n.y) ? 0 : n.y,
+				float.IsNaN(n.x) ? 0 : n.z,
+				float.IsNaN(n.x) ? 0 : n.w);
+		}
+
 		public static Vector3 RandomNormalized()
 		{
 			return new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f)).normalized;
