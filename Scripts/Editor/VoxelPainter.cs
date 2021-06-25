@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Edit;
-using Voxul.Meshing;
 
 namespace Voxul.Edit
 {
@@ -23,7 +22,7 @@ namespace Voxul.Edit
 		None, X, Y, Z
 	}
 
-	[CustomEditor(typeof(VoxelRenderer))]
+	[CustomEditor(typeof(VoxelRenderer), editorForChildClasses:false)]
 	internal class VoxelPainter : Editor
 	{
 		[MenuItem("GameObject/3D Object/Voxel Object")]
@@ -142,33 +141,10 @@ namespace Voxul.Edit
 
 		public override bool RequiresConstantRepaint() => true;
 
+
 		public override void OnInspectorGUI()
 		{
-			Renderer.Mesh = (VoxelMesh)EditorGUILayout.ObjectField("Voxel Mesh", Renderer.Mesh, typeof(VoxelMesh), true);
-			if (Renderer.Mesh == null)
-			{
-				if (GUILayout.Button("Create In-Scene Mesh"))
-				{
-					Renderer.Mesh = CreateInstance<VoxelMesh>();
-					Renderer.Mesh.name = Guid.NewGuid().ToString();
-				}
-			}
-			else if (!AssetDatabase.Contains(Renderer.Mesh) && GUILayout.Button("Save In-Scene Mesh"))
-			{
-				var path = EditorUtility.SaveFilePanelInProject("Save Voxel Mesh", Renderer.name, "asset", "");
-				if (!string.IsNullOrEmpty(path))
-				{
-					AssetDatabase.CreateAsset(Renderer.Mesh, path);
-					AssetDatabase.SaveAssets();
-					AssetDatabase.Refresh();
-				}
-			}
-			else if (GUILayout.Button("Clone Mesh"))
-			{
-				Renderer.Mesh = Instantiate(Renderer.Mesh);
-				Renderer.Mesh.name = Guid.NewGuid().ToString();
-				Renderer.Mesh.Mesh = null;
-			}
+			
 
 			Tab = GUILayout.Toolbar(Tab, Tabs);
 

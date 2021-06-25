@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2340c816118dcf849931b73c6bd6f45b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - Mesh: {instanceID: 0}
+  - MeshRenderer: {instanceID: 0}
+  - Collider: {instanceID: 0}
+  - Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

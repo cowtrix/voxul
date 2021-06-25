@@ -11,7 +11,6 @@ namespace Voxul
 	[ExecuteAlways]
 	public class VoxelRenderer : MonoBehaviour
 	{
-		[HideInInspector]
 		public VoxelMesh Mesh;
 
 		[Header("Settings")]
@@ -95,7 +94,7 @@ namespace Voxul
 #endif
 		}
 
-		public void Invalidate(bool forceCollider)
+		public virtual void Invalidate(bool forceCollider)
 		{
 			//Debug.Log($"Invalidated {this}", this);
 			m_isDirty = false;

@@ -1,8 +1,23 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 namespace Voxul.Utilities
 {
 	public static class VectorExtensions
 	{
+		public static Bounds EncapsulateAll(IEnumerable<Bounds> bounds)
+		{
+			if(bounds == null || !bounds.Any())
+			{
+				return default;
+			}
+			var first = bounds.First();
+			foreach(var b in bounds.Skip(1))
+			{
+				first.Encapsulate(b);
+			}
+			return first;
+		}
 		public static Vector3 Inverse(this Vector3 obj)
 		{
 			return new Vector3(1 / obj.x, 1 / obj.y, 1 / obj.z);

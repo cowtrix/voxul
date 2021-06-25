@@ -91,7 +91,6 @@ namespace Voxul
 				UnityEditor.AssetDatabase.DeleteAsset(tmpPath);
 				UnityEditor.AssetDatabase.ImportAsset(currentPath);
 
-
 				BaseTextureArray = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2DArray>(currentPath);
 				DefaultMaterial.SetTexture("Texture2DArray_8875E265", BaseTextureArray);
 				UnityEditor.EditorUtility.SetDirty(DefaultMaterial);
@@ -131,7 +130,6 @@ namespace Voxul
 			}
 
 			texture2DArray.Apply();
-
 			return texture2DArray;
 		}
 	}
