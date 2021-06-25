@@ -3,7 +3,7 @@
 
 ![Banner](https://user-images.githubusercontent.com/5094696/120939811-b467b900-c711-11eb-895f-22773d26af42.png)
 
-voxul is a voxel system and editor tool for [Unity 3D.](https://unity.com/) It is distributed under the Apache License, Version 2.0 which means that it can be used freely. Feel free to fork this repository, log issues here, and submit pull requests.
+voxul is a voxel system and editor tool for [Unity 3D.](https://unity.com/) Use it to build voxel meshes, objects and levels.
 
 ## Requirements
 
@@ -16,6 +16,7 @@ voxul is a voxel system and editor tool for [Unity 3D.](https://unity.com/) It i
 
 ![select_delete](https://user-images.githubusercontent.com/5094696/120932524-1d3d3a00-c6ee-11eb-9400-3f863b56940a.gif)
 
+- Supports transparency and emission
 - Subdivision and resolution layering system that lets you mix and match different voxel grid resolutions.
 
 ![subdivide](https://user-images.githubusercontent.com/5094696/120932172-ab182580-c6ec-11eb-866c-f1f67644648a.gif)

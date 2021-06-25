@@ -20,15 +20,25 @@ namespace Voxul
 			if (!vm)
 			{
 #if UNITY_EDITOR
-				var rscPath = $"{Application.dataPath}/Resources/{RESOURCES_FOLDER}";
-				if (!Directory.Exists(rscPath))
+				var firstManagerInProject = UnityEditor.AssetDatabase.FindAssets($"t: {nameof(VoxelManager)}")
+					.FirstOrDefault(s => s.Contains("Resources"));
+				if (string.IsNullOrEmpty(firstManagerInProject))
 				{
-					Directory.CreateDirectory(rscPath);
+					var rscPath = $"{Application.dataPath}/Resources/{RESOURCES_FOLDER}";
+					if (!Directory.Exists(rscPath))
+					{
+						Directory.CreateDirectory(rscPath);
+						UnityEditor.AssetDatabase.Refresh();
+					}
+					UnityEditor.AssetDatabase.CreateAsset(CreateInstance<VoxelManager>(), $"Assets/Resources/{RESOURCES_FOLDER}/{nameof(VoxelManager)}.asset");
 					UnityEditor.AssetDatabase.Refresh();
 				}
-				UnityEditor.AssetDatabase.CreateAsset(CreateInstance<VoxelManager>(), $"Assets/Resources/{RESOURCES_FOLDER}/{nameof(VoxelManager)}.asset");
-				UnityEditor.AssetDatabase.Refresh();
+				else
+				{
+					path = firstManagerInProject;
+				}
 				vm = Resources.Load<VoxelManager>(path);
+				
 #else
 				throw new Exception($"Could not find VoxelManager resource at {path}");
 #endif
@@ -46,6 +56,24 @@ namespace Voxul
 		public List<Texture2D> Sprites = new List<Texture2D>();
 		public Mesh CubeMesh;
 		public Material LODMaterial;
+
+		public void OnValidate()
+		{
+			if(!DefaultMaterial)
+			{
+				DefaultMaterial = new Material(Shader.Find("voxul/DefaultVoxel"));
+#if UNITY_EDITOR
+				UnityEditor.EditorUtility.SetDirty(this);
+#endif
+			}
+			if (!DefaultMaterialTransparent)
+			{
+				DefaultMaterialTransparent = new Material(Shader.Find("voxul/DefaultVoxelTransparent"));
+#if UNITY_EDITOR
+				UnityEditor.EditorUtility.SetDirty(this);
+#endif
+			}
+		}
 
 		[ContextMenu("Regenerate Spritesheet")]
 		public void RegenerateSpritesheet()
