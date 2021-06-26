@@ -1,5 +1,7 @@
 ﻿
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Voxul.Utilities;
 
@@ -26,6 +28,28 @@ namespace Voxul.Meshing
 				Remove(hit);
 			}
 			Add(vox.Coordinate, vox);
+		}
+
+		public void Remove(Bounds bounds)
+		{
+			var toRemove = this.Where(v => v.Key.ToBounds().Intersects(bounds))
+				.ToList();
+			foreach(var v in toRemove)
+			{
+				Remove(v.Key);
+			}
+		}
+
+		public void Remove(IEnumerable<VoxelCoordinate> coordinates)
+		{
+			if(coordinates == null)
+			{
+				return;
+			}
+			foreach (var v in coordinates)
+			{
+				Remove(v);
+			}
 		}
 	}
 }

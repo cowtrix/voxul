@@ -5,7 +5,7 @@ namespace Voxul.Utilities
 {
 	public static class VectorExtensions
 	{
-		public static Bounds EncapsulateAll(IEnumerable<Bounds> bounds)
+		public static Bounds EncapsulateAll(this IEnumerable<Bounds> bounds)
 		{
 			if(bounds == null || !bounds.Any())
 			{

@@ -34,10 +34,10 @@ namespace Voxul.Edit
 			return base.DrawInspectorGUI(voxelPainter);
 		}
 
-		protected override bool GetVoxelDataFromPoint(VoxelPainter voxelPainterTool, VoxelRenderer renderer,
+		protected override bool GetVoxelDataFromPoint(VoxelPainter voxelPainterTool, VoxelRenderer renderer, MeshCollider collider,
 			Vector3 hitPoint, Vector3 hitNorm, int triIndex, sbyte layer, out List<VoxelCoordinate> selection, out EVoxelDirection hitDir)
 		{
-			var result = base.GetVoxelDataFromPoint(voxelPainterTool, renderer, hitPoint, hitNorm, triIndex, layer, out selection, out hitDir);
+			var result = base.GetVoxelDataFromPoint(voxelPainterTool, renderer, collider, hitPoint, hitNorm, triIndex, layer, out selection, out hitDir);
 			if (result)
 			{
 				Handles.matrix = renderer.transform.localToWorldMatrix;

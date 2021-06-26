@@ -16,7 +16,7 @@ namespace Voxul
 		public void Invalidate()
 		{
 			Renderer.sharedMaterial = VoxelManager.Instance.DefaultMaterial;
-			var data = new IntermediateVoxelMeshData(null);
+			var data = new IntermediateVoxelMeshData(null, null);
 			VoxelMesh.Cube(Voxel, data);
 			MeshFilter.sharedMesh = data.SetMesh(MeshFilter.sharedMesh);
 		}

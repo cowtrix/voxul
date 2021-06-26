@@ -2,87 +2,157 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Jobs;
 using UnityEngine;
-using Voxul.Meshing;
+using Voxul.Utilities;
+using Voxul.Utilities;
 
 namespace Voxul
 {
+	public static class FontExtensions
+	{
+		public static char GetCharacter(this CharacterInfo info) => Convert.ToChar(info.index);
+	}
+
 	[ExecuteAlways]
 	public class VoxelText : VoxelRenderer
 	{
-		[Header("Text")]
-		[Range(0, 2)]
-		public sbyte Resolution;
-		public Font Font;
-		public int FontSize = 12;
-		public int LineSize = 12;
-		public FontStyle FontStyle;
-		[Multiline]
-		public string Text;
+		[Serializable]
+		public class CharVoxelData
+		{
+			public char Character;
+			public List<VoxelCoordinate> Coordinates = new List<VoxelCoordinate>();
+		}
+		[Serializable]
+		public class CharacterBoundsMapping : SerializableDictionary<Bounds, CharVoxelData> { }
+		[Serializable]
+		public class TextConfiguration
+		{
+			[Range(0, 2)]
+			public sbyte Resolution = 1;
+			public Font Font;
+			public int FontSize = 12;
+			public int LineSize = 12;
+			public FontStyle FontStyle;
+			[Multiline]
+			public string Text = "Text";
 
-		public VoxelMaterial Material;
-		[Range(0, 1)]
-		public float AlphaThreshold = .5f;
+			public VoxelMaterial Material;
+			[Range(0, 1)]
+			public float AlphaThreshold = .5f;
+
+			public override bool Equals(object obj)
+			{
+				return obj is TextConfiguration configuration &&
+					   Resolution == configuration.Resolution &&
+					   EqualityComparer<Font>.Default.Equals(Font, configuration.Font) &&
+					   FontSize == configuration.FontSize &&
+					   LineSize == configuration.LineSize &&
+					   FontStyle == configuration.FontStyle &&
+					   Text == configuration.Text &&
+					   EqualityComparer<VoxelMaterial>.Default.Equals(Material, configuration.Material) &&
+					   AlphaThreshold == configuration.AlphaThreshold;
+			}
+
+			public bool ShouldClearCache(TextConfiguration lastConfig)
+			{
+				return Resolution != lastConfig.Resolution ||
+					   Font != lastConfig.Font ||
+					   FontSize != lastConfig.FontSize ||
+					   LineSize != lastConfig.LineSize ||
+					   FontStyle != lastConfig.FontStyle ||
+					   !Material.Equals(lastConfig.Material) ||
+					   AlphaThreshold != lastConfig.AlphaThreshold;
+			}
+
+			public override int GetHashCode()
+			{
+				int hashCode = 525090847;
+				hashCode = hashCode * -1521134295 + Resolution.GetHashCode();
+				hashCode = hashCode * -1521134295 + EqualityComparer<Font>.Default.GetHashCode(Font);
+				hashCode = hashCode * -1521134295 + FontSize.GetHashCode();
+				hashCode = hashCode * -1521134295 + LineSize.GetHashCode();
+				hashCode = hashCode * -1521134295 + FontStyle.GetHashCode();
+				hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Text);
+				hashCode = hashCode * -1521134295 + Material.GetHashCode();
+				hashCode = hashCode * -1521134295 + AlphaThreshold.GetHashCode();
+				return hashCode;
+			}
+		}
+
+		public TextConfiguration Configuration;
 
 		[SerializeField]
 		[HideInInspector]
-		private string m_lastText;
+		private CharacterBoundsMapping m_cache;
 		[SerializeField]
+		[HideInInspector]
+		private TextConfiguration m_lastConfig;
+		[SerializeField]
+		[HideInInspector]
 		private Texture2D m_workingTexture;
 
 		private void OnValidate()
 		{
-			if (Text == m_lastText)
+			if (m_lastConfig != null && m_lastConfig.Equals(Configuration))
 			{
-				Debug.Log("Text was the same, returning");
 				return;
 			}
-			Debug.Log("Set dirty");
+			if (Configuration.ShouldClearCache(m_lastConfig))
+			{
+				Mesh.Voxels.Clear();
+				m_cache.Clear();
+			}
+			m_lastConfig = JsonUtility.FromJson<TextConfiguration>(JsonUtility.ToJson(Configuration));
 			SetDirty();
-			m_lastText = Text;
 		}
 
-		private void OnEnable()
+		public IEnumerable<(Bounds, CharacterInfo)> GetCharacters()
 		{
-			Font.textureRebuilt += OnFontTextureRebuilt;
-		}
-
-		private void OnDestroy()
-		{
-			Font.textureRebuilt -= OnFontTextureRebuilt;
-		}
-
-		private void OnFontTextureRebuilt(Font obj)
-		{
-			Debug.Log("OnFontTextureRebuilt");
-		}
-
-		public override void Invalidate(bool forceCollider)
-		{
-			Debug.Log("Invalidating");
-			if (!Mesh || !Font)
+			var str = Configuration.Text;
+			Vector3 pos = Vector3.zero;
+			for (int i = 0; i < str.Length; i++)
 			{
-				base.Invalidate(forceCollider);
-				return;
-			}
-			if (!Font.dynamic)
-			{
-				Font = Font.CreateDynamicFontFromOSFont(Font.name, FontSize);
-			}
+				if (str[i] == '\n')
+				{
+					pos = new Vector2(0, pos.y - Configuration.LineSize);
+					continue;
+				}
+				if (str[i] == ' ')
+				{
+					pos = new Vector2(pos.x + Configuration.FontSize, pos.y);
+					continue;
+				}
 
-			Mesh.Voxels.Clear();
+				// Get character rendering information from the font
+				if (!GetCharacterInfo(Configuration.Font.characterInfo, str[i], out var ch))
+				{
+					continue;
+				}
 
+				var spatialBound = new Bounds(pos + new Vector3(ch.minX, ch.maxY, 0), Vector3.zero);
+				spatialBound.Encapsulate(pos + new Vector3(ch.maxX, ch.maxY, 0));
+				spatialBound.Encapsulate(pos + new Vector3(ch.maxX, ch.minY, 0));
+				spatialBound.Encapsulate(pos + new Vector3(ch.minX, ch.minY, 0));
+
+				yield return (spatialBound, ch);
+
+				// Advance character position
+				pos += new Vector3(ch.advance, 0, 0);
+			}
+		}
+
+		private void UpdateFontWorkingTexture()
+		{
 			// Generate a mesh for the characters we want to print.
-			var fontTexture = (Texture2D)Font.material.GetTexture(Font.material.GetTexturePropertyNameIDs().First());
+			var fontTexture = (Texture2D)Configuration.Font.material.GetTexture(Configuration.Font.material.GetTexturePropertyNameIDs().First());
 			if (!fontTexture)
 			{
-				Debug.LogError($"Texture was null for font {Font}", Font);
+				Debug.LogError($"Texture was null for font {Configuration.Font}", Configuration.Font);
 				return;
 			}
 
 			var rt = RenderTexture.GetTemporary(fontTexture.width, fontTexture.height);
-
-
 			if (m_workingTexture == null)
 			{
 				m_workingTexture = new Texture2D(fontTexture.width, fontTexture.height);
@@ -98,31 +168,51 @@ namespace Voxul
 			RenderTexture.active = null;
 			RenderTexture.ReleaseTemporary(rt);
 			m_workingTexture.Apply();
+		}
 
-			var layerStep = VoxelCoordinate.LayerToScale(Resolution);
-			var str = Text;
-			Vector3 pos = Vector3.zero;
-			for (int i = 0; i < str.Length; i++)
+		public override void Invalidate(bool forceCollider)
+		{
+			if (!Mesh || !Configuration.Font)
 			{
-				if(str[i] == '\n')
+				base.Invalidate(forceCollider);
+				return;
+			}
+			if (!Configuration.Font.dynamic)
+			{
+				Configuration.Font = Font.CreateDynamicFontFromOSFont(Configuration.Font.name, Configuration.FontSize);
+			}
+			foreach (var m in Mesh.Meshes)
+			{
+				// Because it's text, we mark it dynamic
+				if (m.Mesh)
 				{
-					pos = new Vector2(0, pos.y - LineSize);
+					m.Mesh.MarkDynamic();
+				}
+			}
+			UpdateFontWorkingTexture();
+			var newCache = new Dictionary<Bounds, CharVoxelData>();
+			var characterCoordList = new List<VoxelCoordinate>();
+			var layerStep = VoxelCoordinate.LayerToScale(Configuration.Resolution);
+			foreach (var info in GetCharacters())
+			{
+				var spatialBound = info.Item1;
+				var ch = info.Item2;
+				var character = ch.GetCharacter();
+
+				if (m_cache.TryGetValue(spatialBound, out var cacheData)
+					&& cacheData.Character == character
+					&& cacheData.Coordinates.Any(v => Mesh.Voxels.ContainsKey(v)))
+				{
+					newCache.Add(spatialBound, cacheData);
 					continue;
 				}
-				// Get character rendering information from the font
-				if (!GetCharacterInfo(Font.characterInfo, str[i], out var ch))
-				{
-					continue;
-				}
 
-				var spatialBound = new Bounds(pos + new Vector3(ch.minX, ch.maxY, 0), Vector3.zero);
-				spatialBound.Encapsulate(pos + new Vector3(ch.maxX, ch.maxY, 0));
-				spatialBound.Encapsulate(pos + new Vector3(ch.maxX, ch.minY, 0));
-				spatialBound.Encapsulate(pos + new Vector3(ch.minX, ch.minY, 0));
+				characterCoordList.Clear();
+				Mesh.Voxels.Remove(cacheData?.Coordinates);
 
-				var uvBound = Rect.MinMaxRect(ch.uvBottomLeft.x, ch.uvBottomLeft.y, ch.uvTopRight.x, ch.uvTopRight.y);
-
-				Debug.Log($"Drawing character {str[i]}");
+				var uvXBound = new Vector2(ch.uvBottomLeft.x, ch.uvTopRight.x);
+				var uvYBound = new Vector2(ch.uvBottomRight.y, ch.uvTopLeft.y);
+				//var uvBound = Rect.MinMaxRect(ch.uvBottomLeft.x, ch.uvBottomLeft.y, ch.uvTopRight.x, ch.uvTopRight.y);
 				for (var x = 0f; x <= spatialBound.size.x; x += layerStep)
 				{
 					var fracX = x / spatialBound.size.x;
@@ -131,38 +221,48 @@ namespace Voxul
 						var fracY = y / spatialBound.size.y;
 
 						var uv = new Vector2(
-							Mathf.Lerp(uvBound.xMin, uvBound.xMax, fracX),
-							Mathf.Lerp(uvBound.yMin, uvBound.yMax, fracY));
+							Mathf.Lerp(uvXBound.x, uvXBound.y, fracX),
+							Mathf.Lerp(uvYBound.x, uvYBound.y, fracY));
 						var c = m_workingTexture.GetPixelBilinear(uv.x, uv.y);
 
-						if (c.a < AlphaThreshold)
+						if (c.a < Configuration.AlphaThreshold)
 						{
 							continue;
 						}
 						else
 						{
 							var voxPos = new Vector3(x + spatialBound.min.x, y + spatialBound.min.y);
-							if (Mesh.Voxels.AddSafe(new Voxel(VoxelCoordinate.FromVector3(voxPos, Resolution), Material.Copy())))
-							{
-								Debug.Log($"Adding voxel {ch.uvBottomLeft} at {voxPos}");
-							}
+							var voxCoord = VoxelCoordinate.FromVector3(voxPos, Configuration.Resolution);
+							characterCoordList.Add(voxCoord);
 						}
 					}
 				}
-
-				// Advance character position
-				Debug.Log("Advancing " + ch.advance);
-				pos += new Vector3(ch.advance, 0, 0);
+				newCache.Add(spatialBound, new CharVoxelData { Character = character, Coordinates = characterCoordList.ToList() });
 			}
+
+			foreach (var c in m_cache.Where(m => !newCache.ContainsKey(m.Key)))
+			{
+				Mesh.Voxels.Remove(c.Key);
+			}
+			m_cache.Clear();
+			foreach (var c in newCache)
+			{
+				m_cache.Add(c.Key, c.Value);
+				foreach (var coord in c.Value.Coordinates)
+				{
+					Mesh.Voxels[coord] = new Voxel(coord, Configuration.Material.Copy());
+				}
+			}
+
 			Mesh.Invalidate();
 			base.Invalidate(forceCollider);
 		}
 
 		protected override void Update()
 		{
-			if (Font)
+			if (Configuration.Font)
 			{
-				Font.RequestCharactersInTexture(Text, FontSize, FontStyle);
+				Configuration.Font.RequestCharactersInTexture(Configuration.Text, Configuration.FontSize, Configuration.FontStyle);
 			}
 			base.Update();
 		}
@@ -184,18 +284,22 @@ namespace Voxul
 		private void OnDrawGizmosSelected()
 		{
 			Gizmos.matrix = transform.localToWorldMatrix;
-
-			var str = Text;
+			Gizmos.color = Color.white.WithAlpha(.25f);
+			if (!Configuration.Font)
+			{
+				return;
+			}
+			var str = Configuration.Text ?? "";
 			Vector3 pos = Vector3.zero;
 			for (int i = 0; i < str.Length; i++)
 			{
 				if (str[i] == '\n')
 				{
-					pos = new Vector2(0, pos.y - LineSize);
+					pos = new Vector2(0, pos.y - Configuration.LineSize);
 					continue;
 				}
 				// Get character rendering information from the font				
-				if (!GetCharacterInfo(Font.characterInfo, str[i], out var ch))
+				if (!GetCharacterInfo(Configuration.Font.characterInfo, str[i], out var ch))
 				{
 					continue;
 				}

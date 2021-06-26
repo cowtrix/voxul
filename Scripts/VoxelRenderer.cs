@@ -13,6 +13,44 @@ namespace Voxul
 	{
 		public VoxelMesh Mesh;
 
+		[Serializable]
+		public class UnityRendererInstance
+		{
+			public GameObject GameObject;
+			public MeshFilter MeshFilter;
+			public MeshRenderer MeshRenderer;
+			public MeshCollider MeshCollider;
+
+			public void SetupComponents(GameObject gameObject, bool collider)
+			{
+				if (!GameObject)
+				{
+					GameObject = new GameObject("RendererChunk");
+					GameObject.transform.SetParent(gameObject.transform);
+				}
+				GameObject.hideFlags = HideFlags.HideInHierarchy;
+				if (!MeshFilter)
+				{
+					MeshFilter = GameObject.GetOrAddComponent<MeshFilter>();
+				}
+				if (!MeshRenderer)
+				{
+					MeshRenderer = GameObject.GetOrAddComponent<MeshRenderer>();
+				}
+				if (collider)
+				{
+					if (!MeshCollider)
+					{
+						MeshCollider = GameObject.GetOrAddComponent<MeshCollider>();
+					}
+
+					MeshCollider.convex = false;
+				}
+			}
+
+			public Bounds Bounds => MeshRenderer.bounds;
+		}
+
 		[Header("Settings")]
 		public bool CustomMaterials;
 		public bool GenerateCollider = true;
@@ -26,18 +64,18 @@ namespace Voxul
 		[Range(sbyte.MinValue, sbyte.MaxValue)]
 		public sbyte MaxLayer = sbyte.MaxValue;
 
-		private MeshFilter m_filter;
-		public MeshRenderer MeshRenderer;
-		public MeshCollider Collider;
 		private bool m_isDirty;
 
 		[SerializeField]
 		[HideInInspector]
 		private string m_lastMeshHash;
 
-		public Bounds Bounds => MeshRenderer.bounds;
 
-		private void Update()
+		public List<UnityRendererInstance> Renderers = new List<UnityRendererInstance>();
+
+		public Bounds Bounds => Renderers.Select(b => b.Bounds).EncapsulateAll();
+
+		protected virtual void Update()
 		{
 			if (SnapToGrid)
 			{
@@ -51,35 +89,20 @@ namespace Voxul
 		}
 
 		public void SetDirty() => m_isDirty = true;
-
-		public void SetupComponents(bool forceCollider)
-		{
-			if (!m_filter)
-			{
-				m_filter = gameObject.GetOrAddComponent<MeshFilter>();
-			}
-			//m_filter.hideFlags = HideFlags.HideAndDontSave;
-			if (!MeshRenderer)
-			{
-				MeshRenderer = gameObject.GetOrAddComponent<MeshRenderer>();
-			}
-			//m_renderer.hideFlags = HideFlags.HideAndDontSave;
-			if (GenerateCollider || forceCollider)
-			{
-				if (!Collider)
-				{
-					Collider = gameObject.GetOrAddComponent<MeshCollider>();
-				}
-				//m_collider.hideFlags = HideFlags.HideAndDontSave;
-				Collider.convex = false;
-			}
-		}
-
+		
 		[ContextMenu("Clear")]
 		public void ClearMesh()
 		{
 			Mesh.Invalidate();
 			Mesh.Voxels.Clear();
+		}
+
+		public void SetupComponents(bool forceCollider)
+		{
+			foreach(var r in Renderers)
+			{
+				r.SetupComponents(gameObject, GenerateCollider || forceCollider);
+			}
 		}
 
 		[ContextMenu("Force Redraw")]
@@ -98,7 +121,6 @@ namespace Voxul
 		{
 			//Debug.Log($"Invalidated {this}", this);
 			m_isDirty = false;
-			SetupComponents(forceCollider);
 			if (!Mesh)
 			{
 				return;
@@ -107,39 +129,71 @@ namespace Voxul
 			{
 				MinLayer = MaxLayer;
 			}
-			m_filter.sharedMesh = Mesh.GenerateMeshInstance(MinLayer, MaxLayer);
-			if (GenerateCollider)
+
+			var newMeshes = Mesh.GenerateMeshInstance(MinLayer, MaxLayer).ToList();
+			for (int i = 0; i < newMeshes.Count; i++)
 			{
-				Collider.sharedMesh = m_filter.sharedMesh;
+				Mesh mesh = newMeshes[i];
+				UnityRendererInstance r;
+				if (Renderers.Count <= newMeshes.Count)
+				{
+					r = new UnityRendererInstance();
+					Renderers.Add(r);
+				}
+				else
+				{
+					r = Renderers[i];
+				}
+				r.SetupComponents(gameObject, forceCollider || GenerateCollider);
+				r.MeshFilter.sharedMesh = mesh;
+				if (GenerateCollider)
+				{
+					r.MeshCollider.sharedMesh = mesh;
+				}
+				if (!CustomMaterials)
+				{
+					if (Mesh.Voxels.Any(v => v.Value.Material.MaterialMode == EMaterialMode.Transparent))
+					{
+						r.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, VoxelManager.Instance.DefaultMaterialTransparent, };
+					}
+					else if (r.MeshRenderer)
+					{
+						r.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, };
+					}
+				}
 			}
-			if (!CustomMaterials)
+			
+			for(var i = Renderers.Count - 1; i >= newMeshes.Count; --i)
 			{
-				if (Mesh.Voxels.Any(v => v.Value.Material.MaterialMode == EMaterialMode.Transparent))
-				{
-					MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, VoxelManager.Instance.DefaultMaterialTransparent, };
-				}
-				else if (MeshRenderer)
-				{
-					MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, };
-				}
+				var r = Renderers[i];
+				r.GameObject.SafeDestroy();
+				Renderers.RemoveAt(i);
 			}
+
 			m_lastMeshHash = Mesh.Hash;
 		}
 
-		public Voxel? GetVoxel(int triangleIndex)
+		public Voxel? GetVoxel(Collider collider, int triangleIndex)
 		{
 			SetupComponents(false);
-			if (triangleIndex < 0 || !m_filter || !m_filter.sharedMesh)
+			var renderer = Renderers.SingleOrDefault(s => s.MeshCollider == collider);
+			if (triangleIndex < 0 || !renderer?.MeshRenderer || !renderer.MeshFilter.sharedMesh)
 			{
 				SetDirty();
 				return null;
 			}
 
+			var meshVoxelData = Mesh.Meshes.SingleOrDefault(m => m.Mesh == renderer.MeshFilter.sharedMesh);
+			if (meshVoxelData == null)
+			{
+				return null;
+			}
+
 			int limit = triangleIndex * 3;
 			int submesh;
-			for (submesh = 0; submesh < m_filter.sharedMesh.subMeshCount; submesh++)
+			for (submesh = 0; submesh < renderer.MeshFilter.sharedMesh.subMeshCount; submesh++)
 			{
-				int numIndices = m_filter.sharedMesh.GetTriangles(submesh).Length;
+				int numIndices = renderer.MeshFilter.sharedMesh.GetTriangles(submesh).Length;
 
 				if (numIndices > limit)
 					break;
@@ -147,7 +201,8 @@ namespace Voxul
 				limit -= numIndices;
 			}
 
-			if (!Mesh.VoxelMapping.TryGetValue(submesh, out var innermap))
+			
+			if (!meshVoxelData.VoxelMapping.TryGetValue(submesh, out var innermap))
 			{
 				throw new Exception($"Couldn't find submesh mapping for {submesh}");
 			}

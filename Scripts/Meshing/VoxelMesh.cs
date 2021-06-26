@@ -10,11 +10,17 @@ namespace Voxul.Meshing
 	[CreateAssetMenu]
 	public class VoxelMesh : ScriptableObject
 	{
-		public Mesh Mesh;
+		[Serializable]
+		public class MeshVoxelData
+		{
+			public Mesh Mesh;
+			public TriangleVoxelMapping VoxelMapping = new TriangleVoxelMapping();
+		}
+
+		public List<MeshVoxelData> Meshes;
+
 		[HideInInspector]
 		public string Hash;
-		[HideInInspector]
-		public TriangleVoxelMapping VoxelMapping = new TriangleVoxelMapping();
 		[HideInInspector]
 		public VoxelMapping Voxels = new VoxelMapping();
 
@@ -22,66 +28,92 @@ namespace Voxul.Meshing
 
 		public void Invalidate() => Hash = Guid.NewGuid().ToString();
 
-		public Mesh GenerateMeshInstance(sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
+		public IEnumerable<Mesh> GenerateMeshInstance(sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
-			if (!Mesh
+			int chunkCount = 0;
+			int voxelCount = 0;
+			var allVox = Voxels
+					.Where(v => v.Key.Layer >= minLayer && v.Key.Layer <= maxLayer)
+					.OrderBy(v => v.Value.Material.MaterialMode)
+					.ToList();
+			while (voxelCount < Voxels.Count)
+			{
+				if (Meshes.Count <= chunkCount)
+				{
+					Meshes.Add(new MeshVoxelData());
+				}
+				var meshData = Meshes[chunkCount];
+				chunkCount++;
+				if (!meshData.Mesh
 #if UNITY_EDITOR
-			|| (Mesh && UnityEditor.AssetDatabase.Contains(this) && !UnityEditor.AssetDatabase.Contains(Mesh))
+			|| (meshData.Mesh && UnityEditor.AssetDatabase.Contains(this) && !UnityEditor.AssetDatabase.Contains(meshData.Mesh))
 #endif
 			)
-			{
-				Mesh = new Mesh();
+				{
+					meshData.Mesh = new Mesh();
 #if UNITY_EDITOR
-				if (UnityEditor.AssetDatabase.Contains(this))
-				{
-					var assetPath = UnityEditor.AssetDatabase.GetAssetPath(this);
-					UnityEditor.AssetDatabase.AddObjectToAsset(Mesh, assetPath);
-				}
+					if (UnityEditor.AssetDatabase.Contains(this))
+					{
+						var assetPath = UnityEditor.AssetDatabase.GetAssetPath(this);
+						UnityEditor.AssetDatabase.AddObjectToAsset(meshData.Mesh, assetPath);
+					}
 #endif
-			}
-			Mesh.name = $"{name}_mesh_{Hash}";
-			var data = new IntermediateVoxelMeshData(this);
-			foreach (var vox in Voxels
-				.Where(v => v.Key.Layer >= minLayer && v.Key.Layer <= maxLayer)
-				.OrderBy(v => v.Value.Material.MaterialMode))
-			{
-				if (vox.Key != vox.Value.Coordinate)
-				{
-					throw new Exception($"Voxel {vox.Key} had incorrect key in data");
 				}
-				switch (vox.Value.Material.RenderMode)
+				meshData.Mesh.name = $"{name}_mesh_{Hash}_0";
+				var data = new IntermediateVoxelMeshData(Voxels, meshData.VoxelMapping);
+				int startVoxCount = voxelCount;
+				foreach (var vox in allVox.Skip(startVoxCount))
 				{
-					case ERenderMode.Block:
-						Cube(vox.Value, data);
+					if (vox.Key != vox.Value.Coordinate)
+					{
+						throw new Exception($"Voxel {vox.Key} had incorrect key in data");
+					}
+					switch (vox.Value.Material.RenderMode)
+					{
+						case ERenderMode.Block:
+							Cube(vox.Value, data);
+							break;
+						case ERenderMode.XPlane:
+							Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, });
+							break;
+						case ERenderMode.YPlane:
+							Plane(vox.Value, data, new[] { EVoxelDirection.YPos, EVoxelDirection.YNeg, });
+							break;
+						case ERenderMode.ZPlane:
+							Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
+							break;
+						case ERenderMode.XYCross:
+							Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
+							break;
+						case ERenderMode.XZCross:
+							Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
+							break;
+						case ERenderMode.ZYCross:
+							Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
+							break;
+						case ERenderMode.FullCross:
+							Plane(vox.Value, data, Directions.ToArray());
+							break;
+					}
+					voxelCount++;
+					if (data.Vertices.Count > 65535 - 100)
+					{
 						break;
-					case ERenderMode.XPlane:
-						Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, });
-						break;
-					case ERenderMode.YPlane:
-						Plane(vox.Value, data, new[] { EVoxelDirection.YPos, EVoxelDirection.YNeg, });
-						break;
-					case ERenderMode.ZPlane:
-						Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
-						break;
-					case ERenderMode.XYCross:
-						Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
-						break;
-					case ERenderMode.XZCross:
-						Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
-						break;
-					case ERenderMode.ZYCross:
-						Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
-						break;
-					case ERenderMode.FullCross:
-						Plane(vox.Value, data, Directions.ToArray());
-						break;
+					}
 				}
+
+				meshData.Mesh = data.SetMesh(meshData.Mesh);
+				meshData.VoxelMapping = data.VoxelMapping;
+				Voxels = data.Voxels;
+				yield return meshData.Mesh;
 			}
 
-			Mesh = data.SetMesh(Mesh);
-			VoxelMapping = data.VoxelMapping;
-			Voxels = data.Voxels;
-			return Mesh;
+			for (var i = Meshes.Count - 1; i >= chunkCount; --i)
+			{
+				var m = Meshes[i];
+				m.Mesh.SafeDestroy();
+				Meshes.RemoveAt(i);
+			}
 		}
 
 		public IEnumerable<VoxelCoordinate> GetVoxelCoordinates(Bounds bounds, sbyte currentLayer)

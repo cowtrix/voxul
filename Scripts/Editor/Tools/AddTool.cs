@@ -50,14 +50,14 @@ namespace Voxul.Edit
 
 		protected override EPaintingTool ToolID => EPaintingTool.Add;
 
-		protected override bool GetVoxelDataFromPoint(VoxelPainter painter, VoxelRenderer renderer, Vector3 hitPoint,
+		protected override bool GetVoxelDataFromPoint(VoxelPainter painter, VoxelRenderer renderer, MeshCollider collider, Vector3 hitPoint,
 			Vector3 hitNorm, int triIndex, sbyte layer,
 			out List<VoxelCoordinate> selection, out EVoxelDirection hitDir)
 		{
 			if (Event.current.alt)
 			{
 				m_cursor?.gameObject.SetActive(false);
-				return base.GetVoxelDataFromPoint(painter, renderer, hitPoint, hitNorm, triIndex, layer, out selection, out hitDir);
+				return base.GetVoxelDataFromPoint(painter, renderer, collider, hitPoint, hitNorm, triIndex, layer, out selection, out hitDir);
 			}
 
 			hitPoint = renderer.transform.worldToLocalMatrix.MultiplyPoint3x4(hitPoint);

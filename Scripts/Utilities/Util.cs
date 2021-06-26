@@ -20,6 +20,11 @@ namespace Voxul.Utilities
 			}
 		}
 
+		public static Color WithAlpha(this Color c, float a)
+		{
+			return new Color(c.r, c.g, c.b, a);
+		}
+
 		public static T GetOrAddComponent<T>(this GameObject child) where T : Component
 		{
 			T result = child.GetComponent<T>();

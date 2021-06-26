@@ -6,10 +6,10 @@ namespace Voxul.Meshing
 {
 	public class IntermediateVoxelMeshData
 	{
-		public IntermediateVoxelMeshData(VoxelMesh mesh)
+		public IntermediateVoxelMeshData(VoxelMapping voxels, TriangleVoxelMapping mapping)
 		{
-			Voxels = mesh?.Voxels;
-			VoxelMapping = mesh?.VoxelMapping;
+			Voxels = voxels;
+			VoxelMapping = mapping;
 		}
 
 		public TriangleVoxelMapping VoxelMapping;

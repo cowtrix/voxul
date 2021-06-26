@@ -44,6 +44,7 @@ namespace Voxul.Edit
 		protected virtual bool GetVoxelDataFromPoint(
 			VoxelPainter voxelPainterTool, 
 			VoxelRenderer renderer, 
+			MeshCollider collider,
 			Vector3 hitPoint, 
 			Vector3 hitNorm, 
 			int triIndex, 
@@ -53,7 +54,7 @@ namespace Voxul.Edit
 		{
 			hitNorm = renderer.transform.worldToLocalMatrix.MultiplyVector(hitNorm);
 			VoxelCoordinate.VectorToDirection(hitNorm, out hitDir);
-			var voxelN = renderer.GetVoxel(triIndex);
+			var voxelN = renderer.GetVoxel(collider, triIndex);
 			if (voxelN.HasValue)
 			{
 				selection = new List<VoxelCoordinate> { voxelN.Value.Coordinate };
@@ -66,7 +67,7 @@ namespace Voxul.Edit
 
 		public void DrawSceneGUI(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent, sbyte painterLayer)
 		{
-			if(!renderer.Mesh|| !renderer.Collider)
+			if(!renderer.Mesh)
 			{
 				renderer.SetupComponents(true);
 				return;
@@ -76,31 +77,37 @@ namespace Voxul.Edit
 			var hitPoint = Vector3.zero;
 			var hitNorm = Vector3.up;
 			var triIndex = -1;
-			if (renderer.Collider.Raycast(worldRay, out var hitInfo, 10000))
+			MeshCollider collider = null;
+			foreach(var r in renderer.Renderers)
 			{
-				hitPoint = hitInfo.point;
-				hitNorm = hitInfo.normal;
-				triIndex = hitInfo.triangleIndex;
-			}
-			else
-			{
-				var p = new Plane(renderer.transform.up, -renderer.transform.position.y); ;
-				if (p.Raycast(worldRay, out var planePoint))
+				if (r.MeshCollider.Raycast(worldRay, out var hitInfo, 10000))
 				{
-					hitPoint = worldRay.origin + worldRay.direction * planePoint ;
-					hitNorm = renderer.transform.up; ;
+					hitPoint = hitInfo.point;
+					hitNorm = hitInfo.normal;
+					triIndex = hitInfo.triangleIndex;
+					collider = r.MeshCollider;
 				}
-			}
-			Handles.DrawWireCube(hitPoint, Vector3.one * .02f);
-			Handles.DrawLine(hitPoint, hitPoint + hitNorm * .2f);
+				else
+				{
+					var p = new Plane(renderer.transform.up, -renderer.transform.position.y); ;
+					if (p.Raycast(worldRay, out var planePoint))
+					{
+						hitPoint = worldRay.origin + worldRay.direction * planePoint;
+						hitNorm = renderer.transform.up; ;
+					}
+				}
+				Handles.DrawWireCube(hitPoint, Vector3.one * .02f);
+				Handles.DrawLine(hitPoint, hitPoint + hitNorm * .2f);
 
-			if (!GetVoxelDataFromPoint(voxelPainter, renderer, hitPoint, hitNorm, triIndex, painterLayer,
-				out var selection, out var hitDir) && ToolID != EPaintingTool.Clipboard)
+				
+			}
+			if (!GetVoxelDataFromPoint(voxelPainter, renderer, collider, hitPoint, hitNorm, triIndex, painterLayer,
+					out var selection, out var hitDir) && ToolID != EPaintingTool.Clipboard)
 			{
 				return;
 			}
 
-			if(selection != null)
+			if (selection != null)
 			{
 				foreach (var brushCoord in selection)
 				{

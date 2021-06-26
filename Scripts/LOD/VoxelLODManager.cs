@@ -48,7 +48,7 @@ namespace Voxul.LevelOfDetail
 				.Select(l => GetUnityLod(l));
 
 			var lods = new[] {
-			new LOD(TopLODLevel, new[] { m_renderer.MeshRenderer })
+			new LOD(TopLODLevel, m_renderer.Renderers.Select(s => s.MeshRenderer).ToArray())
 		}.Concat(subLods)
 			.OrderByDescending(l => l.screenRelativeTransitionHeight);
 

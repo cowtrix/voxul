@@ -34,10 +34,10 @@ namespace Voxul.Edit
 			return false;
 		}
 
-		protected override bool GetVoxelDataFromPoint(VoxelPainter painter, VoxelRenderer renderer, Vector3 hitPoint, Vector3 hitNorm, int triIndex, sbyte layer,
+		protected override bool GetVoxelDataFromPoint(VoxelPainter painter, VoxelRenderer renderer, MeshCollider collider, Vector3 hitPoint, Vector3 hitNorm, int triIndex, sbyte layer,
 			out List<VoxelCoordinate> selection, out EVoxelDirection hitDir)
 		{
-			if (base.GetVoxelDataFromPoint(painter, renderer, hitPoint, hitNorm, triIndex, layer, out selection, out hitDir))
+			if (base.GetVoxelDataFromPoint(painter, renderer, collider, hitPoint, hitNorm, triIndex, layer, out selection, out hitDir))
 			{
 				foreach (var sub in selection.SelectMany(v => v.Subdivide()))
 				{
