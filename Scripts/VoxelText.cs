@@ -5,7 +5,6 @@ using System.Linq;
 using Unity.Jobs;
 using UnityEngine;
 using Voxul.Utilities;
-using Voxul.Utilities;
 
 namespace Voxul
 {
@@ -56,6 +55,10 @@ namespace Voxul
 
 			public bool ShouldClearCache(TextConfiguration lastConfig)
 			{
+				if(lastConfig == null)
+				{
+					return true;
+				}
 				return Resolution != lastConfig.Resolution ||
 					   Font != lastConfig.Font ||
 					   FontSize != lastConfig.FontSize ||
@@ -80,7 +83,7 @@ namespace Voxul
 			}
 		}
 
-		public TextConfiguration Configuration;
+		public TextConfiguration Configuration = new TextConfiguration();
 
 		[SerializeField]
 		[HideInInspector]
@@ -88,13 +91,16 @@ namespace Voxul
 		[SerializeField]
 		[HideInInspector]
 		private TextConfiguration m_lastConfig;
-		[SerializeField]
-		[HideInInspector]
+
 		private Texture2D m_workingTexture;
 
 		private void OnValidate()
 		{
 			if (m_lastConfig != null && m_lastConfig.Equals(Configuration))
+			{
+				return;
+			}
+			if (!Mesh)
 			{
 				return;
 			}
@@ -107,6 +113,20 @@ namespace Voxul
 			SetDirty();
 		}
 
+		protected override void OnClear()
+		{
+			Mesh.Voxels.Clear();
+			m_cache.Clear();
+		}
+
+		private void OnEnable()
+		{
+			if (Configuration.Font)
+			{
+				Configuration.Font = Font.CreateDynamicFontFromOSFont(Configuration.Font.name, Configuration.FontSize);
+			}
+		}
+
 		public IEnumerable<(Bounds, CharacterInfo)> GetCharacters()
 		{
 			var str = Configuration.Text;
@@ -116,11 +136,6 @@ namespace Voxul
 				if (str[i] == '\n')
 				{
 					pos = new Vector2(0, pos.y - Configuration.LineSize);
-					continue;
-				}
-				if (str[i] == ' ')
-				{
-					pos = new Vector2(pos.x + Configuration.FontSize, pos.y);
 					continue;
 				}
 
@@ -172,6 +187,10 @@ namespace Voxul
 
 		public override void Invalidate(bool forceCollider)
 		{
+			if (!ShouldInvalidate())
+			{
+				return;
+			}
 			if (!Mesh || !Configuration.Font)
 			{
 				base.Invalidate(forceCollider);
@@ -210,19 +229,16 @@ namespace Voxul
 				characterCoordList.Clear();
 				Mesh.Voxels.Remove(cacheData?.Coordinates);
 
-				var uvXBound = new Vector2(ch.uvBottomLeft.x, ch.uvTopRight.x);
-				var uvYBound = new Vector2(ch.uvBottomRight.y, ch.uvTopLeft.y);
-				//var uvBound = Rect.MinMaxRect(ch.uvBottomLeft.x, ch.uvBottomLeft.y, ch.uvTopRight.x, ch.uvTopRight.y);
 				for (var x = 0f; x <= spatialBound.size.x; x += layerStep)
 				{
 					var fracX = x / spatialBound.size.x;
 					for (var y = 0f; y <= spatialBound.size.y; y += layerStep)
 					{
-						var fracY = y / spatialBound.size.y;
-
-						var uv = new Vector2(
-							Mathf.Lerp(uvXBound.x, uvXBound.y, fracX),
-							Mathf.Lerp(uvYBound.x, uvYBound.y, fracY));
+						var fracY = 1 - ( y / spatialBound.size.y);
+						var uv = VectorExtensions.QuadLerp(
+							ch.uvTopLeft, ch.uvTopRight, ch.uvBottomRight, ch.uvBottomLeft,
+							fracX, fracY);
+						
 						var c = m_workingTexture.GetPixelBilinear(uv.x, uv.y);
 
 						if (c.a < Configuration.AlphaThreshold)
@@ -311,6 +327,11 @@ namespace Voxul
 				// Advance character position
 				pos += new Vector3(ch.advance, 0, 0);
 			}
+		}
+
+		private void OnDestroy()
+		{
+			m_workingTexture.SafeDestroy();
 		}
 	}
 }

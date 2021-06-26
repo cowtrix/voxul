@@ -8,48 +8,15 @@ using Voxul.Utilities;
 
 namespace Voxul
 {
+
 	[ExecuteAlways]
 	public class VoxelRenderer : MonoBehaviour
 	{
+		[SerializeField]
+		[HideInInspector]
+		private double m_lastUpdateTime;
+
 		public VoxelMesh Mesh;
-
-		[Serializable]
-		public class UnityRendererInstance
-		{
-			public GameObject GameObject;
-			public MeshFilter MeshFilter;
-			public MeshRenderer MeshRenderer;
-			public MeshCollider MeshCollider;
-
-			public void SetupComponents(GameObject gameObject, bool collider)
-			{
-				if (!GameObject)
-				{
-					GameObject = new GameObject("RendererChunk");
-					GameObject.transform.SetParent(gameObject.transform);
-				}
-				GameObject.hideFlags = HideFlags.HideInHierarchy;
-				if (!MeshFilter)
-				{
-					MeshFilter = GameObject.GetOrAddComponent<MeshFilter>();
-				}
-				if (!MeshRenderer)
-				{
-					MeshRenderer = GameObject.GetOrAddComponent<MeshRenderer>();
-				}
-				if (collider)
-				{
-					if (!MeshCollider)
-					{
-						MeshCollider = GameObject.GetOrAddComponent<MeshCollider>();
-					}
-
-					MeshCollider.convex = false;
-				}
-			}
-
-			public Bounds Bounds => MeshRenderer.bounds;
-		}
 
 		[Header("Settings")]
 		public bool CustomMaterials;
@@ -70,13 +37,13 @@ namespace Voxul
 		[HideInInspector]
 		private string m_lastMeshHash;
 
-
-		public List<UnityRendererInstance> Renderers = new List<UnityRendererInstance>();
+		[SerializeField]
+		public List<VoxelRendererSubmesh> Renderers = new List<VoxelRendererSubmesh>();
 
 		public Bounds Bounds => Renderers.Select(b => b.Bounds).EncapsulateAll();
 
 		protected virtual void Update()
-		{
+		{		
 			if (SnapToGrid)
 			{
 				var scale = VoxelCoordinate.LayerToScale(SnapLayer);
@@ -95,20 +62,33 @@ namespace Voxul
 		{
 			Mesh.Invalidate();
 			Mesh.Voxels.Clear();
+			OnClear();
 		}
+
+		protected virtual void OnClear() { }
 
 		public void SetupComponents(bool forceCollider)
 		{
+			Renderers = new List<VoxelRendererSubmesh>(GetComponentsInChildren<VoxelRendererSubmesh>());
 			foreach(var r in Renderers)
 			{
-				r.SetupComponents(gameObject, GenerateCollider || forceCollider);
+				r.SetupComponents(GenerateCollider || forceCollider);
 			}
 		}
 
 		[ContextMenu("Force Redraw")]
 		public void ForceRedraw()
 		{
+			foreach(Transform t in transform)
+			{
+				t.gameObject.SafeDestroy();
+			}
 			SetupComponents(false);
+			if (!Mesh)
+			{
+				Debug.LogWarning($"Tried to force redraw {this}, but it doesn't have a voxel mesh.", this);
+				return;
+			}
 			Mesh.Invalidate();
 			Invalidate(false);
 #if UNITY_EDITOR
@@ -117,9 +97,19 @@ namespace Voxul
 #endif
 		}
 
+		protected virtual bool ShouldInvalidate()
+		{
+			return Util.GetDynamicTime() > m_lastUpdateTime + VoxelManager.Instance.MinimumUpdateTime;
+		}
+
+
 		public virtual void Invalidate(bool forceCollider)
 		{
-			//Debug.Log($"Invalidated {this}", this);
+			if (!ShouldInvalidate())
+			{
+				return;
+			}
+			m_lastUpdateTime = Util.GetDynamicTime();
 			m_isDirty = false;
 			if (!Mesh)
 			{
@@ -130,46 +120,53 @@ namespace Voxul
 				MinLayer = MaxLayer;
 			}
 
+			Mesh.Meshes.Clear();
 			var newMeshes = Mesh.GenerateMeshInstance(MinLayer, MaxLayer).ToList();
 			for (int i = 0; i < newMeshes.Count; i++)
 			{
-				Mesh mesh = newMeshes[i];
-				UnityRendererInstance r;
+				var data = newMeshes[i];
+				var mesh = data.Mesh;
+				VoxelRendererSubmesh submesh;
 				if (Renderers.Count <= newMeshes.Count)
 				{
-					r = new UnityRendererInstance();
-					Renderers.Add(r);
+					submesh = new GameObject($"{name}_submesh_hidden")
+						.AddComponent<VoxelRendererSubmesh>();
+					submesh.transform.SetParent(transform);
+					Renderers.Add(submesh);
 				}
 				else
 				{
-					r = Renderers[i];
+					submesh = Renderers[i];
 				}
-				r.SetupComponents(gameObject, forceCollider || GenerateCollider);
-				r.MeshFilter.sharedMesh = mesh;
+				submesh.SetupComponents(forceCollider || GenerateCollider);
+				submesh.MeshFilter.sharedMesh = mesh;
 				if (GenerateCollider)
 				{
-					r.MeshCollider.sharedMesh = mesh;
+					submesh.MeshCollider.sharedMesh = mesh;
 				}
 				if (!CustomMaterials)
 				{
 					if (Mesh.Voxels.Any(v => v.Value.Material.MaterialMode == EMaterialMode.Transparent))
 					{
-						r.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, VoxelManager.Instance.DefaultMaterialTransparent, };
+						submesh.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, VoxelManager.Instance.DefaultMaterialTransparent, };
 					}
-					else if (r.MeshRenderer)
+					else if (submesh.MeshRenderer)
 					{
-						r.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, };
+						submesh.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, };
 					}
 				}
 			}
-			
-			for(var i = Renderers.Count - 1; i >= newMeshes.Count; --i)
+			for (int i = 0; i < Mesh.Meshes.Count; i++)
+			{
+				var m = Mesh.Meshes[i];
+				Renderers[i].MeshFilter.sharedMesh = m.Mesh;
+			}
+			for (var i = Renderers.Count - 1; i >= Mesh.Meshes.Count; --i)
 			{
 				var r = Renderers[i];
-				r.GameObject.SafeDestroy();
+				r.gameObject.SafeDestroy();
 				Renderers.RemoveAt(i);
 			}
-
 			m_lastMeshHash = Mesh.Hash;
 		}
 

@@ -5,6 +5,40 @@ namespace Voxul.Utilities
 {
 	public static class VectorExtensions
 	{
+		public static Vector3 QuadLerp(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float u, float v)
+		{
+			Vector3 abu = Vector3.Lerp(a, b, u);
+			Vector3 dcu = Vector3.Lerp(d, c, u);
+			return Vector3.Lerp(abu, dcu, v);
+		}
+
+		public static Vector2 QuadLerp(Vector2 a, Vector2 b, Vector2 c, Vector2 d, float u, float v)
+		{
+			// Given a (u,v) coordinate that defines a 2D local position inside a planar quadrilateral, find the
+			// absolute 3D (x,y,z) coordinate at that location.
+			//
+			//  0 <----u----> 1
+			//  a ----------- b    0
+			//  |             |   /|\
+			//  |             |    |
+			//  |             |    v
+			//  |  *(u,v)     |    |
+			//  |             |   \|/
+			//  d------------ c    1
+			//
+			// a, b, c, and d are the vertices of the quadrilateral. They are assumed to exist in the
+			// same plane in 3D space, but this function will allow for some non-planar error.
+			//
+			// Variables u and v are the two-dimensional local coordinates inside the quadrilateral.
+			// To find a point that is inside the quadrilateral, both u and v must be between 0 and 1 inclusive.  
+			// For example, if you send this function u=0, v=0, then it will return coordinate "a".  
+			// Similarly, coordinate u=1, v=1 will return vector "c". Any values between 0 and 1
+			// will return a coordinate that is bi-linearly interpolated between the four vertices.
+			Vector2 abu = Vector2.Lerp(a, b, u);
+			Vector2 dcu = Vector2.Lerp(d, c, u);
+			return Vector2.Lerp(abu, dcu, v);
+		}
+
 		public static Bounds EncapsulateAll(this IEnumerable<Bounds> bounds)
 		{
 			if(bounds == null || !bounds.Any())

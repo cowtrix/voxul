@@ -18,6 +18,8 @@ namespace Voxul.Edit
 		private AutoDestroyer m_keepAlive;
 		private bool m_dirty;
 
+		private Material DebugMaterial => Resources.Load<Material>($"{VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
+
 		public VoxelCursor(VoxelRenderer parent)
 		{
 			m_parentRenderer = parent;
@@ -40,6 +42,19 @@ namespace Voxul.Edit
 					v.Material.Overrides = null;
 					return v;
 				}).Finalise();
+				var debugMat = DebugMaterial;
+				if (!debugMat)
+				{
+					Debug.LogError($"Failed to load debug selection material at {VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
+				}
+				if(m_cursorRenderer?.Renderers != null && m_cursorRenderer.Renderers.Any())
+				{
+					foreach (var r in m_cursorRenderer.Renderers)
+					{
+						r.SetupComponents(false);
+						r.MeshRenderer.sharedMaterial = debugMat;
+					}
+				}
 				m_tempVoxelData.Invalidate();
 				m_dirty = true;
 			}
@@ -55,7 +70,7 @@ namespace Voxul.Edit
 			if (!m_cursorRenderer)
 			{
 				var go = new GameObject("__cursorRenderer");
-				if(m_parentRenderer)
+				if (m_parentRenderer)
 				{
 					SceneManager.MoveGameObjectToScene(go, m_parentRenderer.gameObject.scene);
 				}
@@ -64,12 +79,6 @@ namespace Voxul.Edit
 				m_cursorRenderer = go.AddComponent<VoxelRenderer>();
 				m_cursorRenderer.Mesh = m_tempVoxelData;
 				m_cursorRenderer.CustomMaterials = true;
-				var debugMat = Resources.Load<Material>($"{VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
-				if (!debugMat)
-				{
-					Debug.LogError($"Failed to load debug selection material at {VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
-				}
-				m_cursorRenderer.gameObject.AddComponent<MeshRenderer>().sharedMaterial = debugMat;
 				m_cursorRenderer.GenerateCollider = false;
 			}
 			m_keepAlive?.KeepAlive();

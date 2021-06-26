@@ -25,11 +25,20 @@ namespace Voxul.Edit
 	[CustomEditor(typeof(VoxelRenderer), editorForChildClasses:false)]
 	internal class VoxelPainter : Editor
 	{
-		[MenuItem("GameObject/3D Object/Voxel Object")]
+		[MenuItem("GameObject/3D Object/Voxul Object")]
 		public static void CreateNew()
 		{
 			var go = new GameObject("New Voxel Object");
 			var r = go.AddComponent<VoxelRenderer>();
+			EditorGUIUtility.PingObject(go);
+		}
+
+		[MenuItem("GameObject/3D Object/Voxul Text Object")]
+		public static void CreateNewText()
+		{
+			var go = new GameObject("New Voxel Object");
+			var r = go.AddComponent<VoxelText>();
+			EditorGUIUtility.PingObject(go);
 		}
 
 		Dictionary<EPaintingTool, VoxelPainterTool> m_tools = new Dictionary<EPaintingTool, VoxelPainterTool>

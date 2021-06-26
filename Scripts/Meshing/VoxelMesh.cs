@@ -17,7 +17,7 @@ namespace Voxul.Meshing
 			public TriangleVoxelMapping VoxelMapping = new TriangleVoxelMapping();
 		}
 
-		public List<MeshVoxelData> Meshes;
+		public List<MeshVoxelData> Meshes = new List<MeshVoxelData>();
 
 		[HideInInspector]
 		public string Hash;
@@ -28,7 +28,7 @@ namespace Voxul.Meshing
 
 		public void Invalidate() => Hash = Guid.NewGuid().ToString();
 
-		public IEnumerable<Mesh> GenerateMeshInstance(sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
+		public IEnumerable<MeshVoxelData> GenerateMeshInstance(sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
 			int chunkCount = 0;
 			int voxelCount = 0;
@@ -105,7 +105,7 @@ namespace Voxul.Meshing
 				meshData.Mesh = data.SetMesh(meshData.Mesh);
 				meshData.VoxelMapping = data.VoxelMapping;
 				Voxels = data.Voxels;
-				yield return meshData.Mesh;
+				yield return meshData;
 			}
 
 			for (var i = Meshes.Count - 1; i >= chunkCount; --i)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Meshing;
@@ -70,7 +71,7 @@ namespace Voxul.Edit
 			{
 				property.objectReferenceValue = UnityEngine.Object.Instantiate(newMesh);
 				property.objectReferenceValue.name = Guid.NewGuid().ToString();
-				(property.objectReferenceValue as VoxelMesh).Meshes?.Clear();
+				(property.objectReferenceValue as VoxelMesh).Meshes = new List<VoxelMesh.MeshVoxelData>();
 			}
 
 			EditorGUI.EndProperty();

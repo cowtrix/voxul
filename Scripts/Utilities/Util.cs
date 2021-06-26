@@ -20,6 +20,15 @@ namespace Voxul.Utilities
 			}
 		}
 
+		public static double GetDynamicTime()
+		{
+			return (
+#if UNITY_EDITOR
+			UnityEditor.EditorApplication.isPlaying ? UnityEditor.EditorApplication.timeSinceStartup :
+#endif
+				Time.timeAsDouble);
+		}
+
 		public static Color WithAlpha(this Color c, float a)
 		{
 			return new Color(c.r, c.g, c.b, a);

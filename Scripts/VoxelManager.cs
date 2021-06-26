@@ -56,6 +56,8 @@ namespace Voxul
 		public List<Texture2D> Sprites = new List<Texture2D>();
 		public Mesh CubeMesh;
 		public Material LODMaterial;
+		[Range(0, 1)]
+		public float MinimumUpdateTime = 0.1f;
 
 		public void OnValidate()
 		{

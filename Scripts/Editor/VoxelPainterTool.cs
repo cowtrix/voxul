@@ -80,27 +80,29 @@ namespace Voxul.Edit
 			MeshCollider collider = null;
 			foreach(var r in renderer.Renderers)
 			{
+				if (!r.MeshCollider)
+				{
+					continue;
+				}
 				if (r.MeshCollider.Raycast(worldRay, out var hitInfo, 10000))
 				{
 					hitPoint = hitInfo.point;
 					hitNorm = hitInfo.normal;
 					triIndex = hitInfo.triangleIndex;
 					collider = r.MeshCollider;
-				}
-				else
-				{
-					var p = new Plane(renderer.transform.up, -renderer.transform.position.y); ;
-					if (p.Raycast(worldRay, out var planePoint))
-					{
-						hitPoint = worldRay.origin + worldRay.direction * planePoint;
-						hitNorm = renderer.transform.up; ;
-					}
-				}
-				Handles.DrawWireCube(hitPoint, Vector3.one * .02f);
-				Handles.DrawLine(hitPoint, hitPoint + hitNorm * .2f);
-
-				
+				}				
 			}
+			if (!collider)
+			{
+				var p = new Plane(renderer.transform.up, -renderer.transform.position.y); ;
+				if (p.Raycast(worldRay, out var planePoint))
+				{
+					hitPoint = worldRay.origin + worldRay.direction * planePoint;
+					hitNorm = renderer.transform.up; ;
+				}
+			}
+			Handles.DrawWireCube(hitPoint, Vector3.one * .02f);
+			Handles.DrawLine(hitPoint, hitPoint + hitNorm * .2f);
 			if (!GetVoxelDataFromPoint(voxelPainter, renderer, collider, hitPoint, hitNorm, triIndex, painterLayer,
 					out var selection, out var hitDir) && ToolID != EPaintingTool.Clipboard)
 			{
