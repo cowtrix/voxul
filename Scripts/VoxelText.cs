@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Jobs;
 using UnityEngine;
+using Voxul.Meshing;
 using Voxul.Utilities;
 
 namespace Voxul
@@ -87,7 +88,7 @@ namespace Voxul
 
 		[SerializeField]
 		[HideInInspector]
-		private CharacterBoundsMapping m_cache;
+		private CharacterBoundsMapping m_cache = new CharacterBoundsMapping();
 		[SerializeField]
 		[HideInInspector]
 		private TextConfiguration m_lastConfig;
@@ -104,6 +105,7 @@ namespace Voxul
 			{
 				return;
 			}
+			
 			if (Configuration.ShouldClearCache(m_lastConfig))
 			{
 				Mesh.Voxels.Clear();
@@ -121,6 +123,11 @@ namespace Voxul
 
 		private void OnEnable()
 		{
+			if (!Mesh)
+			{
+				Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
+				Mesh.name = Guid.NewGuid().ToString();
+			}
 			if (Configuration.Font)
 			{
 				Configuration.Font = Font.CreateDynamicFontFromOSFont(Configuration.Font.name, Configuration.FontSize);
@@ -200,6 +207,10 @@ namespace Voxul
 			{
 				Configuration.Font = Font.CreateDynamicFontFromOSFont(Configuration.Font.name, Configuration.FontSize);
 			}
+			if (Configuration.Font)
+			{
+				Configuration.Font.RequestCharactersInTexture(Configuration.Text, Configuration.FontSize, Configuration.FontStyle);
+			}
 			foreach (var m in Mesh.Meshes)
 			{
 				// Because it's text, we mark it dynamic
@@ -272,15 +283,6 @@ namespace Voxul
 
 			Mesh.Invalidate();
 			base.Invalidate(forceCollider);
-		}
-
-		protected override void Update()
-		{
-			if (Configuration.Font)
-			{
-				Configuration.Font.RequestCharactersInTexture(Configuration.Text, Configuration.FontSize, Configuration.FontStyle);
-			}
-			base.Update();
 		}
 
 		private bool GetCharacterInfo(CharacterInfo[] infos, char character, out CharacterInfo info)

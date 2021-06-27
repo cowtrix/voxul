@@ -50,6 +50,7 @@ namespace Voxul.Meshing
 #endif
 			)
 				{
+					Debug.Log("Created a new mesh in VoxelMesh");
 					meshData.Mesh = new Mesh();
 #if UNITY_EDITOR
 					if (UnityEditor.AssetDatabase.Contains(this))

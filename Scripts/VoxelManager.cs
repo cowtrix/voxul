@@ -61,14 +61,14 @@ namespace Voxul
 
 		public void OnValidate()
 		{
-			if(!DefaultMaterial)
+			if(!DefaultMaterial || DefaultMaterial == null)
 			{
 				DefaultMaterial = new Material(Shader.Find("voxul/DefaultVoxel"));
 #if UNITY_EDITOR
 				UnityEditor.EditorUtility.SetDirty(this);
 #endif
 			}
-			if (!DefaultMaterialTransparent)
+			if (!DefaultMaterialTransparent || DefaultMaterialTransparent == null)
 			{
 				DefaultMaterialTransparent = new Material(Shader.Find("voxul/DefaultVoxelTransparent"));
 #if UNITY_EDITOR

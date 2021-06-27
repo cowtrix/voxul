@@ -55,6 +55,11 @@ namespace Voxul
 			}
 		}
 
+		protected virtual void Awake()
+		{
+			VoxelManager.Instance.OnValidate();
+		}
+
 		public void SetDirty() => m_isDirty = true;
 		
 		[ContextMenu("Clear")]
@@ -120,7 +125,6 @@ namespace Voxul
 				MinLayer = MaxLayer;
 			}
 
-			Mesh.Meshes.Clear();
 			var newMeshes = Mesh.GenerateMeshInstance(MinLayer, MaxLayer).ToList();
 			for (int i = 0; i < newMeshes.Count; i++)
 			{

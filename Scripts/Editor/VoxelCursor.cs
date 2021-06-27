@@ -33,6 +33,7 @@ namespace Voxul.Edit
 			{
 				if (m_cursorMesh == null)
 				{
+					Debug.Log("Created a new mesh in VoxelCursor");
 					m_cursorMesh = new Mesh();
 				}
 				m_tempVoxelData.Voxels = data.Select(v =>
