@@ -29,13 +29,11 @@ namespace Voxul.Testing
 					for (var z = -Size.z; z < Size.z; z += step)
 					{
 						var coord = VoxelCoordinate.FromVector3(new Vector3(x, y, z), Layer);
-						var mat = new VoxelMaterial
+						var mat = new VoxelMaterial()
+							.SetAllSurfaces(new SurfaceData
 						{
-							Default = new SurfaceData
-							{
-								Albedo = Random.ColorHSV(),
-							}
-						};
+							Albedo = Random.ColorHSV(),
+						});
 						Renderer.Mesh.Voxels[coord] = new Voxel(coord, mat);
 					}
 				}

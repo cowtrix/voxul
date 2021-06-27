@@ -106,7 +106,7 @@ namespace Voxul.Edit
 				}
 				if (currentEvent.shift)
 				{
-					vox.Material = CurrentBrush.Copy();
+					vox.Material = CurrentBrush;
 				}
 				else
 				{
@@ -118,15 +118,7 @@ namespace Voxul.Edit
 						surface.Albedo = Color.Lerp(surface.Albedo, LerpColor, UnityEngine.Random.value);
 					}
 
-					if (vox.Material.Overrides == null)
-					{
-						vox.Material.Overrides = new DirectionOverride[0];
-					}
-					vox.Material.Overrides = vox.Material.Overrides.Where(o => o.Direction != dir).Append(new DirectionOverride
-					{
-						Direction = dir,
-						Data = surface,
-					}).ToArray();
+					vox.Material = vox.Material.SetSurface(dir, surface);
 				}
 				renderer.Mesh.Voxels[brushCoord] = vox;
 			}

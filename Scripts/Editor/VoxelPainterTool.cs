@@ -13,8 +13,7 @@ namespace Voxul.Edit
 		private Editor m_cachedBrushEditor;
 		private bool m_cachedEditorNeedsRefresh = true;
 		private List<string> m_brushes = new List<string>();
-		protected static VoxelMaterial DefaultMaterial => new VoxelMaterial { Default = new SurfaceData { Albedo = Color.white } };
-
+		protected static VoxelMaterial DefaultMaterial => new VoxelMaterial().SetAllSurfaces(new SurfaceData { Albedo = Color.white });
 		protected static VoxelMaterialAsset m_asset;
 
 		protected static VoxelMaterial CurrentBrush
@@ -42,12 +41,12 @@ namespace Voxul.Edit
 		protected abstract EPaintingTool ToolID { get; }
 
 		protected virtual bool GetVoxelDataFromPoint(
-			VoxelPainter voxelPainterTool, 
-			VoxelRenderer renderer, 
+			VoxelPainter voxelPainterTool,
+			VoxelRenderer renderer,
 			MeshCollider collider,
-			Vector3 hitPoint, 
-			Vector3 hitNorm, 
-			int triIndex, 
+			Vector3 hitPoint,
+			Vector3 hitNorm,
+			int triIndex,
 			sbyte layer,
 			out List<VoxelCoordinate> selection,
 			out EVoxelDirection hitDir)
@@ -67,7 +66,7 @@ namespace Voxul.Edit
 
 		public void DrawSceneGUI(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent, sbyte painterLayer)
 		{
-			if(!renderer.Mesh)
+			if (!renderer.Mesh)
 			{
 				renderer.SetupComponents(true);
 				return;
@@ -78,7 +77,7 @@ namespace Voxul.Edit
 			var hitNorm = Vector3.up;
 			var triIndex = -1;
 			MeshCollider collider = null;
-			foreach(var r in renderer.Renderers)
+			foreach (var r in renderer.Renderers)
 			{
 				if (!r.MeshCollider)
 				{
@@ -90,7 +89,7 @@ namespace Voxul.Edit
 					hitNorm = hitInfo.normal;
 					triIndex = hitInfo.triangleIndex;
 					collider = r.MeshCollider;
-				}				
+				}
 			}
 			if (!collider)
 			{
@@ -133,13 +132,12 @@ namespace Voxul.Edit
 				if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 				{
 					var vox = selection.First();
-					CurrentBrush = voxelPainter.Renderer.Mesh.Voxels[vox].Material.Copy();
+					CurrentBrush = voxelPainter.Renderer.Mesh.Voxels[vox].Material;
 					if (ToolID == EPaintingTool.Paint)
 					{
 						var cb = CurrentBrush;
-						cb.Overrides = null;
 						var surface = CurrentBrush.GetSurface(hitDir);
-						cb.Default = surface;
+						cb.SetAllSurfaces(surface);
 						CurrentBrush = cb;
 					}
 					currentEvent.Use();
@@ -159,7 +157,7 @@ namespace Voxul.Edit
 				EditorUtility.SetDirty(renderer.Mesh);
 				Event.current.Use();
 			}
-			
+
 		}
 
 		public virtual bool DrawInspectorGUI(VoxelPainter voxelPainter)

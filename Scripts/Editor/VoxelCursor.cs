@@ -38,8 +38,7 @@ namespace Voxul.Edit
 				m_tempVoxelData.Voxels = data.Select(v =>
 				{
 					v.Material.MaterialMode = EMaterialMode.Opaque;
-					v.Material.Default.UVMode = EUVMode.Local;
-					v.Material.Overrides = null;
+					v.Material.SetAllSurfaces(new SurfaceData { UVMode = EUVMode.Local } );
 					return v;
 				}).Finalise();
 				var debugMat = DebugMaterial;

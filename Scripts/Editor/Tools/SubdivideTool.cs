@@ -26,7 +26,7 @@ namespace Voxul.Edit
 					renderer.Mesh.Voxels.Remove(brushCoord);
 					foreach (var sub in selection.SelectMany(s => s.Subdivide()))
 					{
-						renderer.Mesh.Voxels[sub] = new Voxel(sub, vox.Material.Copy());
+						renderer.Mesh.Voxels[sub] = new Voxel(sub, vox.Material);
 					}
 				}
 				return true;

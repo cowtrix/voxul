@@ -9,6 +9,17 @@ namespace Voxul
 {
 	public static class VoxelExtensions
 	{
+		public static int GetVerticesForRenderMode(this ERenderMode mode)
+		{
+			switch (mode)
+			{
+				case ERenderMode.Block:
+				case ERenderMode.FullCross:
+					return 8;
+			}
+			throw new Exception($"Unsupported estimate for mode {mode}");
+		}
+
 		public static VoxelMapping Finalise(this IEnumerable<Voxel> voxels)
 		{
 			var result = new VoxelMapping();
@@ -38,7 +49,7 @@ namespace Voxul
 			return voxels.Select(v =>
 			{
 				var newCoord = func(v.Coordinate);
-				return new Voxel(newCoord, v.Material.Copy());
+				return new Voxel(newCoord, v.Material);
 			});
 		}
 
@@ -48,17 +59,24 @@ namespace Voxul
 			var dirVals = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>();
 			return voxels.Select(v =>
 			{
-				v.Material = v.Material.Copy();
-				for (int i = 0; i < v.Material.Overrides?.Length; i++)
+				var original = v.Material;
+				switch (dir)
 				{
-					var o = v.Material.Overrides[i];
-					var oAxis = o.Direction.ToString()[0];
-					if (oAxis != dAxis)
-					{
-						continue;
-					}
-					o.Direction = dirVals.First(d => d != o.Direction && d.ToString()[0] == oAxis);
-					v.Material.Overrides[i] = o;
+					case EVoxelDirection.YNeg:
+					case EVoxelDirection.YPos:
+						v.Material.YNeg = original.YPos;
+						v.Material.YPos = original.YNeg;
+						break;
+					case EVoxelDirection.XNeg:
+					case EVoxelDirection.XPos:
+						v.Material.XNeg = original.XPos;
+						v.Material.XPos = original.XNeg;
+						break;
+					case EVoxelDirection.ZNeg:
+					case EVoxelDirection.ZPos:
+						v.Material.ZNeg = original.YNeg;
+						v.Material.ZPos = original.YPos;
+						break;
 				}
 				return v;
 			});

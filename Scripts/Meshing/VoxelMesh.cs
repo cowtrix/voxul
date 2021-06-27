@@ -2,11 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using UnityEngine;
+using Unity.Jobs;
 using Voxul.Utilities;
 
 namespace Voxul.Meshing
 {
+
 	[CreateAssetMenu]
 	public class VoxelMesh : ScriptableObject
 	{
@@ -60,51 +63,23 @@ namespace Voxul.Meshing
 #endif
 				}
 				meshData.Mesh.name = $"{name}_mesh_{Hash}_0";
-				var data = new IntermediateVoxelMeshData(Voxels, meshData.VoxelMapping);
-				int startVoxCount = voxelCount;
-				foreach (var vox in allVox.Skip(startVoxCount))
-				{
-					if (vox.Key != vox.Value.Coordinate)
-					{
-						throw new Exception($"Voxel {vox.Key} had incorrect key in data");
-					}
-					switch (vox.Value.Material.RenderMode)
-					{
-						case ERenderMode.Block:
-							Cube(vox.Value, data);
-							break;
-						case ERenderMode.XPlane:
-							Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, });
-							break;
-						case ERenderMode.YPlane:
-							Plane(vox.Value, data, new[] { EVoxelDirection.YPos, EVoxelDirection.YNeg, });
-							break;
-						case ERenderMode.ZPlane:
-							Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
-							break;
-						case ERenderMode.XYCross:
-							Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
-							break;
-						case ERenderMode.XZCross:
-							Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
-							break;
-						case ERenderMode.ZYCross:
-							Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
-							break;
-						case ERenderMode.FullCross:
-							Plane(vox.Value, data, Directions.ToArray());
-							break;
-					}
-					voxelCount++;
-					if (data.Vertices.Count > 65535 - 100)
-					{
-						break;
-					}
-				}
 
-				meshData.Mesh = data.SetMesh(meshData.Mesh);
-				meshData.VoxelMapping = data.VoxelMapping;
-				Voxels = data.Voxels;
+				var vertexEstimate = allVox.Sum(a => a.Value.Material.RenderMode.GetVerticesForRenderMode());
+
+				var job = new VoxelJob();
+				job.Voxels = new NativeArray<Voxel>(Voxels.Values.ToArray(), Allocator.TempJob);
+				job.Vertices = new NativeArray<Vector3>(vertexEstimate, Allocator.TempJob);
+				job.Colors = new NativeArray<Color>(vertexEstimate, Allocator.TempJob);
+				job.UV1 = new NativeArray<Vector2>(vertexEstimate, Allocator.TempJob);
+				job.UV2 = new NativeArray<Vector4>(vertexEstimate, Allocator.TempJob);
+
+				job.OpaqueTriangles = new NativeArray<int>(vertexEstimate * 3, Allocator.TempJob);
+				job.TransparentTriangles = new NativeArray<int>(vertexEstimate * 3, Allocator.TempJob);
+
+				var handle = job.Schedule();
+				handle.Complete();
+
+
 				yield return meshData;
 			}
 

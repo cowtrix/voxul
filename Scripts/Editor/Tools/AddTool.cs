@@ -92,10 +92,10 @@ namespace Voxul.Edit
 				m_cursor.Mesh.Voxels.Clear();
 				foreach (var s in selection)
 				{
-					var v = CurrentBrush.Copy();
+					var v = CurrentBrush;
 					if (LerpEnabled)
 					{
-						UnityEngine.Random.InitState(s.GetHashCode());
+						/*UnityEngine.Random.InitState(s.GetHashCode());
 						var surf = v.Default;
 						surf.Albedo = Color.Lerp(surf.Albedo, LerpColor, UnityEngine.Random.value);
 						v.Default = surf;
@@ -104,7 +104,7 @@ namespace Voxul.Edit
 							o.Data.Albedo = Color.Lerp(o.Data.Albedo, LerpColor, UnityEngine.Random.value);
 							return o;
 						}).ToArray();
-						v.Overrides = ov;
+						v.Overrides = ov;*/
 					}
 					m_cursor.Mesh.Voxels.AddSafe(new Voxel { Coordinate = s, Material = v });
 				}
@@ -150,10 +150,10 @@ namespace Voxul.Edit
 		{
 			foreach (var brushCoord in coords)
 			{
-				var v = CurrentBrush.Copy();
+				var v = CurrentBrush;
 				if (LerpEnabled)
 				{
-					UnityEngine.Random.InitState(brushCoord.GetHashCode());
+					/*UnityEngine.Random.InitState(brushCoord.GetHashCode());
 					var s = v.Default;
 					s.Albedo = Color.Lerp(s.Albedo, LerpColor, UnityEngine.Random.value);
 					v.Default = s;
@@ -162,7 +162,7 @@ namespace Voxul.Edit
 						o.Data.Albedo = Color.Lerp(o.Data.Albedo, LerpColor, UnityEngine.Random.value);
 						return o;
 					}).ToArray();
-					v.Overrides = ov;
+					v.Overrides = ov;*/
 				}
 				if (renderer.Mesh.Voxels.AddSafe(new Voxel(brushCoord, v)))
 				{

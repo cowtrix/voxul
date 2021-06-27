@@ -42,13 +42,6 @@ namespace Voxul
 	}
 
 	[Serializable]
-	public struct DirectionOverride
-	{
-		public EVoxelDirection Direction;
-		public SurfaceData Data;
-	}
-
-	[Serializable]
 	public struct TextureIndex
 	{
 		public int Index;
@@ -108,64 +101,65 @@ namespace Voxul
 		public EMaterialMode MaterialMode;
 		public ERenderMode RenderMode;
 		public ENormalMode NormalMode;
-		public SurfaceData Default;
-		public DirectionOverride[] Overrides;
+		public SurfaceData XPos, XNeg, YPos, YNeg, ZPos, ZNeg;
 
 		public SurfaceData GetSurface(EVoxelDirection dir)
 		{
-			if (Overrides != null)
+			switch (dir)
 			{
-				var ov = Overrides.Where(o => o.Direction == dir);
-				if (ov.Any())
-				{
-					return ov.First().Data;
-				}
+				case EVoxelDirection.XNeg:
+					return XNeg;
+				case EVoxelDirection.XPos:
+					return XPos;
+				case EVoxelDirection.YNeg:
+					return YNeg;
+				case EVoxelDirection.YPos:
+					return YPos;
+				case EVoxelDirection.ZNeg:
+					return ZNeg;
+				case EVoxelDirection.ZPos:
+					return ZPos;
 			}
-
-			return Default;
+			throw new ArgumentException($"Invalid surface direction: {dir}");
 		}
 
-		public IEnumerable<(EVoxelDirection, SurfaceData)> GetSurfaces()
+		public VoxelMaterial SetAllSurfaces(SurfaceData data)
 		{
-			yield return (EVoxelDirection.XNeg, GetSurface(EVoxelDirection.XNeg));
-			yield return (EVoxelDirection.XPos, GetSurface(EVoxelDirection.XPos));
-			yield return (EVoxelDirection.YNeg, GetSurface(EVoxelDirection.YNeg));
-			yield return (EVoxelDirection.YPos, GetSurface(EVoxelDirection.YPos));
-			yield return (EVoxelDirection.ZNeg, GetSurface(EVoxelDirection.ZNeg));
-			yield return (EVoxelDirection.ZPos, GetSurface(EVoxelDirection.ZPos));
+			XNeg = data;
+			XPos = data;
+			YNeg = data;
+			YPos = data;
+			ZNeg = data;
+			ZPos = data;
+			return this;
 		}
 
-		public VoxelMaterial Copy()
+		public VoxelMaterial SetSurface(EVoxelDirection dir, SurfaceData data)
 		{
-			return new VoxelMaterial
+			switch (dir)
 			{
-				Default = Default,
-				Overrides = Overrides?.ToArray(),
-				RenderMode = RenderMode,
-				NormalMode = NormalMode,
-				MaterialMode = MaterialMode,
-			};
-		}
-
-		public override bool Equals(object obj)
-		{
-			return obj is VoxelMaterial material &&
-				   MaterialMode == material.MaterialMode &&
-				   RenderMode == material.RenderMode &&
-				   NormalMode == material.NormalMode &&
-				   Default.Equals(material.Default) &&
-				   ((Overrides == null && material.Overrides == null) || !Overrides.Any(o => !material.Overrides.Contains(o)));
-		}
-
-		public override int GetHashCode()
-		{
-			int hashCode = 1681058014;
-			hashCode = hashCode * -1521134295 + MaterialMode.GetHashCode();
-			hashCode = hashCode * -1521134295 + RenderMode.GetHashCode();
-			hashCode = hashCode * -1521134295 + NormalMode.GetHashCode();
-			hashCode = hashCode * -1521134295 + Default.GetHashCode();
-			hashCode = hashCode * -1521134295 + EqualityComparer<DirectionOverride[]>.Default.GetHashCode(Overrides);
-			return hashCode;
+				case EVoxelDirection.XNeg:
+					XNeg = data;
+					break;
+				case EVoxelDirection.XPos:
+					XPos = data;
+					break;
+				case EVoxelDirection.YNeg:
+					YNeg = data;
+					break;
+				case EVoxelDirection.YPos:
+					YPos = data;
+					break;
+				case EVoxelDirection.ZNeg:
+					ZNeg = data;
+					break;
+				case EVoxelDirection.ZPos:
+					ZPos = data;
+					break;
+				default:
+					throw new ArgumentException($"Invalid surface direction: {dir}");
+			}
+			return this;
 		}
 	}
 

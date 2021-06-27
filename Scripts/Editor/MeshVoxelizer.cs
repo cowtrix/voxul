@@ -48,10 +48,7 @@ namespace Voxul.Edit
 							TargetVoxelMesh.Voxels.AddSafe(new Voxel
 							{
 								Coordinate = VoxelCoordinate.FromVector3(localCoord, MaxLayer),
-								Material = new VoxelMaterial
-								{
-									Default = Surface
-								}
+								Material = new VoxelMaterial().SetAllSurfaces(Surface)
 							});
 						}
 					}

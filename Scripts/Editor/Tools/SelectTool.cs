@@ -23,7 +23,7 @@ namespace Voxul.Edit
 				Debug.Log($"Applying material");
 				foreach (var v in voxelPainter.CurrentSelection)
 				{
-					voxelPainter.Renderer.Mesh.Voxels[v] = new Voxel(v, CurrentBrush.Copy());
+					voxelPainter.Renderer.Mesh.Voxels[v] = new Voxel(v, CurrentBrush);
 				}
 				return true;
 			}
@@ -35,7 +35,7 @@ namespace Voxul.Edit
 				foreach (VoxelCoordinate coord in voxelPainter.Renderer.Mesh.GetVoxelCoordinates(bounds, voxelPainter.CurrentLayer))
 				{
 					DebugHelper.DrawPoint(voxelPainter.Renderer.transform.localToWorldMatrix.MultiplyPoint3x4(coord.ToVector3()), .1f, Color.white, 5);
-					voxelPainter.Renderer.Mesh.Voxels[coord] = new Voxel(coord, CurrentBrush.Copy());
+					voxelPainter.Renderer.Mesh.Voxels[coord] = new Voxel(coord, CurrentBrush);
 				}
 				return true;
 			}
@@ -50,7 +50,7 @@ namespace Voxul.Edit
 					voxelPainter.Renderer.Mesh.Voxels.Remove(v);
 					foreach (var subV in v.Subdivide())
 					{
-						voxelPainter.Renderer.Mesh.Voxels[subV] = new Voxel(subV, vox.Material.Copy());
+						voxelPainter.Renderer.Mesh.Voxels[subV] = new Voxel(subV, vox.Material);
 						newSelection.Add(subV);
 					}
 				}

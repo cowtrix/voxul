@@ -277,7 +277,7 @@ namespace Voxul
 				m_cache.Add(c.Key, c.Value);
 				foreach (var coord in c.Value.Coordinates)
 				{
-					Mesh.Voxels[coord] = new Voxel(coord, Configuration.Material.Copy());
+					Mesh.Voxels[coord] = new Voxel(coord, Configuration.Material);
 				}
 			}
 

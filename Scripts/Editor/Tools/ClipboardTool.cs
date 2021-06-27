@@ -206,7 +206,7 @@ namespace Voxul.Edit
 					{
 						var coord = v.Key;
 						var offset = VoxelCoordinate.FromVector3(Offset, v.Key.Layer);
-						var newVox = new Voxel(coord + offset, v.Value.Material.Copy());
+						var newVox = new Voxel(coord + offset, v.Value.Material);
 						if (PasteMode == ePasteMode.Add)
 						{
 							if (!voxelPainter.Renderer.Mesh.Voxels.AddSafe(newVox))
