@@ -57,7 +57,7 @@ namespace Voxul
 		public Mesh CubeMesh;
 		public Material LODMaterial;
 		[Range(0, 1)]
-		public float MinimumUpdateTime = 0.1f;
+		public float MinimumUpdateTime = 0.01f;
 
 		public void OnValidate()
 		{

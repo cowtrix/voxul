@@ -5,12 +5,12 @@ using UnityEngine;
 
 namespace Voxul.Testing
 {
-    public class TextBenchmark : MonoBehaviour
-    {
-        public int TextCount = 10;
-        public Vector2 CharacterCount = new Vector2(2, 64);
+	public class TextBenchmark : MonoBehaviour
+	{
+		public int TextCount = 10;
+		public Vector2 CharacterCount = new Vector2(2, 64);
 		public Font Font;
-        List<VoxelText> m_texts = new List<VoxelText>();
+		List<VoxelText> m_texts = new List<VoxelText>();
 
 		private static string GenerateRandomAlphanumericString(int length)
 		{
@@ -24,7 +24,7 @@ namespace Voxul.Testing
 
 		private void Start()
 		{
-			for(var i =0; i < TextCount; ++i)
+			for (var i = 0; i < TextCount; ++i)
 			{
 				var t = new GameObject($"Text_{i}")
 					.AddComponent<VoxelText>();
@@ -36,13 +36,13 @@ namespace Voxul.Testing
 
 		// Update is called once per frame
 		void Update()
-        {
-			foreach(var t in m_texts)
+		{
+			foreach (var t in m_texts)
 			{
 				var str = GenerateRandomAlphanumericString((int)UnityEngine.Random.Range(CharacterCount.x, CharacterCount.y));
 				t.Configuration.Text = str;
 				t.Invalidate(false);
 			}
-        }
-    }
+		}
+	}
 }

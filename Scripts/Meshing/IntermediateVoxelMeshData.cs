@@ -25,7 +25,6 @@ namespace Voxul.Meshing
 		{
 			if (!mesh)
 			{
-				Debug.Log("Created a new mesh in IntermediateVoxelMeshData");
 				mesh = new Mesh();
 			}
 			mesh.Clear();
