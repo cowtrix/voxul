@@ -32,6 +32,6 @@ voxul is a voxel system and editor tool for [Unity 3D.](https://unity.com/) Use 
 
 ### Experimental
 
-![VoxelText](https://user-images.githubusercontent.com/5094696/123529212-0fc01200-d6e6-11eb-8d5c-e95508796091.PNG)
+![VoxelText](https://user-images.githubusercontent.com/5094696/123529266-76ddc680-d6e6-11eb-8fde-90d6532e3a80.PNG)
 
 Voxel text from any font!
