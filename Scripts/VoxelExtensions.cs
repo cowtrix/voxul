@@ -9,6 +9,39 @@ namespace Voxul
 {
 	public static class VoxelExtensions
 	{
+		public static IEnumerable<Voxel> GetVoxels(this VoxelMesh mesh, Bounds bounds)
+		{
+			return mesh?.Voxels
+				.Where(v => bounds.Contains(v.Key.ToVector3()))
+				.Select(v => v.Value);
+		}
+
+		public static IEnumerable<Voxel> GetVoxels(this VoxelMesh mesh, Vector3 localPos, float radius)
+		{
+			return mesh?.Voxels
+				.Where(v => (v.Key.ToVector3() - localPos).sqrMagnitude < (radius * radius))
+				.Select(v => v.Value);
+		}
+
+		public static IEnumerable<VoxelCoordinate> GetVoxelCoordinates(this Bounds bounds, sbyte currentLayer)
+		{
+			var layerScale = VoxelCoordinate.LayerToScale(currentLayer);
+			var halfVox = layerScale * .5f * Vector3.one;
+			var minCoord = VoxelCoordinate.FromVector3(bounds.min + halfVox, currentLayer);
+			var maxCoord = VoxelCoordinate.FromVector3(bounds.max - halfVox, currentLayer);
+
+			for (var x = minCoord.X; x <= maxCoord.X; ++x)
+			{
+				for (var y = minCoord.Y; y <= maxCoord.Y; ++y)
+				{
+					for (var z = minCoord.Z; z <= maxCoord.Z; ++z)
+					{
+						yield return new VoxelCoordinate(x, y, z, currentLayer);
+					}
+				}
+			}
+		}
+
 		public static VoxelMapping Finalise(this IEnumerable<Voxel> voxels)
 		{
 			var result = new VoxelMapping();

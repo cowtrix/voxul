@@ -6,13 +6,13 @@ namespace Voxul.Meshing
 {
 	public class IntermediateVoxelMeshData
 	{
-		public IntermediateVoxelMeshData(VoxelMapping voxels, TriangleVoxelMapping mapping)
+		public IntermediateVoxelMeshData(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels)
 		{
-			Voxels = voxels;
-			VoxelMapping = mapping;
+			Voxels = new VoxelMapping(voxels);
+			TriangleVoxelMapping = new TriangleVoxelMapping(); ;
 		}
 
-		public TriangleVoxelMapping VoxelMapping;
+		public TriangleVoxelMapping TriangleVoxelMapping;
 		public VoxelMapping Voxels;
 
 		public List<Vector3> Vertices = new List<Vector3>();

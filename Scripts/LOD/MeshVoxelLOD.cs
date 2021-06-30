@@ -22,7 +22,7 @@ namespace Voxul.LevelOfDetail
 			m_voxelRenderer.Mesh.Voxels = renderer.Mesh.Voxels.Values
 				.Where(s => s.Coordinate.Layer <= MaxLayer)
 				.Finalise();
-			m_voxelRenderer.Invalidate(false);
+			m_voxelRenderer.Invalidate(false, false);
 		}
 	}
 }

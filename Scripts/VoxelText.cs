@@ -192,15 +192,17 @@ namespace Voxul
 			m_workingTexture.Apply();
 		}
 
-		public override void Invalidate(bool forceCollider)
+		public override void Invalidate(bool force, bool forceCollider)
 		{
 			if (!ShouldInvalidate())
 			{
 				return;
 			}
+			m_lastUpdateTime = Util.GetDynamicTime();
+			m_isDirty = false;
 			if (!Mesh || !Configuration.Font)
 			{
-				base.Invalidate(forceCollider);
+				base.Invalidate(force, forceCollider);
 				return;
 			}
 			if (!Configuration.Font.dynamic)
@@ -211,12 +213,12 @@ namespace Voxul
 			{
 				Configuration.Font.RequestCharactersInTexture(Configuration.Text, Configuration.FontSize, Configuration.FontStyle);
 			}
-			foreach (var m in Mesh.Meshes)
+			foreach (var m in Mesh.UnityMeshInstances)
 			{
 				// Because it's text, we mark it dynamic
-				if (m.Mesh)
+				if (m.UnityMesh)
 				{
-					m.Mesh.MarkDynamic();
+					m.UnityMesh.MarkDynamic();
 				}
 			}
 			UpdateFontWorkingTexture();
@@ -266,7 +268,6 @@ namespace Voxul
 				}
 				newCache.Add(spatialBound, new CharVoxelData { Character = character, Coordinates = characterCoordList.ToList() });
 			}
-
 			foreach (var c in m_cache.Where(m => !newCache.ContainsKey(m.Key)))
 			{
 				Mesh.Voxels.Remove(c.Key);
@@ -282,7 +283,12 @@ namespace Voxul
 			}
 
 			Mesh.Invalidate();
-			base.Invalidate(forceCollider);
+			base.Invalidate(force, forceCollider);
+		}
+
+		protected override void OnMeshRebuilt(VoxelMeshWorker worker, VoxelMesh voxelMesh)
+		{
+			base.OnMeshRebuilt(worker, voxelMesh);
 		}
 
 		private bool GetCharacterInfo(CharacterInfo[] infos, char character, out CharacterInfo info)

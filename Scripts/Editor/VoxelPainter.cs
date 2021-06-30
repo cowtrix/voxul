@@ -22,7 +22,7 @@ namespace Voxul.Edit
 		None, X, Y, Z
 	}
 
-	[CustomEditor(typeof(VoxelRenderer), editorForChildClasses:false)]
+	[CustomEditor(typeof(VoxelRenderer), editorForChildClasses: false)]
 	internal class VoxelPainter : Editor
 	{
 		[MenuItem("GameObject/3D Object/Voxul Object")]
@@ -33,10 +33,10 @@ namespace Voxul.Edit
 			EditorGUIUtility.PingObject(go);
 		}
 
-		[MenuItem("GameObject/3D Object/Voxul Text Object")]
+		[MenuItem("GameObject/3D Object/Voxul Text")]
 		public static void CreateNewText()
 		{
-			var go = new GameObject("New Voxel Object");
+			var go = new GameObject("New Voxel Text");
 			var r = go.AddComponent<VoxelText>();
 			EditorGUIUtility.PingObject(go);
 		}
@@ -150,11 +150,8 @@ namespace Voxul.Edit
 
 		public override bool RequiresConstantRepaint() => true;
 
-
 		public override void OnInspectorGUI()
 		{
-			
-
 			Tab = GUILayout.Toolbar(Tab, Tabs);
 
 			if (Tab == 1)
@@ -189,13 +186,31 @@ namespace Voxul.Edit
 			if (t.DrawInspectorGUI(this))
 			{
 				EditorUtility.SetDirty(Renderer.Mesh);
-				Renderer.Invalidate(true);
+				Renderer.Invalidate(true, true);
 			}
 			EditorGUILayout.EndVertical();
 			GUI.enabled = true;
 			EditorGUILayout.EndVertical();
 
 			SceneView.RepaintAll();
+		}
+
+		private void OnEnable()
+		{
+			SceneView.duringSceneGui += DuringSceneGUI;
+		}
+
+		private void DuringSceneGUI(SceneView sceneView)
+		{
+			switch (Event.current.type)
+			{
+				case EventType.MouseEnterWindow:
+					Renderer.Renderers.ForEach(x => x.hideFlags = x.hideFlags & ~HideFlags.HideInHierarchy);
+					break;
+				case EventType.MouseLeaveWindow:
+					Renderer.Renderers.ForEach(x => x.hideFlags = x.hideFlags | HideFlags.HideInHierarchy);
+					break;
+			}
 		}
 
 		void OnSceneGUI()
@@ -231,6 +246,7 @@ namespace Voxul.Edit
 		public void OnDisable()
 		{
 			m_tools[CurrentTool]?.OnDisable();
+			SceneView.duringSceneGui -= DuringSceneGUI;
 		}
 	}
 }

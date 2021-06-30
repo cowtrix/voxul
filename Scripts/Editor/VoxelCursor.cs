@@ -84,7 +84,7 @@ namespace Voxul.Edit
 			m_keepAlive?.KeepAlive();
 			if (m_dirty)
 			{
-				m_cursorRenderer.Invalidate(false);
+				m_cursorRenderer.Invalidate(true, false);
 				m_dirty = false;
 			}
 			m_cursorRenderer.transform.ApplyTRSMatrix(Matrix);

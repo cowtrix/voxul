@@ -109,7 +109,7 @@ namespace Voxul.Edit
 					m_cursor.Mesh.Voxels.AddSafe(new Voxel { Coordinate = s, Material = v });
 				}
 				m_cursor.Mesh.Invalidate();
-				m_cursor.Invalidate(false);
+				m_cursor.Invalidate(true, false);
 			}
 
 			return true;
@@ -132,7 +132,7 @@ namespace Voxul.Edit
 				{
 					var bounds = voxelPainter.CurrentSelection.GetBounds();
 					bounds.Encapsulate(selection.GetBounds());
-					foreach (VoxelCoordinate coord in renderer.Mesh.GetVoxelCoordinates(bounds, voxelPainter.CurrentLayer))
+					foreach (VoxelCoordinate coord in bounds.GetVoxelCoordinates(voxelPainter.CurrentLayer))
 					{
 						creationList.Add(coord);
 					}
@@ -170,7 +170,7 @@ namespace Voxul.Edit
 				}
 			}
 			renderer.Mesh.Invalidate();
-			renderer.Invalidate(true);
+			renderer.Invalidate(true, true);
 		}
 	}
 }

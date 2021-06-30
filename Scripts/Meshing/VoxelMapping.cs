@@ -10,6 +10,24 @@ namespace Voxul.Meshing
 	[Serializable]
 	public class VoxelMapping : SerializableDictionary<VoxelCoordinate, Voxel>
 	{
+		public VoxelMapping() { }
+
+		public VoxelMapping(IEnumerable<Voxel> voxels)
+		{
+			foreach(var v in voxels)
+			{
+				this[v.Coordinate] = v;
+			}
+		}
+
+		public VoxelMapping(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels)
+		{
+			foreach (var v in voxels)
+			{
+				this[v.Key] = v.Value;
+			}
+		}
+
 		public bool AddSafe(Voxel vox)
 		{
 			if (Keys.CollideCheck(vox.Coordinate, out var hit))

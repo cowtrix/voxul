@@ -71,7 +71,7 @@ namespace Voxul.Edit
 			{
 				property.objectReferenceValue = UnityEngine.Object.Instantiate(newMesh);
 				property.objectReferenceValue.name = Guid.NewGuid().ToString();
-				(property.objectReferenceValue as VoxelMesh).Meshes = new List<VoxelMesh.MeshVoxelData>();
+				(property.objectReferenceValue as VoxelMesh).UnityMeshInstances = null;
 			}
 
 			EditorGUI.EndProperty();

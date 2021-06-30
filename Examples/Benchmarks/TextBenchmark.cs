@@ -30,6 +30,7 @@ namespace Voxul.Testing
 					.AddComponent<VoxelText>();
 				t.transform.position = new Vector3(0, i * 10, 0);
 				t.Configuration.Font = Font;
+				t.GenerateCollider = false;
 				m_texts.Add(t);
 			}
 		}
@@ -41,7 +42,7 @@ namespace Voxul.Testing
 			{
 				var str = GenerateRandomAlphanumericString((int)UnityEngine.Random.Range(CharacterCount.x, CharacterCount.y));
 				t.Configuration.Text = str;
-				t.Invalidate(false);
+				t.Invalidate(false, false);
 			}
 		}
 	}

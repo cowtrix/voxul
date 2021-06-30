@@ -47,7 +47,7 @@ namespace Voxul.Edit
 					var dirs = new HashSet<EVoxelDirection>() { hitDir };
 					if (Event.current.shift)
 					{
-						foreach (var d in VoxelMesh.Directions)
+						foreach (var d in VoxelMeshWorker.Directions)
 						{
 							dirs.Add(d);
 						}
@@ -130,7 +130,7 @@ namespace Voxul.Edit
 				}
 				renderer.Mesh.Voxels[brushCoord] = vox;
 			}
-			renderer.Invalidate(true);
+			renderer.Invalidate(true, true);
 			return true;
 		}
 	}

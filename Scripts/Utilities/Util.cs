@@ -2,9 +2,10 @@
 
 namespace Voxul.Utilities
 {
+
 	public static class Util
 	{
-		public static void SafeDestroy(this Object obj)
+		public static void SafeDestroy(this UnityEngine.Object obj)
 		{
 			if(obj == null || !obj)
 			{
@@ -12,11 +13,11 @@ namespace Voxul.Utilities
 			}
 			if (Application.isPlaying)
 			{
-				Object.Destroy(obj);
+				UnityEngine.Object.Destroy(obj);
 			}
 			else
 			{
-				Object.DestroyImmediate(obj);
+				UnityEngine.Object.DestroyImmediate(obj);
 			}
 		}
 
@@ -24,7 +25,7 @@ namespace Voxul.Utilities
 		{
 			return (
 #if UNITY_EDITOR
-			UnityEditor.EditorApplication.isPlaying ? UnityEditor.EditorApplication.timeSinceStartup :
+			!UnityEditor.EditorApplication.isPlaying ? UnityEditor.EditorApplication.timeSinceStartup :
 #endif
 				Time.timeAsDouble);
 		}

@@ -8,14 +8,10 @@ using Voxul.Utilities;
 
 namespace Voxul
 {
-
+	[SelectionBase]
 	[ExecuteAlways]
 	public class VoxelRenderer : MonoBehaviour
 	{
-		[SerializeField]
-		[HideInInspector]
-		private double m_lastUpdateTime;
-
 		public VoxelMesh Mesh;
 
 		[Header("Settings")]
@@ -31,7 +27,8 @@ namespace Voxul
 		[Range(sbyte.MinValue, sbyte.MaxValue)]
 		public sbyte MaxLayer = sbyte.MaxValue;
 
-		private bool m_isDirty;
+		protected double m_lastUpdateTime;
+		protected bool m_isDirty;
 
 		[SerializeField]
 		[HideInInspector]
@@ -51,7 +48,7 @@ namespace Voxul
 			}
 			if (m_isDirty || Mesh?.Hash != m_lastMeshHash)
 			{
-				Invalidate(false);
+				Invalidate(false, false);
 			}
 		}
 
@@ -95,7 +92,7 @@ namespace Voxul
 				return;
 			}
 			Mesh.Invalidate();
-			Invalidate(false);
+			Invalidate(true, false);
 #if UNITY_EDITOR
 			UnityEditor.EditorUtility.SetDirty(gameObject);
 			UnityEditor.EditorUtility.SetDirty(Mesh);
@@ -104,11 +101,14 @@ namespace Voxul
 
 		protected virtual bool ShouldInvalidate()
 		{
-			return Util.GetDynamicTime() > m_lastUpdateTime + VoxelManager.Instance.MinimumUpdateTime;
+			if (!Application.isPlaying)
+			{
+				return true;
+			}
+			return Time.timeSinceLevelLoadAsDouble > m_lastUpdateTime + VoxelManager.Instance.MinimumUpdateTime;
 		}
 
-
-		public virtual void Invalidate(bool forceCollider)
+		public virtual void Invalidate(bool force, bool forceCollider)
 		{
 			if (!ShouldInvalidate())
 			{
@@ -125,13 +125,30 @@ namespace Voxul
 				MinLayer = MaxLayer;
 			}
 
-			var newMeshes = Mesh.GenerateMeshInstance(MinLayer, MaxLayer).ToList();
-			for (int i = 0; i < newMeshes.Count; i++)
+			SetupComponents(forceCollider || GenerateCollider);
+
+			if(Mesh.CurrentWorker == null || Mesh.CurrentWorker.VoxelMesh != Mesh)
 			{
-				var data = newMeshes[i];
-				var mesh = data.Mesh;
+				Mesh.CurrentWorker = new VoxelMeshWorker(Mesh);
+				Mesh.CurrentWorker.OnCompleted += OnMeshRebuilt;
+			}
+			Mesh.CurrentWorker.GenerateMesh(force, MinLayer, MaxLayer);
+
+			m_lastMeshHash = Mesh.Hash;
+		}
+
+		protected virtual void OnMeshRebuilt(VoxelMeshWorker worker, VoxelMesh voxelMesh)
+		{
+			if(Mesh != voxelMesh)
+			{
+				return;
+			}
+			for (int i = 0; i < voxelMesh.UnityMeshInstances.Count; i++)
+			{
+				var data = voxelMesh.UnityMeshInstances[i];
+				var unityMesh = data.UnityMesh;
 				VoxelRendererSubmesh submesh;
-				if (Renderers.Count <= newMeshes.Count)
+				if (Renderers.Count <= voxelMesh.UnityMeshInstances.Count)
 				{
 					submesh = new GameObject($"{name}_submesh_hidden")
 						.AddComponent<VoxelRendererSubmesh>();
@@ -142,11 +159,11 @@ namespace Voxul
 				{
 					submesh = Renderers[i];
 				}
-				submesh.SetupComponents(forceCollider || GenerateCollider);
-				submesh.MeshFilter.sharedMesh = mesh;
+				submesh.SetupComponents(GenerateCollider);
+				submesh.MeshFilter.sharedMesh = unityMesh;
 				if (GenerateCollider)
 				{
-					submesh.MeshCollider.sharedMesh = mesh;
+					submesh.MeshCollider.sharedMesh = unityMesh;
 				}
 				if (!CustomMaterials)
 				{
@@ -160,12 +177,12 @@ namespace Voxul
 					}
 				}
 			}
-			for (int i = 0; i < Mesh.Meshes.Count; i++)
+			for (int i = 0; i < Mesh.UnityMeshInstances.Count; i++)
 			{
-				var m = Mesh.Meshes[i];
-				Renderers[i].MeshFilter.sharedMesh = m.Mesh;
+				var m = Mesh.UnityMeshInstances[i];
+				Renderers[i].MeshFilter.sharedMesh = m.UnityMesh;
 			}
-			for (var i = Renderers.Count - 1; i >= Mesh.Meshes.Count; --i)
+			for (var i = Renderers.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)
 			{
 				var r = Renderers[i];
 				r.gameObject.SafeDestroy();
@@ -184,7 +201,7 @@ namespace Voxul
 				return null;
 			}
 
-			var meshVoxelData = Mesh.Meshes.SingleOrDefault(m => m.Mesh == renderer.MeshFilter.sharedMesh);
+			var meshVoxelData = Mesh.UnityMeshInstances.SingleOrDefault(m => m.UnityMesh == renderer.MeshFilter.sharedMesh);
 			if (meshVoxelData == null)
 			{
 				return null;

@@ -15,6 +15,7 @@ namespace Voxul.Testing
 		{
 			Renderer = new GameObject("Voxel Renderer")
 				.AddComponent<VoxelRenderer>();
+			Renderer.GenerateCollider = false;
 			Renderer.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
 		}
 
@@ -29,7 +30,29 @@ namespace Voxul.Testing
 					for (var z = -Size.z; z < Size.z; z += step)
 					{
 						var coord = VoxelCoordinate.FromVector3(new Vector3(x, y, z), Layer);
-						var mat = new VoxelMaterial
+						var neighbor = coord + new VoxelCoordinate(0, 2, 0, Layer);
+
+						VoxelMaterial mat;
+						/*if (Renderer.Mesh.Voxels.TryGetValue(neighbor, out var neighborVox))
+						{
+							mat = neighborVox.Material;
+						}
+						else
+						{
+							if(y < 0)
+							{
+								Debug.LogError("Something has gone very wrong...");
+							}
+							mat = new VoxelMaterial
+							{
+								Default = new SurfaceData
+								{
+									Albedo = Random.ColorHSV(),
+								}
+							};
+						}*/
+
+						mat = new VoxelMaterial
 						{
 							Default = new SurfaceData
 							{
@@ -41,7 +64,7 @@ namespace Voxul.Testing
 				}
 			}
 			Renderer.Mesh.Invalidate();
-			Renderer.Invalidate(false);
+			Renderer.Invalidate(false, false);
 
 			Renderer.transform.localRotation *= Quaternion.Euler(1, .1f, .1f);
 		}

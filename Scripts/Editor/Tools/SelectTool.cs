@@ -32,7 +32,7 @@ namespace Voxul.Edit
 			{
 				Debug.Log($"Setting voxels material");
 				var bounds = voxelPainter.CurrentSelection.GetBounds();
-				foreach (VoxelCoordinate coord in voxelPainter.Renderer.Mesh.GetVoxelCoordinates(bounds, voxelPainter.CurrentLayer))
+				foreach (VoxelCoordinate coord in bounds.GetVoxelCoordinates(voxelPainter.CurrentLayer))
 				{
 					DebugHelper.DrawPoint(voxelPainter.Renderer.transform.localToWorldMatrix.MultiplyPoint3x4(coord.ToVector3()), .1f, Color.white, 5);
 					voxelPainter.Renderer.Mesh.Voxels[coord] = new Voxel(coord, CurrentBrush.Copy());
