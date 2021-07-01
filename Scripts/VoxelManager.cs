@@ -54,9 +54,11 @@ namespace Voxul
 		public Material DefaultMaterialTransparent;
 		public Texture2DArray BaseTextureArray;
 		public List<Texture2D> Sprites = new List<Texture2D>();
+		public voxulLogger.ELogLevel LogLevel;
 
 		public void OnValidate()
 		{
+			voxulLogger.InvalidateLogLevel();
 			if(!DefaultMaterial || DefaultMaterial == null)
 			{
 				DefaultMaterial = new Material(Shader.Find("voxul/DefaultVoxel"));

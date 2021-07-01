@@ -17,11 +17,17 @@ namespace Voxul.Testing
 				.AddComponent<VoxelRenderer>();
 			Renderer.GenerateCollider = false;
 			Renderer.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
+			Renderer.transform.position = transform.position;
 		}
 
 		// Update is called once per frame
 		void Update()
 		{
+			if(Renderer.Mesh.CurrentWorker != null && Renderer.Mesh.CurrentWorker.IsRecalculating)
+			{
+				return;
+			}
+
 			var step = VoxelCoordinate.LayerToScale(Layer) * 2;
 			for (var x = -Size.x; x < Size.x; x += step)
 			{

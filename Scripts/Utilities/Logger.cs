@@ -6,25 +6,18 @@ namespace Voxul.Utilities
 	{
 		public enum ELogLevel { Error, Warning, Debug }
 		public static ELogLevel LogLevel { get; private set; }
+
 		static voxulLogger()
 		{
-			UnityMainThreadDispatcher.EnsureSubscribed();
-			UnityMainThreadDispatcher.Enqueue(() =>
-			{
-#if !UNITY_EDITOR
-				LogLevel = ELogLevel.Error;
-#else
-				LogLevel = (ELogLevel)UnityEditor.EditorPrefs.GetInt($"voxul_LogLevel", (int)ELogLevel.Debug);
-#endif
-			});
+			InvalidateLogLevel();
 		}
 
-		public static void SetLogLevel(ELogLevel level)
+		public static void InvalidateLogLevel()
 		{
-			LogLevel = level;
-#if UNITY_EDITOR
-			UnityEditor.EditorPrefs.SetInt($"voxul_LogLevel", (int)level);
-#endif
+			UnityMainThreadDispatcher.Enqueue(() =>
+			{
+				LogLevel = VoxelManager.Instance.LogLevel;
+			});
 		}
 
 		public static void Debug(string message, Object context = null)

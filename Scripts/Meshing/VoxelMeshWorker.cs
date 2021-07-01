@@ -180,7 +180,10 @@ namespace Voxul.Meshing
 						}
 						else
 #endif
+						{
 							meshData.UnityMesh = new Mesh();
+							meshData.UnityMesh.MarkDynamic();
+						}
 					}
 					meshData.UnityMesh.name = $"{VoxelMesh.name}_mesh_{VoxelMesh.Hash}_0";
 					IntermediateVoxelMeshData result = IntermediateData[i];
@@ -188,9 +191,10 @@ namespace Voxul.Meshing
 					meshData.VoxelMapping = voxData.TriangleVoxelMapping;
 				}
 
-				for (var i = VoxelMesh.UnityMeshInstances.Count - 1; i >= IntermediateData.Count; --i)
+				for (var i = VoxelMesh.UnityMeshInstances.Count - 1; i > IntermediateData.Count; --i)
 				{
 					var m = VoxelMesh.UnityMeshInstances[i];
+					voxulLogger.Debug($"Destroying mesh {m}");
 					m.UnityMesh.SafeDestroy();
 					VoxelMesh.UnityMeshInstances.RemoveAt(i);
 				}

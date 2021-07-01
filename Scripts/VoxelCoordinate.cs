@@ -9,8 +9,8 @@ namespace Voxul
 	public struct VoxelCoordinate
 	{
 		public static int LayerRatio => VoxelManager.Instance.LayerRatio;
-		public sbyte Layer;
-		public int X, Y, Z;
+		public readonly sbyte Layer;
+		public readonly int X, Y, Z;
 
 		public VoxelCoordinate(int x, int y, int z, sbyte layer)
 		{

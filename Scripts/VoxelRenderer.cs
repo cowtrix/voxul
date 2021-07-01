@@ -178,6 +178,7 @@ namespace Voxul
 				{
 					continue;
 				}
+				Debug.Log($"Destroying submesh renderer {r}");
 				r.gameObject.SafeDestroy();
 				Renderers.RemoveAt(i);
 			}
