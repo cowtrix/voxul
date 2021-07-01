@@ -170,7 +170,7 @@ namespace Voxul
 			var fontTexture = (Texture2D)Configuration.Font.material.GetTexture(Configuration.Font.material.GetTexturePropertyNameIDs().First());
 			if (!fontTexture)
 			{
-				Debug.LogError($"Texture was null for font {Configuration.Font}", Configuration.Font);
+				voxulLogger.Error($"Texture was null for font {Configuration.Font}", Configuration.Font);
 				return;
 			}
 
@@ -194,11 +194,6 @@ namespace Voxul
 
 		public override void Invalidate(bool force, bool forceCollider)
 		{
-			if (!ShouldInvalidate())
-			{
-				return;
-			}
-			m_lastUpdateTime = Util.GetDynamicTime();
 			m_isDirty = false;
 			if (!Mesh || !Configuration.Font)
 			{

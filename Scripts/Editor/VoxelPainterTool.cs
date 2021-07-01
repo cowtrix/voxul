@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
@@ -173,7 +174,7 @@ namespace Voxul.Edit
 			{
 				dirty = true;
 				CurrentBrush = AssetDatabase.LoadAssetAtPath<VoxelMaterialAsset>(m_brushes.ElementAt(selIndex)).Data;
-				Debug.Log($"Loaded brush from {m_brushes.ElementAt(selIndex)}");
+				voxulLogger.Debug($"Loaded brush from {m_brushes.ElementAt(selIndex)}");
 			}
 			GUILayout.EndVertical();
 			if (dirty || m_cachedBrushEditor == null || !m_cachedBrushEditor || m_cachedEditorNeedsRefresh || Event.current.alt)

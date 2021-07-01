@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Meshing;
+using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
@@ -27,7 +28,7 @@ namespace Voxul.Edit
 		{
 			if (!CheckParams(out var error))
 			{
-				Debug.LogError(error);
+				voxulLogger.Error(error);
 				return;
 			}
 			TargetVoxelMesh.Voxels.Clear();

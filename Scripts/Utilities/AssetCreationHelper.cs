@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Voxul.Utilities
 {
+
 #if UNITY_EDITOR
 
 	public static class AssetCreationHelper

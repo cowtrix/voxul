@@ -41,7 +41,7 @@ namespace Voxul.Testing
 						{
 							if(y < 0)
 							{
-								Debug.LogError("Something has gone very wrong...");
+								voxulLogger.Error("Something has gone very wrong...");
 							}
 							mat = new VoxelMaterial
 							{

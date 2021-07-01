@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Meshing;
+using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
@@ -73,7 +74,7 @@ namespace Voxul.Edit
 			{
 				if (EditorApplication.timeSinceStartup < m_lastAdd + .1f)
 				{
-					Debug.LogWarning($"Swallowed double event");
+					voxulLogger.Warning($"Swallowed double event");
 					return false;
 				}
 				m_lastAdd = EditorApplication.timeSinceStartup;
@@ -110,7 +111,7 @@ namespace Voxul.Edit
 				}
 				else
 				{
-					Debug.Log($"Set voxel at {brushCoord} ({dir})");
+					voxulLogger.Debug($"Set voxel at {brushCoord} ({dir})");
 					var surface = CurrentBrush.GetSurface(dir);
 
 					if (LerpEnabled)

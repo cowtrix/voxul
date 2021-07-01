@@ -54,10 +54,6 @@ namespace Voxul
 		public Material DefaultMaterialTransparent;
 		public Texture2DArray BaseTextureArray;
 		public List<Texture2D> Sprites = new List<Texture2D>();
-		public Mesh CubeMesh;
-		public Material LODMaterial;
-		[Range(0, 1)]
-		public float MinimumUpdateTime = 0.01f;
 
 		public void OnValidate()
 		{

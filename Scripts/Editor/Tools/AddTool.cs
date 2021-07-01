@@ -123,7 +123,7 @@ namespace Voxul.Edit
 			{
 				if (EditorApplication.timeSinceStartup < m_lastAdd + .5f)
 				{
-					//Debug.LogWarning($"Swallowed double event");
+					//voxulLogger.Warning($"Swallowed double event");
 					return false;
 				}
 				m_lastAdd = EditorApplication.timeSinceStartup;

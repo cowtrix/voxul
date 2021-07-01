@@ -1,18 +1,31 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
 namespace Voxul.Utilities
 {
-	public static class UnityMainThreadDispatcher
+	public class UnityMainThreadDispatcher : MonoBehaviour
 	{
 		private static readonly Queue<Action> m_actionQueue = new Queue<Action>();
-		private static SemaphoreSlim _executionQueueLock = new SemaphoreSlim(1, 1);
+		private static SemaphoreSlim m_executionQueueLock = new SemaphoreSlim(1, 1);
+		private static UnityMainThreadDispatcher m_runtimeExecutor;
 
-		static UnityMainThreadDispatcher()
+		public Coroutine Coroutine;
+
+		public static void EnsureSubscribed()
 		{
-			Application.onBeforeRender += Execute;
+			if (!m_runtimeExecutor)
+			{
+				m_runtimeExecutor = new GameObject("RuntimeThreadDispatcher_hidden")
+					.AddComponent<UnityMainThreadDispatcher>();
+				m_runtimeExecutor.gameObject.hideFlags = HideFlags.HideAndDontSave;
+			}
+			if (m_runtimeExecutor && m_runtimeExecutor.Coroutine == null)
+			{
+				m_runtimeExecutor.Coroutine = m_runtimeExecutor.StartCoroutine(CallbackExecute());
+			}
 #if UNITY_EDITOR
 			UnityEditor.EditorApplication.update += Execute;
 #endif
@@ -20,20 +33,30 @@ namespace Voxul.Utilities
 
 		public static void Enqueue(Action a)
 		{
-			_executionQueueLock.Wait();
+			m_executionQueueLock.Wait();
 			try
 			{
 				m_actionQueue.Enqueue(a);
 			}
 			finally
 			{
-				_executionQueueLock.Release();
+				m_executionQueueLock.Release();
+			}
+		}
+
+		static IEnumerator CallbackExecute()
+		{
+			while (true)
+			{
+				Execute();
+				yield return null;
 			}
 		}
 
 		private static void Execute()
 		{
-			_executionQueueLock.Wait();
+			//voxulLogger.Debug("Execute");
+			m_executionQueueLock.Wait();
 			try
 			{
 				while (m_actionQueue.Count > 0)
@@ -43,7 +66,7 @@ namespace Voxul.Utilities
 			}
 			finally
 			{
-				_executionQueueLock.Release();
+				m_executionQueueLock.Release();
 			}
 		}
 	}

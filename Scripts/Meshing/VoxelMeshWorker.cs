@@ -8,134 +8,154 @@ using Voxul.Utilities;
 
 namespace Voxul.Meshing
 {
+	public enum EThreadingMode
+	{
+		SingleThreaded,
+		Task,
+		Coroutine,
+	}
+
 	public class VoxelMeshWorker
 	{
 		public static readonly EVoxelDirection[] Directions = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>().ToArray();
 
-		public VoxelMesh VoxelMesh { get; }
+		public VoxelRenderer Dispatcher { get; private set; }
+		public VoxelMesh VoxelMesh { get; private set; }
 		public event VoxelRebuildMeshEvent OnCompleted;
 
+		private Guid m_lastGenID;
 		private Task m_currentTask;
 		private CancellationTokenSource m_cancellationToken;
-		private SemaphoreSlim m_voxelMeshSemaphore = new SemaphoreSlim(1, 1);
+		private object m_threadObjectLock = new object();
 
 		public List<IntermediateVoxelMeshData> IntermediateData = new List<IntermediateVoxelMeshData>();
 
-		public VoxelMeshWorker(VoxelMesh mesh)
-		{
-			VoxelMesh = mesh;
-		}
+		public bool IsRecalculating => (m_currentTask != null && m_currentTask.Status == TaskStatus.Running && !m_cancellationToken.IsCancellationRequested);
 
-		public void GenerateMesh(bool force = false, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
+		public void GenerateMesh(VoxelRenderer dispatcher, EThreadingMode mode, bool force = false, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
-			if (m_currentTask != null && m_currentTask.Status == TaskStatus.Running)
+			voxulLogger.Debug($"VoxelMeshWorker: GenerateMesh for {VoxelMesh}", VoxelMesh);
+			if (IsRecalculating)
 			{
 				if (!force)
 				{
-					Debug.LogWarning($"ignoring rebake as one is already in progress");
+					voxulLogger.Warning($"ignoring rebake for {VoxelMesh} as one is already in progress", VoxelMesh);
 					return;
 				}
-				Debug.LogWarning($"Forcing restart of recalculation job for {VoxelMesh}", VoxelMesh);
-				while (m_currentTask != null)
-				{
-					m_cancellationToken.Cancel();
-				}
+				voxulLogger.Warning($"Forcing restart of recalculation job for {VoxelMesh}", VoxelMesh);
+				m_cancellationToken.Cancel();
 			}
-
+			Dispatcher = dispatcher;
+			VoxelMesh = dispatcher.Mesh;
 			IntermediateData.Clear();
-			m_cancellationToken = new CancellationTokenSource();
-			var token = m_cancellationToken.Token;
-			Task newTask = null;
 			
-			newTask = new Task(() =>
+			switch (mode)
 			{
-				int voxelCount = 0;
-				List<KeyValuePair<VoxelCoordinate, Voxel>> allVoxels;
-				m_voxelMeshSemaphore.Wait();
-				try
-				{
-					allVoxels = VoxelMesh.Voxels
-						.Where(v => v.Key.Layer >= minLayer && v.Key.Layer <= maxLayer)
-						.OrderBy(v => v.Value.Material.MaterialMode)
-						.ToList();
-				}
-				finally
-				{
-					m_voxelMeshSemaphore.Release();
-				}
-				while (voxelCount < allVoxels.Count)
-				{
-					var data = new IntermediateVoxelMeshData(allVoxels);
-					IntermediateData.Add(data);
-					int startVoxCount = voxelCount;
-					foreach (var vox in allVoxels.Skip(startVoxCount))
-					{
-						if (m_cancellationToken.IsCancellationRequested)
-						{
-							if (m_currentTask == newTask)
-							{
-								m_currentTask = null;
-							}
-							return;
-						}
-
-						if (vox.Key != vox.Value.Coordinate)
-						{
-							throw new Exception($"Voxel {vox.Key} had incorrect key in data");
-						}
-						switch (vox.Value.Material.RenderMode)
-						{
-							case ERenderMode.Block:
-								Cube(vox.Value, data);
-								break;
-							case ERenderMode.XPlane:
-								Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, });
-								break;
-							case ERenderMode.YPlane:
-								Plane(vox.Value, data, new[] { EVoxelDirection.YPos, EVoxelDirection.YNeg, });
-								break;
-							case ERenderMode.ZPlane:
-								Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
-								break;
-							case ERenderMode.XYCross:
-								Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
-								break;
-							case ERenderMode.XZCross:
-								Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
-								break;
-							case ERenderMode.ZYCross:
-								Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
-								break;
-							case ERenderMode.FullCross:
-								Plane(vox.Value, data, Directions.ToArray());
-								break;
-						}
-						voxelCount++;
-						if (data.Vertices.Count > 65535 - 100)
-						{
-							break;
-						}
-					}
-
-				}
-				UnityMainThreadDispatcher.Enqueue(() => Complete());
-				if (m_currentTask == newTask)
-				{
-					m_currentTask = null;
-				}
-			}, token);
-			m_currentTask = newTask;
-			m_currentTask.Start();
+				case EThreadingMode.SingleThreaded:
+					m_cancellationToken = null;
+					GenerateMesh(minLayer, maxLayer, false);
+					break;
+				case EThreadingMode.Task:
+					GenerateMeshOnThread(minLayer, maxLayer);
+					break;
+			}
 		}
 
-		void Complete()
+		private void GenerateMeshOnThread(sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
-			if (!VoxelMesh)
+			UnityMainThreadDispatcher.EnsureSubscribed();
+			m_cancellationToken = new CancellationTokenSource();
+			var token = m_cancellationToken.Token;
+			m_currentTask = Task.Factory.StartNew(() =>
 			{
+				GenerateMesh(minLayer, maxLayer, true);
+			}, token);
+		}
+
+		private void GenerateMesh(sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue, bool offThread = false)
+		{
+			var thisJobGuid = Guid.NewGuid();
+			voxulLogger.Debug($"Started rebake job {thisJobGuid}");
+			m_lastGenID = thisJobGuid;
+			int voxelCount = 0;
+			List<KeyValuePair<VoxelCoordinate, Voxel>> allVoxels;
+			lock (m_threadObjectLock)
+			{
+				allVoxels = VoxelMesh.Voxels
+					.Where(v => v.Key.Layer >= minLayer && v.Key.Layer <= maxLayer)
+					.OrderBy(v => v.Value.Material.MaterialMode)
+					.ToList();
+			}
+			while (voxelCount < allVoxels.Count)
+			{
+				var data = new IntermediateVoxelMeshData();
+				data.Initialise(allVoxels);
+				IntermediateData.Add(data);
+				int startVoxCount = voxelCount;
+				foreach (var vox in allVoxels.Skip(startVoxCount))
+				{
+					if (m_cancellationToken != null && m_cancellationToken.IsCancellationRequested)
+					{
+						voxulLogger.Debug($"Cancelled rebake job {thisJobGuid}");
+						return;
+					}
+					if (vox.Key != vox.Value.Coordinate)
+					{
+						throw new Exception($"Voxel {vox.Key} had incorrect key in data");
+					}
+					switch (vox.Value.Material.RenderMode)
+					{
+						case ERenderMode.Block:
+							Cube(vox.Value, data);
+							break;
+						case ERenderMode.XPlane:
+							Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, });
+							break;
+						case ERenderMode.YPlane:
+							Plane(vox.Value, data, new[] { EVoxelDirection.YPos, EVoxelDirection.YNeg, });
+							break;
+						case ERenderMode.ZPlane:
+							Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
+							break;
+						case ERenderMode.XYCross:
+							Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
+							break;
+						case ERenderMode.XZCross:
+							Plane(vox.Value, data, new[] { EVoxelDirection.XPos, EVoxelDirection.XNeg, EVoxelDirection.ZPos, EVoxelDirection.ZNeg, });
+							break;
+						case ERenderMode.ZYCross:
+							Plane(vox.Value, data, new[] { EVoxelDirection.ZPos, EVoxelDirection.ZNeg, EVoxelDirection.YPos, EVoxelDirection.YNeg, });
+							break;
+						case ERenderMode.FullCross:
+							Plane(vox.Value, data, Directions.ToArray());
+							break;
+					}
+					voxelCount++;
+					if (data.Vertices.Count > 65535 - 100)
+					{
+						break;
+					}
+				}
+			}
+			if (offThread)
+			{
+				UnityMainThreadDispatcher.Enqueue(() => Complete(thisJobGuid));
+			}
+			else
+			{
+				Complete(thisJobGuid);
+			}
+		}
+
+		void Complete(Guid jobID)
+		{
+			if (!VoxelMesh || m_lastGenID != jobID)
+			{
+				voxulLogger.Debug("Ignored the complete because ID's were different");
 				return;
 			}
-			m_voxelMeshSemaphore.Wait();
-			try
+			voxulLogger.Debug($"Completing render job for {this}");
+			lock (m_threadObjectLock)
 			{
 				for (int i = 0; i < IntermediateData.Count; i++)
 				{
@@ -174,10 +194,11 @@ namespace Voxul.Meshing
 					m.UnityMesh.SafeDestroy();
 					VoxelMesh.UnityMeshInstances.RemoveAt(i);
 				}
-			}
-			finally
-			{
-				m_voxelMeshSemaphore.Release();
+
+				foreach (var data in IntermediateData)
+				{
+					data.Clear();
+				}
 			}
 			OnCompleted.Invoke(this, VoxelMesh);
 		}
@@ -229,7 +250,7 @@ namespace Voxul.Meshing
 			var submeshIndex = (int)vox.Material.MaterialMode;
 			if (!data.Triangles.TryGetValue(submeshIndex, out var tris))
 			{
-				tris = new List<int>();
+				tris = new List<int>(data.Voxels.Count * 16 * 3);
 				data.Triangles[submeshIndex] = tris;
 				if (data.TriangleVoxelMapping != null)
 				{

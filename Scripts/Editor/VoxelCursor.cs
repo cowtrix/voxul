@@ -45,7 +45,7 @@ namespace Voxul.Edit
 				var debugMat = DebugMaterial;
 				if (!debugMat)
 				{
-					Debug.LogError($"Failed to load debug selection material at {VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
+					voxulLogger.Error($"Failed to load debug selection material at {VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
 				}
 				if(m_cursorRenderer?.Renderers != null && m_cursorRenderer.Renderers.Any())
 				{

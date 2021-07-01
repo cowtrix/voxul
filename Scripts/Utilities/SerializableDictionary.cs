@@ -15,7 +15,7 @@ namespace Voxul.Utilities
 		{
 			if (keys == null || values == null)
 			{
-				Debug.LogError("Failed to deserialize SerializableDictionary<>");
+				voxulLogger.Error("Failed to deserialize SerializableDictionary<>");
 				return;
 			}
 			var c = keys.Length;

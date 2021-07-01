@@ -32,7 +32,7 @@ namespace Voxul.Meshing
 		{
 			if (Keys.CollideCheck(vox.Coordinate, out var hit))
 			{
-				//Debug.LogWarning($"Voxel {vox.Coordinate} collided with {hit} and so was skipped");
+				//voxulLogger.Warning($"Voxel {vox.Coordinate} collided with {hit} and so was skipped");
 				return false;
 			}
 			Add(vox.Coordinate, vox);

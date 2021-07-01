@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Voxul.Meshing;
 
 namespace Voxul.Testing
 {
 	public class TextBenchmark : MonoBehaviour
 	{
+		public EThreadingMode ThreadingMode;
 		public int TextCount = 10;
 		public Vector2 CharacterCount = new Vector2(2, 64);
 		public Font Font;
@@ -31,15 +33,19 @@ namespace Voxul.Testing
 				t.transform.position = new Vector3(0, i * 10, 0);
 				t.Configuration.Font = Font;
 				t.GenerateCollider = false;
+				t.ThreadingMode = ThreadingMode;
 				m_texts.Add(t);
 			}
 		}
 
-		// Update is called once per frame
 		void Update()
 		{
 			foreach (var t in m_texts)
 			{
+				if (t.Mesh.CurrentWorker != null  && t.Mesh.CurrentWorker.IsRecalculating)
+				{
+					continue;
+				}
 				var str = GenerateRandomAlphanumericString((int)UnityEngine.Random.Range(CharacterCount.x, CharacterCount.y));
 				t.Configuration.Text = str;
 				t.Invalidate(false, false);

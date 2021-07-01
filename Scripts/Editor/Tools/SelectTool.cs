@@ -20,7 +20,7 @@ namespace Voxul.Edit
 			if (GUILayout.Button("Apply Material To Selection (SHIFT + M)") ||
 				(Event.current.isKey && Event.current.shift && Event.current.keyCode == KeyCode.M))
 			{
-				Debug.Log($"Applying material");
+				voxulLogger.Debug($"Applying material");
 				foreach (var v in voxelPainter.CurrentSelection)
 				{
 					voxelPainter.Renderer.Mesh.Voxels[v] = new Voxel(v, CurrentBrush.Copy());
@@ -30,7 +30,7 @@ namespace Voxul.Edit
 			if (GUILayout.Button("Set Voxels For Selection (SHIFT + F)") ||
 				(Event.current.isKey && Event.current.shift && Event.current.keyCode == KeyCode.F))
 			{
-				Debug.Log($"Setting voxels material");
+				voxulLogger.Debug($"Setting voxels material");
 				var bounds = voxelPainter.CurrentSelection.GetBounds();
 				foreach (VoxelCoordinate coord in bounds.GetVoxelCoordinates(voxelPainter.CurrentLayer))
 				{
@@ -42,7 +42,7 @@ namespace Voxul.Edit
 			if (GUILayout.Button("Subdivide Selection (SHIFT + S)") ||
 				(Event.current.isKey && Event.current.shift && Event.current.keyCode == KeyCode.S))
 			{
-				Debug.Log($"Subdividing");
+				voxulLogger.Debug($"Subdividing");
 				var newSelection = new HashSet<VoxelCoordinate>();
 				foreach (var v in voxelPainter.CurrentSelection)
 				{
