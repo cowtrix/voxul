@@ -26,9 +26,25 @@ namespace Voxul
 		public sbyte MinLayer = sbyte.MinValue;
 		[Range(sbyte.MinValue, sbyte.MaxValue)]
 		public sbyte MaxLayer = sbyte.MaxValue;
-		public EThreadingMode ThreadingMode = EThreadingMode.Task;
+		public EThreadingMode ThreadingMode;
+
+		[DrawIf(nameof(ThreadingMode), EThreadingMode.Coroutine, ComparisonType.Equals)]
+		public float MaxCoroutineUpdateTime = 0.5f;
 
 		protected bool m_isDirty;
+
+		[SerializeField]
+		[HideInInspector]
+		private VoxelMeshWorker m_voxWorker;
+
+		protected virtual VoxelMeshWorker GetVoxelMeshWorker()
+		{
+			if (m_voxWorker == null)
+			{
+				m_voxWorker = new VoxelMeshWorker();
+			}
+			return m_voxWorker;
+		}
 
 		[SerializeField]
 		[HideInInspector]
@@ -36,7 +52,7 @@ namespace Voxul
 
 		[SerializeField]
 		public List<VoxelRendererSubmesh> Renderers = new List<VoxelRendererSubmesh>();
-
+		
 		public Bounds Bounds => Renderers.Select(b => b.Bounds).EncapsulateAll();
 
 		protected virtual void Update()
@@ -50,6 +66,11 @@ namespace Voxul
 			{
 				Invalidate(false, false);
 			}
+		}
+
+		private void Reset()
+		{
+			ThreadingMode = VoxelManager.Instance.DefaultThreadingMode;
 		}
 
 		protected virtual void Awake()
@@ -113,13 +134,10 @@ namespace Voxul
 
 			SetupComponents(forceCollider || GenerateCollider);
 
-			if(Mesh.CurrentWorker == null)
-			{
-				Mesh.CurrentWorker = new VoxelMeshWorker();
-				Mesh.CurrentWorker.OnCompleted += OnMeshRebuilt;
-			}
+			Mesh.CurrentWorker = GetVoxelMeshWorker();
+			Mesh.CurrentWorker.OnCompleted -= OnMeshRebuilt;
+			Mesh.CurrentWorker.OnCompleted += OnMeshRebuilt;
 			Mesh.CurrentWorker.GenerateMesh(this, ThreadingMode, force, MinLayer, MaxLayer);
-
 			m_lastMeshHash = Mesh.Hash;
 		}
 
@@ -155,13 +173,16 @@ namespace Voxul
 				}
 				if (!CustomMaterials)
 				{
-					if (Mesh.Voxels.Any(v => v.Value.Material.MaterialMode == EMaterialMode.Transparent))
+					lock (Mesh)
 					{
-						submesh.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, VoxelManager.Instance.DefaultMaterialTransparent, };
-					}
-					else if (submesh.MeshRenderer)
-					{
-						submesh.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, };
+						if (Mesh.Voxels.Any(v => v.Value.Material.MaterialMode == EMaterialMode.Transparent))
+						{
+							submesh.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, VoxelManager.Instance.DefaultMaterialTransparent, };
+						}
+						else if (submesh.MeshRenderer)
+						{
+							submesh.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, };
+						}
 					}
 				}
 			}

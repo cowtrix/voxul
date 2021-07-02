@@ -12,6 +12,30 @@ namespace Voxul.Utilities
 			return Vector3.Lerp(abu, dcu, v);
 		}
 
+		public static float GetBilinear(this float[,] array, float x, float y)
+		{
+			var width = array.GetLength(0);
+			var fracX = x * (width - 1);
+			var lowX = Mathf.FloorToInt(fracX);
+			var highX = Mathf.Min(Mathf.CeilToInt(fracX), width - 1);
+			fracX -= lowX;
+
+			var height = array.GetLength(1);
+			var fracY = y * (height - 1);
+			var lowY = Mathf.FloorToInt(fracY);
+			var highY = Mathf.Min(Mathf.CeilToInt(fracY), height - 1);
+			fracY -= lowY;
+
+			var p1 = array[lowX, highY];
+			var p2 = array[highX, highY];
+			var p3 = array[lowX, lowY];
+			var p4 = array[highX, lowY];
+
+			float abu = Mathf.Lerp(p1, p2, fracX);
+			float dcu = Mathf.Lerp(p3, p4, fracX);
+			return Mathf.Lerp(abu, dcu, 1 - fracY);
+		}
+
 		public static Vector2 QuadLerp(Vector2 a, Vector2 b, Vector2 c, Vector2 d, float u, float v)
 		{
 			// Given a (u,v) coordinate that defines a 2D local position inside a planar quadrilateral, find the

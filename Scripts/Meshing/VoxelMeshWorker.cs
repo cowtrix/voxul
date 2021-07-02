@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +17,7 @@ namespace Voxul.Meshing
 		Coroutine,
 	}
 
+	[Serializable]
 	public class VoxelMeshWorker
 	{
 		public static readonly EVoxelDirection[] Directions = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>().ToArray();
@@ -25,12 +28,26 @@ namespace Voxul.Meshing
 
 		private Guid m_lastGenID;
 		private Task m_currentTask;
+		private Coroutine m_currentCoroutine;
 		private CancellationTokenSource m_cancellationToken;
 		private object m_threadObjectLock = new object();
+		protected float m_maxCoroutineUpdateTime;
 
 		public List<IntermediateVoxelMeshData> IntermediateData = new List<IntermediateVoxelMeshData>();
 
-		public bool IsRecalculating => (m_currentTask != null && m_currentTask.Status == TaskStatus.Running && !m_cancellationToken.IsCancellationRequested);
+		public bool IsRecalculating =>
+			m_currentCoroutine != null ||
+			(m_currentTask != null && m_currentTask.Status == TaskStatus.Running && !m_cancellationToken.IsCancellationRequested);
+
+		private void CancelCurrentJob()
+		{
+			m_cancellationToken?.Cancel();
+			m_currentTask = null;
+			if (m_currentCoroutine != null && Dispatcher)
+			{
+				Dispatcher.StopCoroutine(m_currentCoroutine);
+			}
+		}
 
 		public void GenerateMesh(VoxelRenderer dispatcher, EThreadingMode mode, bool force = false, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
@@ -43,37 +60,50 @@ namespace Voxul.Meshing
 					return;
 				}
 				voxulLogger.Warning($"Forcing restart of recalculation job for {VoxelMesh}", VoxelMesh);
-				m_cancellationToken.Cancel();
+				CancelCurrentJob();
 			}
 			Dispatcher = dispatcher;
 			VoxelMesh = dispatcher.Mesh;
 			IntermediateData.Clear();
-			
+			m_currentCoroutine = null;
+			m_maxCoroutineUpdateTime = Dispatcher.MaxCoroutineUpdateTime;
+			UnityMainThreadDispatcher.EnsureSubscribed();
 			switch (mode)
 			{
 				case EThreadingMode.SingleThreaded:
 					m_cancellationToken = null;
-					GenerateMesh(minLayer, maxLayer, false);
+					var w = GenerateMesh(EThreadingMode.SingleThreaded, minLayer, maxLayer);
+					while (w.MoveNext()) { }
 					break;
 				case EThreadingMode.Task:
 					GenerateMeshOnThread(minLayer, maxLayer);
+					break;
+				case EThreadingMode.Coroutine:
+					GenerateMeshOnCoroutine(minLayer, maxLayer);
 					break;
 			}
 		}
 
 		private void GenerateMeshOnThread(sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
-			UnityMainThreadDispatcher.EnsureSubscribed();
 			m_cancellationToken = new CancellationTokenSource();
 			var token = m_cancellationToken.Token;
 			m_currentTask = Task.Factory.StartNew(() =>
 			{
-				GenerateMesh(minLayer, maxLayer, true);
+				var w = GenerateMesh(EThreadingMode.Task, minLayer, maxLayer);
+				while (w.MoveNext()) { }
 			}, token);
 		}
 
-		private void GenerateMesh(sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue, bool offThread = false)
+		private void GenerateMeshOnCoroutine(sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
+			m_currentCoroutine = Dispatcher.StartCoroutine(GenerateMesh(EThreadingMode.Coroutine, minLayer, maxLayer));
+		}
+
+		protected virtual IEnumerator GenerateMesh(EThreadingMode mode, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
+		{
+			var timeLim = m_maxCoroutineUpdateTime;
+			var sw = Stopwatch.StartNew();
 			var thisJobGuid = Guid.NewGuid();
 			voxulLogger.Debug($"Started rebake job {thisJobGuid}");
 			m_lastGenID = thisJobGuid;
@@ -97,7 +127,7 @@ namespace Voxul.Meshing
 					if (m_cancellationToken != null && m_cancellationToken.IsCancellationRequested)
 					{
 						voxulLogger.Debug($"Cancelled rebake job {thisJobGuid}");
-						return;
+						yield break;
 					}
 					if (vox.Key != vox.Value.Coordinate)
 					{
@@ -130,6 +160,11 @@ namespace Voxul.Meshing
 							Plane(vox.Value, data, Directions.ToArray());
 							break;
 					}
+					if (mode == EThreadingMode.Coroutine && sw.Elapsed.TotalSeconds > timeLim)
+					{
+						sw.Restart();
+						yield return null;
+					}
 					voxelCount++;
 					if (data.Vertices.Count > 65535 - 100)
 					{
@@ -137,7 +172,7 @@ namespace Voxul.Meshing
 					}
 				}
 			}
-			if (offThread)
+			if (mode == EThreadingMode.Task)
 			{
 				UnityMainThreadDispatcher.Enqueue(() => Complete(thisJobGuid));
 			}
@@ -147,7 +182,7 @@ namespace Voxul.Meshing
 			}
 		}
 
-		void Complete(Guid jobID)
+		protected virtual void Complete(Guid jobID)
 		{
 			if (!VoxelMesh || m_lastGenID != jobID)
 			{
@@ -157,6 +192,10 @@ namespace Voxul.Meshing
 			voxulLogger.Debug($"Completing render job for {this}");
 			lock (m_threadObjectLock)
 			{
+				if(VoxelMesh.UnityMeshInstances == null)
+				{
+					VoxelMesh.UnityMeshInstances = new List<MeshVoxelData>();
+				}
 				for (int i = 0; i < IntermediateData.Count; i++)
 				{
 					if (VoxelMesh.UnityMeshInstances.Count <= i)
@@ -204,7 +243,15 @@ namespace Voxul.Meshing
 					data.Clear();
 				}
 			}
+			m_currentCoroutine = null;
+			m_currentTask = null;
 			OnCompleted.Invoke(this, VoxelMesh);
+		}
+
+		public virtual void Clear()
+		{
+			CancelCurrentJob();
+			IntermediateData.Clear();
 		}
 
 		public static void Plane(Voxel vox, IntermediateVoxelMeshData data, IEnumerable<EVoxelDirection> dirs)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using Voxul.Meshing;
 using Voxul.Utilities;
 
 namespace Voxul
@@ -46,15 +47,23 @@ namespace Voxul
 			return vm;
 		}
 
+
+		public voxulLogger.ELogLevel LogLevel;
+		public EThreadingMode DefaultThreadingMode = EThreadingMode.Task;
+
+		[HideInInspector]
+		public Material DefaultMaterial;
+		[HideInInspector]
+		public Material DefaultMaterialTransparent;
+		[HideInInspector]
+		public Texture2DArray BaseTextureArray;
+
 		[Range(2, 10)]
 		public int LayerRatio = 3;
 		[Range(8, 1024)]
 		public int SpriteResolution = 32;
-		public Material DefaultMaterial;
-		public Material DefaultMaterialTransparent;
-		public Texture2DArray BaseTextureArray;
+		
 		public List<Texture2D> Sprites = new List<Texture2D>();
-		public voxulLogger.ELogLevel LogLevel;
 
 		public void OnValidate()
 		{
@@ -73,6 +82,7 @@ namespace Voxul
 				UnityEditor.EditorUtility.SetDirty(this);
 #endif
 			}
+			RegenerateSpritesheet();
 		}
 
 		[ContextMenu("Regenerate Spritesheet")]

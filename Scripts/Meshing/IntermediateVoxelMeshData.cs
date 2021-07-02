@@ -19,11 +19,11 @@ namespace Voxul.Meshing
 		{
 			Voxels = new VoxelMapping(voxels);
 			TriangleVoxelMapping = new TriangleVoxelMapping();
-			Vertices = new List<Vector3>(Voxels.Count * 8);
-			Triangles = new Dictionary<int, List<int>>(Voxels.Count * 16 * 3);
-			Color1 = new List<Color>(Vertices.Count);
-			UV1 = new List<Vector2>(Vertices.Count);
-			UV2 = new List<Vector4>(Vertices.Count);
+			Vertices = Vertices ?? new List<Vector3>(Voxels.Count * 8);
+			Triangles = Triangles ?? new Dictionary<int, List<int>>(Voxels.Count * 16 * 3);
+			Color1 = Color1 ?? new List<Color>(Vertices.Count);
+			UV1 = UV1 ?? new List<Vector2>(Vertices.Count);
+			UV2 = UV2 ?? new List<Vector4>(Vertices.Count);
 		}
 
 		public Mesh SetMesh(Mesh mesh)
@@ -37,7 +37,7 @@ namespace Voxul.Meshing
 				mesh.Clear();
 				mesh.SetVertices(Vertices);
 				mesh.SetColors(Color1);
-				if (Triangles.Any())
+				if (Triangles != null && Triangles.Any())
 				{
 					var meshCount = Triangles.Max(k => k.Key) + 1;
 					mesh.subMeshCount = meshCount;

@@ -7,6 +7,7 @@ namespace Voxul.Testing
 {
 	public class BoxBenchmark : MonoBehaviour
 	{
+		public EThreadingMode ThreadingMode;
 		public Vector3 Size = Vector3.one;
 		public sbyte Layer = 2;
 
@@ -16,6 +17,7 @@ namespace Voxul.Testing
 			Renderer = new GameObject("Voxel Renderer")
 				.AddComponent<VoxelRenderer>();
 			Renderer.GenerateCollider = false;
+			Renderer.ThreadingMode = ThreadingMode;
 			Renderer.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
 			Renderer.transform.position = transform.position;
 		}
@@ -23,7 +25,8 @@ namespace Voxul.Testing
 		// Update is called once per frame
 		void Update()
 		{
-			if(Renderer.Mesh.CurrentWorker != null && Renderer.Mesh.CurrentWorker.IsRecalculating)
+			Renderer.transform.localRotation *= Quaternion.Euler(1, .1f, .1f);
+			if (Renderer.Mesh.CurrentWorker != null && Renderer.Mesh.CurrentWorker.IsRecalculating)
 			{
 				return;
 			}
@@ -71,8 +74,6 @@ namespace Voxul.Testing
 			}
 			Renderer.Mesh.Invalidate();
 			Renderer.Invalidate(false, false);
-
-			Renderer.transform.localRotation *= Quaternion.Euler(1, .1f, .1f);
 		}
 	}
 

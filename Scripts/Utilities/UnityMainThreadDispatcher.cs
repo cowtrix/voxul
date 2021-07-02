@@ -16,7 +16,7 @@ namespace Voxul.Utilities
 
 		public static void EnsureSubscribed()
 		{
-			if (!m_runtimeExecutor)
+			if (Application.isPlaying && !m_runtimeExecutor)
 			{
 				m_runtimeExecutor = new GameObject("RuntimeThreadDispatcher_hidden")
 					.AddComponent<UnityMainThreadDispatcher>();
@@ -55,7 +55,6 @@ namespace Voxul.Utilities
 
 		private static void Execute()
 		{
-			//voxulLogger.Debug("Execute");
 			m_executionQueueLock.Wait();
 			try
 			{
@@ -63,6 +62,10 @@ namespace Voxul.Utilities
 				{
 					m_actionQueue.Dequeue().Invoke();
 				}
+			}
+			catch(Exception e)
+			{
+				voxulLogger.Exception(e);
 			}
 			finally
 			{

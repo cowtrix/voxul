@@ -19,7 +19,7 @@ namespace Voxul.Meshing
 	[CreateAssetMenu]
 	public class VoxelMesh : ScriptableObject
 	{
-		public VoxelMeshWorker CurrentWorker { get; set; }
+		public VoxelMeshWorker CurrentWorker;
 
 		public List<MeshVoxelData> UnityMeshInstances = new List<MeshVoxelData>();
 
@@ -29,5 +29,6 @@ namespace Voxul.Meshing
 		public VoxelMapping Voxels = new VoxelMapping();
 
 		public void Invalidate() => Hash = Guid.NewGuid().ToString();
+
 	}
 }
