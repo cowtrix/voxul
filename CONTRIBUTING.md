@@ -1,6 +1,6 @@
 # Contributing to this repository
 
-Never contributed to a Git repository before? (Read this guide](https://github.com/github/docs/blob/main/CONTRIBUTING.md) to get started.
+Never contributed to a Git repository before? [Read this guide](https://github.com/github/docs/blob/main/CONTRIBUTING.md) to get started.
 
 ## Opening Issues
 
