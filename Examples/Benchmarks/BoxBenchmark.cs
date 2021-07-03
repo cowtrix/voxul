@@ -18,6 +18,7 @@ namespace Voxul.Testing
 				.AddComponent<VoxelRenderer>();
 			Renderer.GenerateCollider = false;
 			Renderer.ThreadingMode = ThreadingMode;
+			Renderer.MaxCoroutineUpdateTime = VoxelManager.Instance.DefaultMaxCoroutineUpdateTime;
 			Renderer.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
 			Renderer.transform.position = transform.position;
 		}

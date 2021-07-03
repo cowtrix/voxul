@@ -39,7 +39,7 @@ namespace Voxul
 					path = firstManagerInProject;
 				}
 				vm = Resources.Load<VoxelManager>(path);
-				
+
 #else
 				throw new Exception($"Could not find VoxelManager resource at {path}");
 #endif
@@ -50,6 +50,7 @@ namespace Voxul
 
 		public voxulLogger.ELogLevel LogLevel;
 		public EThreadingMode DefaultThreadingMode = EThreadingMode.Task;
+		public float DefaultMaxCoroutineUpdateTime = 1 / 60f;
 
 		[HideInInspector]
 		public Material DefaultMaterial;
@@ -62,13 +63,13 @@ namespace Voxul
 		public int LayerRatio = 3;
 		[Range(8, 1024)]
 		public int SpriteResolution = 32;
-		
+
 		public List<Texture2D> Sprites = new List<Texture2D>();
 
 		public void OnValidate()
 		{
 			voxulLogger.InvalidateLogLevel();
-			if(!DefaultMaterial || DefaultMaterial == null)
+			if (!DefaultMaterial || DefaultMaterial == null)
 			{
 				DefaultMaterial = new Material(Shader.Find("voxul/DefaultVoxel"));
 #if UNITY_EDITOR
@@ -91,7 +92,7 @@ namespace Voxul
 #if UNITY_EDITOR
 			var texArray = BaseTextureArray;
 			var newArray = GenerateArray(Sprites, TextureFormat.ARGB32, SpriteResolution);
-			if(newArray != null)
+			if (newArray != null)
 			{
 				newArray.filterMode = FilterMode.Point;
 				newArray.wrapMode = TextureWrapMode.Repeat;
