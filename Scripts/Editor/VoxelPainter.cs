@@ -41,6 +41,14 @@ namespace Voxul.Edit
 			EditorGUIUtility.PingObject(go);
 		}
 
+		[MenuItem("GameObject/3D Object/Voxul Sprite")]
+		public static void CreateNewSprite()
+		{
+			var go = new GameObject("New Voxel Sprite");
+			var r = go.AddComponent<VoxelSprite>();
+			EditorGUIUtility.PingObject(go);
+		}
+
 		Dictionary<EPaintingTool, VoxelPainterTool> m_tools = new Dictionary<EPaintingTool, VoxelPainterTool>
 	{
 		{ EPaintingTool.Select, new SelectTool() },

@@ -16,6 +16,10 @@ namespace Voxul.Utilities
 		{
 			UnityMainThreadDispatcher.Enqueue(() =>
 			{
+				if (!VoxelManager.Instance)
+				{
+					return;
+				}
 				LogLevel = VoxelManager.Instance.LogLevel;
 			});
 		}

@@ -35,7 +35,7 @@ namespace Voxul
 
 		[SerializeField]
 		[HideInInspector]
-		private VoxelMeshWorker m_voxWorker;
+		protected VoxelMeshWorker m_voxWorker;
 
 		protected virtual VoxelMeshWorker GetVoxelMeshWorker()
 		{
@@ -196,12 +196,11 @@ namespace Voxul
 			for (var i = Renderers.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)
 			{
 				var r = Renderers[i];
-				if(r && r.gameObject)
+				if(r || r.gameObject)
 				{
-					continue;
+					voxulLogger.Debug($"Destroying submesh renderer {r}", this);
+					r.gameObject.SafeDestroy();
 				}
-				Debug.Log($"Destroying submesh renderer {r}");
-				r.gameObject.SafeDestroy();
 				Renderers.RemoveAt(i);
 			}
 			m_lastMeshHash = Mesh.Hash;

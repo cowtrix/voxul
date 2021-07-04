@@ -12,7 +12,7 @@ namespace Voxul.Utilities
 		{
 			get
 			{
-				if (!m_initialized)
+				if (!m_initialized || m_value == null)
 				{
 					m_initialized = true;
 					m_value = m_getter.Invoke();

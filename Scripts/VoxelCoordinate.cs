@@ -13,7 +13,7 @@ namespace Voxul
 		/// one the layer above. Put visually: With a LayerRatio of 3, consider a voxel on 
 		/// layer 0 on the left, and a grid of voxels on layer 1 on the right:
 		///			Layer 0					Layer 1
-		///      ______________			 ____ ____ ____
+		///      ______________	         ____ ____ ____
 		///     |              |        |    |    |    |
 		///     |              |        |____|____|____|
 		///     |              |  --->  |    |    |    |    // 3x3 cells inside

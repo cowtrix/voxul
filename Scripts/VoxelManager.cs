@@ -44,6 +44,10 @@ namespace Voxul
 				throw new Exception($"Could not find VoxelManager resource at {path}");
 #endif
 			}
+			if (!vm)
+			{
+				voxulLogger.Error("Failed to initialize ResourceManager singleton");
+			}
 			return vm;
 		}
 

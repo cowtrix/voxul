@@ -63,10 +63,7 @@ namespace Voxul.Utilities
 
 		private IEnumerator RunAction(EThreadingMode mode)
 		{
-			if(m_cancellationToken == null)
-			{
-				m_cancellationToken = new CancellationTokenSource();
-			}
+			m_cancellationToken = new CancellationTokenSource();
 			var en = Action.Invoke(mode, m_cancellationToken.Token);
 			while (en.MoveNext())
 			{
@@ -84,6 +81,7 @@ namespace Voxul.Utilities
 			{
 				m_cancellationToken.Cancel();
 			}
+			m_lock = 0;
 		}
 
 		public void Release()

@@ -93,7 +93,7 @@ namespace Voxul.Edit
             // If the condition is met, simply draw the field. Else...
             if (conditionMet)
             {
-                EditorGUI.PropertyField(position, property, label);
+                EditorGUI.PropertyField(position, property, label, true);
             }
             else
             {
