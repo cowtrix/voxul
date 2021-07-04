@@ -14,12 +14,12 @@ namespace Voxul
 		/// layer 0 on the left, and a grid of voxels on layer 1 on the right:
 		///			Layer 0					Layer 1
 		///      ______________			 ____ ____ ____
-		///		|              |		|    |    |    |
-		///     |              |		|____|____|____|
-		///		|              |  --->	|    |    |    |	// 3x3 cells inside
-		///     |              |		|____|____|____|	// so LayerRatio = 3!
-		///		|              |		|    |    |    |
-		///     |______________|		|____|____|____|
+		///     |              |        |    |    |    |
+		///     |              |        |____|____|____|
+		///     |              |  --->  |    |    |    |    // 3x3 cells inside
+		///     |              |        |____|____|____|    // so LayerRatio = 3!
+		///     |              |        |    |    |    |
+		///     |______________|        |____|____|____|
 		/// 
 		/// </summary>
 		public static int LayerRatio => VoxelManager.Instance.LayerRatio;
