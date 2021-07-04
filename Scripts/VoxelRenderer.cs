@@ -71,6 +71,7 @@ namespace Voxul
 		private void Reset()
 		{
 			ThreadingMode = VoxelManager.Instance.DefaultThreadingMode;
+			MaxCoroutineUpdateTime = VoxelManager.Instance.DefaultMaxCoroutineUpdateTime;
 		}
 
 		protected virtual void Awake()

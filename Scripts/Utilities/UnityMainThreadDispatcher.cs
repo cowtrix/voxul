@@ -44,6 +44,19 @@ namespace Voxul.Utilities
 			}
 		}
 
+		public static void Enqueue(IEnumerator a)
+		{
+			m_executionQueueLock.Wait();
+			try
+			{
+				m_actionQueue.Enqueue(() => m_runtimeExecutor.StartCoroutine(a));
+			}
+			finally
+			{
+				m_executionQueueLock.Release();
+			}
+		}
+
 		static IEnumerator CallbackExecute()
 		{
 			while (true)

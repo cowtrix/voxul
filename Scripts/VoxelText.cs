@@ -125,10 +125,6 @@ namespace Voxul
 				Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
 				Mesh.name = Guid.NewGuid().ToString();
 			}
-			if (Configuration.Font)
-			{
-				Configuration.Font = Font.CreateDynamicFontFromOSFont(Configuration.Font.name, Configuration.FontSize);
-			}
 		}
 
 		public override void Invalidate(bool force, bool forceCollider)
@@ -137,10 +133,6 @@ namespace Voxul
 			UnityMainThreadDispatcher.EnsureSubscribed();
 			if (Mesh && Configuration.Font)
 			{
-				if (!Configuration.Font.dynamic)
-				{
-					Configuration.Font = Font.CreateDynamicFontFromOSFont(Configuration.Font.name, Configuration.FontSize);
-				}
 				if (Configuration.Font)
 				{
 					Configuration.Font.RequestCharactersInTexture(Configuration.Text, Configuration.FontSize, Configuration.FontStyle);

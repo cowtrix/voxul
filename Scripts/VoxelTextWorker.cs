@@ -136,7 +136,7 @@ namespace Voxul
 			return false;
 		}
 
-		protected override IEnumerator GenerateMesh(EThreadingMode mode, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
+		protected override IEnumerator GenerateMesh(EThreadingMode mode, CancellationToken token, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
 			voxulLogger.Debug("Started VoxelText.GenerateMesh step");
 			var timeLim = m_maxCoroutineUpdateTime;
@@ -203,6 +203,10 @@ namespace Voxul
 							sw.Restart();
 							yield return null;
 						}
+						if (token.IsCancellationRequested)
+						{
+							yield break;
+						}
 					}
 				}
 				newCache.Add(spatialBound, new CharVoxelData { Character = character, Coordinates = characterCoordList.ToList() });
@@ -225,7 +229,7 @@ namespace Voxul
 			}
 			voxulLogger.Debug("Finished VoxelText.GenerateMesh step");
 
-			var baseCoroutine = base.GenerateMesh(mode, minLayer, maxLayer);
+			var baseCoroutine = base.GenerateMesh(mode, token, minLayer, maxLayer);
 			while (baseCoroutine.MoveNext())
 			{
 				yield return baseCoroutine.Current;
