@@ -16,19 +16,32 @@ namespace Voxul.Meshing
 		public TriangleVoxelMapping VoxelMapping = new TriangleVoxelMapping();
 	}
 
+	/// <summary>
+	/// This is the asset object representing a voxel mesh. It contains the voxel information itself,
+	/// as well as the bake data if the Voxel Mesh has been invalidated yet.
+	/// </summary>
 	[CreateAssetMenu]
 	public class VoxelMesh : ScriptableObject
 	{
+		/// <summary>
+		/// The voxel worker transforms the VoxelMapping data into the UnityMeshInstances data.
+		/// </summary>
 		public VoxelMeshWorker CurrentWorker;
 
 		public List<MeshVoxelData> UnityMeshInstances = new List<MeshVoxelData>();
 
+		/// <summary>
+		/// The hash is a random string used to detect asset version changes. It is set below in `Invalidate()`
+		/// </summary>
 		[HideInInspector]
 		public string Hash;
+
+		/// <summary>
+		/// This is the voxel data of the object.
+		/// </summary>
 		[HideInInspector]
 		public VoxelMapping Voxels = new VoxelMapping();
 
 		public void Invalidate() => Hash = Guid.NewGuid().ToString();
-
 	}
 }

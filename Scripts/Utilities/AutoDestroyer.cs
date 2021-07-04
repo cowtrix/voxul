@@ -2,6 +2,9 @@
 
 namespace Voxul.Utilities
 {
+	/// <summary>
+	/// This class will automatically destroy itself unless something calls "Alive" that frame.
+	/// </summary>
 	[ExecuteAlways]
 	public class AutoDestroyer : MonoBehaviour
 	{

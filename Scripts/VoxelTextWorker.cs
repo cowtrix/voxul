@@ -11,6 +11,11 @@ using Voxul.Utilities;
 
 namespace Voxul
 {
+	/// <summary>
+	/// The VoxelTextWorker is responsible for taking the VoxelText.Configuration data
+	/// and transforming it into the necessary voxel data, before calling the base class
+	/// to generate the unity mesh.
+	/// </summary>
 	[Serializable]
 	public class VoxelTextWorker : VoxelMeshWorker
 	{
@@ -20,9 +25,13 @@ namespace Voxul
 			public char Character;
 			public List<VoxelCoordinate> Coordinates = new List<VoxelCoordinate>();
 		}
+
 		[Serializable]
 		public class CharacterBoundsMapping : SerializableDictionary<Bounds, CharVoxelData> { }
 
+		/// <summary>
+		/// In order to sample the texture off-thread, we copy the alpha to a float array.
+		/// </summary>
 		[SerializeField]
 		[HideInInspector]
 		private Texture2D m_workingTexture;
@@ -32,32 +41,52 @@ namespace Voxul
 		[HideInInspector]
 		private CharacterBoundsMapping m_cache = new CharacterBoundsMapping();
 
+		/// <summary>
+		/// We cache the character -> voxel list so we don't have to update
+		/// text that hasn't moved. Makes redrawing large paragraphs lots
+		/// faster.
+		/// </summary>
 		[SerializeField]
 		[HideInInspector]
 		private List<CharacterInfo> m_charInfo = new List<CharacterInfo>();
 
+		public VoxelText.TextConfiguration Configuration { get; set; }
+
+		/// <summary>
+		/// This is a semaphore indicating the progress of UpdateFontWorkingTexture()
+		/// 0	- clear
+		/// > 0 - not clear
+		/// TODO: replace with semaphoreslim
+		/// </summary>
 		private int m_fontUpdate;
 
+		/// <summary>
+		/// There are two reasons we need to do this bit of work before we can access the font texture data:
+		///		1 - The font texture isn't readable so we can't sample it
+		///		2 - You can't sample Texture objects from another thread anyway so we need to copy it
+		/// </summary>
 		public void UpdateFontWorkingTexture()
 		{
 			Interlocked.Increment(ref m_fontUpdate);
-			var text = Dispatcher as VoxelText;
-			if (!text.Configuration.Font)
+
+			if (!Configuration.Font)
 			{
+				// Nothing to do
 				m_fontUpdate = 0;
 				return;
 			}
 
-			voxulLogger.Debug("Began UpdateFontWorkingTexture for font " + text.Configuration.Font);
+			voxulLogger.Debug("Began UpdateFontWorkingTexture for font " + Configuration.Font);
 			// Generate a mesh for the characters we want to print.
-			var fontTexture = (Texture2D)text.Configuration.Font.material.GetTexture(text.Configuration.Font.material.GetTexturePropertyNameIDs().First());
+			var fontTexture = (Texture2D)Configuration.Font.material.GetTexture(Configuration.Font.material.GetTexturePropertyNameIDs().First());
 			if (!fontTexture)
 			{
 				m_fontUpdate = 0;
-				voxulLogger.Error($"Texture was null for font {text.Configuration.Font}", text.Configuration.Font);
+				voxulLogger.Error($"Texture was null for font {Configuration.Font}, this shouldn't really happen.", Configuration.Font);
 				return;
 			}
 
+			// Blit the font texture to a temporary working texture so we can use things like GetPixels
 			var rt = RenderTexture.GetTemporary(fontTexture.width, fontTexture.height);
 			if (m_workingTexture == null)
 			{
@@ -78,6 +107,7 @@ namespace Voxul
 			RenderTexture.ReleaseTemporary(rt);
 			m_workingTexture.Apply();
 
+			// Copy texture alpha channel to float array for off-thread access
 			for(var x = 0; x < m_workingTexture.width; ++x)
 			{
 				for (var y = 0; y < m_workingTexture.height; ++y)
@@ -86,9 +116,10 @@ namespace Voxul
 				}
 			}
 
+			// Add the character infos for off-thread access
 			m_charInfo.Clear();
-			m_charInfo.AddRange(text.Configuration.Font.characterInfo);
-			m_fontUpdate = 0;
+			m_charInfo.AddRange(Configuration.Font.characterInfo);
+			m_fontUpdate = 0;	// Release int-semaphore
 			voxulLogger.Debug("Finished UpdateFontWorkingTexture");
 		}
 
@@ -138,7 +169,7 @@ namespace Voxul
 
 		protected override IEnumerator GenerateMesh(EThreadingMode mode, CancellationToken token, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
-			voxulLogger.Debug("Started VoxelText.GenerateMesh step");
+			voxulLogger.Debug("Started VoxelGenerateMesh step");
 			var timeLim = m_maxCoroutineUpdateTime;
 			var sw = Stopwatch.StartNew();
 			if (mode == EThreadingMode.Task)
@@ -154,11 +185,10 @@ namespace Voxul
 			{
 				UpdateFontWorkingTexture();
 			}
-			var text = Dispatcher as VoxelText;
 			var newCache = new Dictionary<Bounds, CharVoxelData>();
 			var characterCoordList = new List<VoxelCoordinate>();
-			var layerStep = VoxelCoordinate.LayerToScale(text.Configuration.Resolution);
-			foreach (var info in GetCharacters(text.Configuration.Text, text.Configuration.LineSize))
+			var layerStep = VoxelCoordinate.LayerToScale(Configuration.Resolution);
+			foreach (var info in GetCharacters(Configuration.Text, Configuration.LineSize))
 			{
 				var spatialBound = info.Item1;
 				var ch = info.Item2;
@@ -166,7 +196,7 @@ namespace Voxul
 
 				if (m_cache.TryGetValue(spatialBound, out var cacheData)
 					&& cacheData.Character == character
-					&& cacheData.Coordinates.Any(v => text.Mesh.Voxels.ContainsKey(v)))
+					&& cacheData.Coordinates.Any(v => VoxelMesh.Voxels.ContainsKey(v)))
 				{
 					newCache.Add(spatialBound, cacheData);
 					continue;
@@ -187,14 +217,14 @@ namespace Voxul
 
 						var c = m_workingTextureAlpha.GetBilinear(uv.x, uv.y);
 
-						if (c < text.Configuration.AlphaThreshold)
+						if (c < Configuration.AlphaThreshold)
 						{
 							continue;
 						}
 						else
 						{
 							var voxPos = new Vector3(x + spatialBound.min.x, y + spatialBound.min.y);
-							var voxCoord = VoxelCoordinate.FromVector3(voxPos, text.Configuration.Resolution);
+							var voxCoord = VoxelCoordinate.FromVector3(voxPos, Configuration.Resolution);
 							characterCoordList.Add(voxCoord);
 						}
 
@@ -213,7 +243,7 @@ namespace Voxul
 			}
 			foreach (var c in m_cache.Where(m => !newCache.ContainsKey(m.Key)))
 			{
-				Dispatcher.Mesh.Voxels.Remove(c.Key);
+				VoxelMesh.Voxels.Remove(c.Key);
 			}
 			lock (m_cache)
 			{
@@ -223,11 +253,11 @@ namespace Voxul
 					m_cache.Add(c.Key, c.Value);
 					foreach (var coord in c.Value.Coordinates)
 					{
-						Dispatcher.Mesh.Voxels[coord] = new Voxel(coord, text.Configuration.Material.Copy());
+						VoxelMesh.Voxels[coord] = new Voxel(coord, Configuration.Material.Copy());
 					}
 				}
 			}
-			voxulLogger.Debug("Finished VoxelText.GenerateMesh step");
+			voxulLogger.Debug("Finished VoxelGenerateMesh step");
 
 			var baseCoroutine = base.GenerateMesh(mode, token, minLayer, maxLayer);
 			while (baseCoroutine.MoveNext())

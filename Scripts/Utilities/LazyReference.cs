@@ -2,6 +2,10 @@
 
 namespace Voxul.Utilities
 {
+	/// <summary>
+	/// This is a value that is lazy-intialized the first time the value is accessed.
+	/// </summary>
+	/// <typeparam name="T">The type of the object.</typeparam>
 	public class LazyReference<T> where T : UnityEngine.Object
 	{
 		public T Value

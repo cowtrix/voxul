@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace Voxul.Meshing
 {
+	/// <summary>
+	/// This is the data container for a rebake job, where we store data
+	/// for use within a VoxelMeshWorker.
+	/// </summary>
 	public class IntermediateVoxelMeshData
 	{
 		public TriangleVoxelMapping TriangleVoxelMapping;
@@ -15,6 +19,10 @@ namespace Voxul.Meshing
 		public List<Vector2> UV1;
 		public List<Vector4> UV2;
 
+		/// <summary>
+		/// Copy data from voxels and initialize data structures if null.
+		/// </summary>
+		/// <param name="voxels"></param>
 		public void Initialise(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels)
 		{
 			Voxels = new VoxelMapping(voxels);
@@ -26,6 +34,11 @@ namespace Voxul.Meshing
 			UV2 = UV2 ?? new List<Vector4>(Vertices.Count);
 		}
 
+		/// <summary>
+		/// Set the data of the mesh to the values in this data object.
+		/// </summary>
+		/// <param name="mesh">The mesh to modify. If null, a new mesh will be initialised.</param>
+		/// <returns>The mesh that has been modified.</returns>
 		public Mesh SetMesh(Mesh mesh)
 		{
 			if (!mesh)
@@ -53,6 +66,9 @@ namespace Voxul.Meshing
 			return mesh;
 		}
 
+		/// <summary>
+		/// Clear the data.
+		/// </summary>
 		public void Clear()
 		{
 			TriangleVoxelMapping = null;

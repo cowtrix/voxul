@@ -10,13 +10,25 @@ using Voxul.Utilities;
 
 namespace Voxul.Meshing
 {
+	/// <summary>
+	/// The VoxelMeshWorker is responsible for taking a VoxelMesh object
+	/// and transforming it into one or more Unity Meshes.
+	/// </summary>
 	[Serializable]
 	public class VoxelMeshWorker
 	{
+		/// <summary>
+		/// Stored for quick lookup.
+		/// </summary>
 		public static readonly EVoxelDirection[] Directions = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>().ToArray();
 
+		/// <summary>
+		/// A list of the intermediate data objects which are used while the job is running.
+		/// </summary>
 		public List<IntermediateVoxelMeshData> IntermediateData = new List<IntermediateVoxelMeshData>();
-		public VoxelRenderer Dispatcher { get; private set; }
+		/// <summary>
+		/// The voxel mesh which contains this worker.
+		/// </summary>
 		public VoxelMesh VoxelMesh { get; private set; }
 		public event VoxelRebuildMeshEvent OnCompleted;
 
@@ -43,7 +55,6 @@ namespace Voxul.Meshing
 				voxulLogger.Warning($"Forcing restart of recalculation job for {VoxelMesh}", VoxelMesh);
 				CancelCurrentJob();
 			}
-			Dispatcher = dispatcher;
 			VoxelMesh = dispatcher.Mesh;
 			IntermediateData.Clear();
 			if (m_handler == null)

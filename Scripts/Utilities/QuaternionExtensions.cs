@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 namespace Voxul.Utilities
 {
+
 	public static class QuaternionExtensions
 	{
 		public static Quaternion SnapToNearest90Degrees(this Quaternion quat)

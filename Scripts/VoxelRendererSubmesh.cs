@@ -3,9 +3,14 @@ using Voxul.Utilities;
 
 namespace Voxul
 {
+	/// <summary>
+	/// This is the handler for managing a MeshFilter, MeshRenderer and MeshCollider
+	/// with voxel data.
+	/// TODO: in order to better support in-scene selection, the first renderer submesh
+	/// should be itself.
+	/// </summary>
 	public class VoxelRendererSubmesh : MonoBehaviour
 	{
-
 		public MeshFilter MeshFilter;
 		public MeshRenderer MeshRenderer;
 		public MeshCollider MeshCollider;
