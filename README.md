@@ -29,9 +29,8 @@ voxul is a voxel system and editor tool for [Unity 3D.](https://unity.com/) Use 
 - Lots of useful utilities for building your voxel systems, like destroyable objects.
 - Edit in-scene mesh objects, or save your meshes to their own `VoxelMesh` assets.
 - Works efficiently and shares meshes with prefabs and multi-instanced objects.
-
-### Experimental
+- Choose from single threading, coroutines or dedicated tasks for rebake jobs.
 
 ![VoxelText](https://user-images.githubusercontent.com/5094696/123529266-76ddc680-d6e6-11eb-8fde-90d6532e3a80.PNG)
 
-Voxel text from any font!
+- Voxel text from any font!
