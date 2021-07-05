@@ -8,6 +8,7 @@ using Voxul.Utilities;
 
 namespace Voxul
 {
+	
 
 	[SelectionBase]
 	[ExecuteAlways]
@@ -23,10 +24,7 @@ namespace Voxul
 		public sbyte SnapLayer = 0;
 
 		[Header("Rendering")]
-		[Range(sbyte.MinValue, sbyte.MaxValue)]
-		public sbyte MinLayer = sbyte.MinValue;
-		[Range(sbyte.MinValue, sbyte.MaxValue)]
-		public sbyte MaxLayer = sbyte.MaxValue;
+		public sbyte2 RenderLayers = new sbyte2 { x = sbyte.MinValue, y = sbyte.MaxValue };
 		public EThreadingMode ThreadingMode;
 
 		[DrawIf(nameof(ThreadingMode), EThreadingMode.Coroutine, ComparisonType.Equals)]
@@ -129,9 +127,9 @@ namespace Voxul
 			{
 				return;
 			}
-			if (MinLayer > MaxLayer)
+			if (RenderLayers.x > RenderLayers.y)
 			{
-				MinLayer = MaxLayer;
+				RenderLayers = new sbyte2 { x = RenderLayers.y, y = RenderLayers.y };
 			}
 			if (Mesh && (Mesh.Optimisers == null || !Mesh.Optimisers.Any()))
 			{
@@ -143,7 +141,7 @@ namespace Voxul
 			Mesh.CurrentWorker = GetVoxelMeshWorker();
 			Mesh.CurrentWorker.OnCompleted -= OnMeshRebuilt;
 			Mesh.CurrentWorker.OnCompleted += OnMeshRebuilt;
-			Mesh.CurrentWorker.GenerateMesh(this, ThreadingMode, force, MinLayer, MaxLayer);
+			Mesh.CurrentWorker.GenerateMesh(this, ThreadingMode, force, RenderLayers.x, RenderLayers.y);
 			m_lastMeshHash = Mesh.Hash;
 		}
 

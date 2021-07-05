@@ -6,32 +6,6 @@ using Voxul.Meshing;
 
 namespace Voxul.Edit
 {
-	public class VoxelMeshInfoWindow : EditorWindow
-	{
-		public VoxelMesh Mesh;
-		public void SetData(VoxelMesh mesh)
-		{
-			Mesh = mesh;
-		}
-
-		private void OnGUI()
-		{
-			var helpContent = EditorGUIUtility.IconContent("_Help");
-			helpContent.text = Mesh?.name;
-			titleContent = helpContent;
-
-			Mesh = (VoxelMesh)EditorGUILayout.ObjectField("Target", Mesh, typeof(VoxelMesh), true);
-
-			EditorGUILayout.LabelField("Voxels", Mesh.Voxels.Count.ToString());
-			foreach(var submesh in Mesh.UnityMeshInstances)
-			{
-				EditorGUILayout.BeginVertical("Box");
-				EditorGUILayout.ObjectField("Mesh", submesh.UnityMesh, typeof(Mesh), true);
-				EditorGUILayout.LabelField("Vertices", submesh.UnityMesh.vertexCount.ToString());
-				EditorGUILayout.EndVertical();
-			}
-		}
-	}
 
 	[CustomPropertyDrawer(typeof(VoxelMesh))]
 	public class VoxelMeshFieldEditor : PropertyDrawer

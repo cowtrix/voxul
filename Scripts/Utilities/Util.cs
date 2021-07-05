@@ -2,7 +2,6 @@
 
 namespace Voxul.Utilities
 {
-
 	public static class Util
 	{
 		public static void SafeDestroy(this UnityEngine.Object obj)
