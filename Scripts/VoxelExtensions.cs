@@ -9,6 +9,25 @@ namespace Voxul
 {
 	public static class VoxelExtensions
 	{
+		public static int EstimateVertexCount(this ERenderMode mode)
+		{
+			switch (mode)
+			{
+				case ERenderMode.Block:
+				case ERenderMode.FullCross:
+					return 8;
+				case ERenderMode.XYCross:
+				case ERenderMode.XZCross:
+				case ERenderMode.ZYCross:
+					return 6;
+				case ERenderMode.XPlane:
+				case ERenderMode.YPlane:
+				case ERenderMode.ZPlane:
+					return 4;
+			}
+			return 0;
+		}
+
 		public static IEnumerable<Voxel> GetVoxels(this VoxelMesh mesh, Bounds bounds)
 		{
 			return mesh?.Voxels
@@ -75,10 +94,30 @@ namespace Voxul
 			});
 		}
 
+		public static EVoxelDirection FlipDirection(this EVoxelDirection dir)
+		{
+			switch (dir)
+			{
+				case EVoxelDirection.XNeg:
+					return EVoxelDirection.XPos;
+				case EVoxelDirection.XPos:
+					return EVoxelDirection.XNeg;
+				case EVoxelDirection.YNeg:
+					return EVoxelDirection.YPos;
+				case EVoxelDirection.YPos:
+					return EVoxelDirection.YNeg;
+				case EVoxelDirection.ZNeg:
+					return EVoxelDirection.ZPos;
+				case EVoxelDirection.ZPos:
+					return EVoxelDirection.ZNeg;
+				default:
+					throw new ArgumentException($"Invalid voxel direction {dir}");
+			}
+		}
+
 		public static IEnumerable<Voxel> FlipSurface(this IEnumerable<Voxel> voxels, EVoxelDirection dir)
 		{
 			var dAxis = dir.ToString()[0];
-			var dirVals = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>();
 			return voxels.Select(v =>
 			{
 				v.Material = v.Material.Copy();
@@ -90,7 +129,7 @@ namespace Voxul
 					{
 						continue;
 					}
-					o.Direction = dirVals.First(d => d != o.Direction && d.ToString()[0] == oAxis);
+					o.Direction = o.Direction.FlipDirection();
 					v.Material.Overrides[i] = o;
 				}
 				return v;

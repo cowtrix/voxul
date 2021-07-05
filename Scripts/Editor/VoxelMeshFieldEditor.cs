@@ -6,6 +6,33 @@ using Voxul.Meshing;
 
 namespace Voxul.Edit
 {
+	public class VoxelMeshInfoWindow : EditorWindow
+	{
+		public VoxelMesh Mesh;
+		public void SetData(VoxelMesh mesh)
+		{
+			Mesh = mesh;
+		}
+
+		private void OnGUI()
+		{
+			var helpContent = EditorGUIUtility.IconContent("_Help");
+			helpContent.text = Mesh?.name;
+			titleContent = helpContent;
+
+			Mesh = (VoxelMesh)EditorGUILayout.ObjectField("Target", Mesh, typeof(VoxelMesh), true);
+
+			EditorGUILayout.LabelField("Voxels", Mesh.Voxels.Count.ToString());
+			foreach(var submesh in Mesh.UnityMeshInstances)
+			{
+				EditorGUILayout.BeginVertical("Box");
+				EditorGUILayout.ObjectField("Mesh", submesh.UnityMesh, typeof(Mesh), true);
+				EditorGUILayout.LabelField("Vertices", submesh.UnityMesh.vertexCount.ToString());
+				EditorGUILayout.EndVertical();
+			}
+		}
+	}
+
 	[CustomPropertyDrawer(typeof(VoxelMesh))]
 	public class VoxelMeshFieldEditor : PropertyDrawer
 	{
@@ -30,11 +57,11 @@ namespace Voxul.Edit
 			return RowHeight * GetRowCount(property);
 		}
 
-		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+		public override void OnGUI(Rect rootPos, SerializedProperty property, GUIContent label)
 		{
-			EditorGUI.BeginProperty(position, label, property);
+			EditorGUI.BeginProperty(rootPos, label, property);
 			// Draw label
-			position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+			var position = EditorGUI.PrefixLabel(rootPos, GUIUtility.GetControlID(FocusType.Passive), label);
 
 			Rect GetRow(ref int row)
 			{
@@ -46,6 +73,16 @@ namespace Voxul.Edit
 			int row = 0;
 			var newMesh = EditorGUI.ObjectField(GetRow(ref row), property.objectReferenceValue, typeof(VoxelMesh), false) as VoxelMesh;
 
+			var helpContent = EditorGUIUtility.IconContent("_Help");
+			helpContent.text = "Mesh Info";
+			GUI.enabled = property.objectReferenceValue != null;
+			if (GUI.Button(new Rect(new Vector2(rootPos.xMin, rootPos.yMin + RowHeight), new Vector2(100, RowHeight)), helpContent))
+			{
+				EditorWindow.GetWindow<VoxelMeshInfoWindow>()
+					.SetData(property.objectReferenceValue as VoxelMesh);
+			}
+			GUI.enabled = true;
+
 			if (newMesh == null)
 			{
 				if (GUI.Button(GetRow(ref row), "Create In-Scene Mesh"))
@@ -55,7 +92,7 @@ namespace Voxul.Edit
 					property.objectReferenceValue = newMesh;
 				}
 			}
-			else if (!AssetDatabase.Contains(newMesh) && 
+			else if (!AssetDatabase.Contains(newMesh) &&
 				GUI.Button(GetRow(ref row), "Save In-Scene Mesh"))
 			{
 				var path = EditorUtility.SaveFilePanelInProject("Save Voxel Mesh",

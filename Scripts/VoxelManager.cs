@@ -69,6 +69,7 @@ namespace Voxul
 		public int SpriteResolution = 32;
 
 		public List<Texture2D> Sprites = new List<Texture2D>();
+		public List<VoxelOptimiserBase> DefaultOptimisers = new List<VoxelOptimiserBase>();
 
 		public void OnValidate()
 		{

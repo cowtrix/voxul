@@ -7,6 +7,7 @@ using Voxul.Edit;
 
 namespace Voxul.Edit
 {
+
 	internal enum EPaintingTool
 	{
 		Select,
@@ -22,33 +23,9 @@ namespace Voxul.Edit
 		None, X, Y, Z
 	}
 
-	[CustomEditor(typeof(VoxelRenderer), editorForChildClasses: false)]
-	internal class VoxelPainter : Editor
+	[CustomEditor(typeof(VoxelRenderer))]
+	internal class VoxelPainter : VoxelObjectEditorBase
 	{
-		[MenuItem("GameObject/3D Object/Voxul Object")]
-		public static void CreateNew()
-		{
-			var go = new GameObject("New Voxel Object");
-			var r = go.AddComponent<VoxelRenderer>();
-			EditorGUIUtility.PingObject(go);
-		}
-
-		[MenuItem("GameObject/3D Object/Voxul Text")]
-		public static void CreateNewText()
-		{
-			var go = new GameObject("New Voxel Text");
-			var r = go.AddComponent<VoxelText>();
-			EditorGUIUtility.PingObject(go);
-		}
-
-		[MenuItem("GameObject/3D Object/Voxul Sprite")]
-		public static void CreateNewSprite()
-		{
-			var go = new GameObject("New Voxel Sprite");
-			var r = go.AddComponent<VoxelSprite>();
-			EditorGUIUtility.PingObject(go);
-		}
-
 		Dictionary<EPaintingTool, VoxelPainterTool> m_tools = new Dictionary<EPaintingTool, VoxelPainterTool>
 	{
 		{ EPaintingTool.Select, new SelectTool() },
@@ -103,7 +80,6 @@ namespace Voxul.Edit
 				EditorPrefUtility.SetPref("VoxelPainter_CurrentTool", value);
 			}
 		}
-		public VoxelRenderer Renderer => target as VoxelRenderer;
 
 		public IEnumerable<VoxelCoordinate> CurrentSelection => m_selection;
 		private HashSet<VoxelCoordinate> m_selection = new HashSet<VoxelCoordinate>();
@@ -160,6 +136,12 @@ namespace Voxul.Edit
 
 		public override void OnInspectorGUI()
 		{
+			if(target.GetType() != typeof(VoxelRenderer))
+			{
+				base.OnInspectorGUI();
+				return;
+			}
+
 			Tab = GUILayout.Toolbar(Tab, Tabs);
 
 			if (Tab == 1)

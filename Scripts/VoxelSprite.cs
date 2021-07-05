@@ -13,17 +13,13 @@ namespace Voxul
 		public float AlphaCuttoff = .5f;
         public Sprite Sprite;
         public sbyte Layer;
-
-		private void OnValidate()
-		{
-			if (!m_voxWorker.IsRecalculating)
-			{
-				SetDirty();
-			}
-		}
-
+		
 		public override void Invalidate(bool force, bool forceCollider)
 		{
+			if (!Sprite || !Mesh)
+			{
+				return;
+			}
 			if (!Sprite.texture.isReadable)
 			{
 				throw new System.Exception("Sprite must be readable.");

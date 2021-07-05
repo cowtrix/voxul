@@ -8,6 +8,7 @@ using Voxul.Utilities;
 
 namespace Voxul
 {
+
 	[SelectionBase]
 	[ExecuteAlways]
 	public class VoxelRenderer : MonoBehaviour
@@ -71,7 +72,7 @@ namespace Voxul
 		private void Reset()
 		{
 			ThreadingMode = VoxelManager.Instance.DefaultThreadingMode;
-			MaxCoroutineUpdateTime = VoxelManager.Instance.DefaultMaxCoroutineUpdateTime;
+			MaxCoroutineUpdateTime = VoxelManager.Instance.DefaultMaxCoroutineUpdateTime;			
 		}
 
 		protected virtual void Awake()
@@ -132,6 +133,10 @@ namespace Voxul
 			{
 				MinLayer = MaxLayer;
 			}
+			if (Mesh && (Mesh.Optimisers == null || !Mesh.Optimisers.Any()))
+			{
+				Mesh.Optimisers = VoxelManager.Instance.DefaultOptimisers.ToList();
+			}
 
 			SetupComponents(forceCollider || GenerateCollider);
 
@@ -144,6 +149,11 @@ namespace Voxul
 
 		protected virtual void OnMeshRebuilt(VoxelMeshWorker worker, VoxelMesh voxelMesh)
 		{
+			if (!this)
+			{
+				// Object has been destroyed
+				return;
+			}
 			voxulLogger.Debug($"VoxelRenderer.OnMeshRebuilt: {voxelMesh}, {this}", this);
 			if(Mesh.Hash != voxelMesh.Hash)
 			{

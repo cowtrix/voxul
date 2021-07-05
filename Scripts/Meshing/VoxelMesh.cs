@@ -42,6 +42,8 @@ namespace Voxul.Meshing
 		[HideInInspector]
 		public VoxelMapping Voxels = new VoxelMapping();
 
+		public List<VoxelOptimiserBase> Optimisers = new List<VoxelOptimiserBase>();
+
 		public void Invalidate() => Hash = Guid.NewGuid().ToString();
 	}
 }
