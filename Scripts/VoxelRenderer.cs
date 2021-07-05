@@ -18,6 +18,11 @@ namespace Voxul
 
 		[Header("Settings")]
 		public bool CustomMaterials;
+		[DrawIf(nameof(CustomMaterials), true, ComparisonType.Equals)]
+		public Material OpaqueMaterial;
+		[DrawIf(nameof(CustomMaterials), true, ComparisonType.Equals)]
+		public Material TransparentMaterial;
+
 		public bool GenerateCollider = true;
 		public bool SnapToGrid;
 		[Range(sbyte.MinValue, sbyte.MaxValue)]
@@ -182,17 +187,16 @@ namespace Voxul
 				}
 				if (!CustomMaterials)
 				{
-					lock (Mesh)
+					var vm = VoxelManager.Instance;
+					if(!vm.DefaultMaterial || !vm.DefaultMaterialTransparent)
 					{
-						if (Mesh.Voxels.Any(v => v.Value.Material.MaterialMode == EMaterialMode.Transparent))
-						{
-							submesh.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, VoxelManager.Instance.DefaultMaterialTransparent, };
-						}
-						else if (submesh.MeshRenderer)
-						{
-							submesh.MeshRenderer.sharedMaterials = new[] { VoxelManager.Instance.DefaultMaterial, };
-						}
+						vm.OnValidate();
 					}
+					SetMaterials(submesh, VoxelManager.Instance.DefaultMaterial, VoxelManager.Instance.DefaultMaterialTransparent);
+				}
+				else
+				{
+					SetMaterials(submesh, OpaqueMaterial, TransparentMaterial);
 				}
 			}
 			for (int i = 0; i < Mesh.UnityMeshInstances.Count; i++)
@@ -212,6 +216,21 @@ namespace Voxul
 				Renderers.RemoveAt(i);
 			}
 			m_lastMeshHash = Mesh.Hash;
+		}
+
+		private void SetMaterials(VoxelRendererSubmesh submesh, Material opaque, Material transparent)
+		{
+			lock (Mesh)
+			{
+				if (Mesh.Voxels.Any(v => v.Value.Material.MaterialMode == EMaterialMode.Transparent))
+				{
+					submesh.MeshRenderer.sharedMaterials = new[] { opaque, transparent, };
+				}
+				else if (submesh.MeshRenderer)
+				{
+					submesh.MeshRenderer.sharedMaterials = new[] { opaque, };
+				}
+			}
 		}
 
 		public Voxel? GetVoxel(Collider collider, int triangleIndex)

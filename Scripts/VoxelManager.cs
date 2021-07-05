@@ -74,6 +74,13 @@ namespace Voxul
 		public void OnValidate()
 		{
 			voxulLogger.InvalidateLogLevel();
+			if (DefaultOptimisers == null || DefaultOptimisers.Count == 0)
+			{
+				DefaultOptimisers = new List<VoxelOptimiserBase>()
+				{
+					Resources.Load<VoxelOptimiserBase>($"{RESOURCES_FOLDER}/{nameof(DefaultFaceOptimiser)}"),
+				};
+			}
 			if (!DefaultMaterial || DefaultMaterial == null)
 			{
 				DefaultMaterial = new Material(Shader.Find("voxul/DefaultVoxel"));
