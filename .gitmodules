@@ -1,0 +1,3 @@
+[submodule "Lib/CsharpVoxReader"]
+	path = Lib/CsharpVoxReader
+	url = https://github.com/LoicBaumann/CsharpVoxReader.git
