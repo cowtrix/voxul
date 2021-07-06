@@ -143,6 +143,7 @@ namespace Voxul.Meshing
 					if (vertexCounter >= 65535)
 					{
 						// We've reached the max vertex count more or less, so make a new renderer
+						vertexCounter = 0;
 						break;
 					}
 				}
