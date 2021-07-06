@@ -3,6 +3,8 @@
 - Altered VoxelRenderer.MinLayer & VoxelRenderer.MaxLayer to be a single "min-max" struct `CullLayers`.
 - Created "optimiser" workflow which should hopefully serve as a flexible framework for injecting arbitrary little bits of computation into the off-thread baking process.
 - Moved internal face optimisation to new "optimiser" workflow.
+- New voxel type: Voxel Sprites! Select any sprite texture and automatically generate a voxel object representation.
+- Restructured threading architecture into `ThreadHandler` abstraction.
 
 0.0.1
 
