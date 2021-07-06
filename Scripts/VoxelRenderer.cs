@@ -8,8 +8,6 @@ using Voxul.Utilities;
 
 namespace Voxul
 {
-	
-
 	[SelectionBase]
 	[ExecuteAlways]
 	public class VoxelRenderer : MonoBehaviour
@@ -29,7 +27,7 @@ namespace Voxul
 		public sbyte SnapLayer = 0;
 
 		[Header("Rendering")]
-		public sbyte2 RenderLayers = new sbyte2 { x = sbyte.MinValue, y = sbyte.MaxValue };
+		public sbyte2 CullLayers = new sbyte2 { x = sbyte.MinValue, y = sbyte.MaxValue };
 		public EThreadingMode ThreadingMode;
 
 		[DrawIf(nameof(ThreadingMode), EThreadingMode.Coroutine, ComparisonType.Equals)]
@@ -132,9 +130,9 @@ namespace Voxul
 			{
 				return;
 			}
-			if (RenderLayers.x > RenderLayers.y)
+			if (CullLayers.x > CullLayers.y)
 			{
-				RenderLayers = new sbyte2 { x = RenderLayers.y, y = RenderLayers.y };
+				CullLayers = new sbyte2 { x = CullLayers.y, y = CullLayers.y };
 			}
 			if (Mesh && (Mesh.Optimisers == null || !Mesh.Optimisers.Any()))
 			{
@@ -146,7 +144,7 @@ namespace Voxul
 			Mesh.CurrentWorker = GetVoxelMeshWorker();
 			Mesh.CurrentWorker.OnCompleted -= OnMeshRebuilt;
 			Mesh.CurrentWorker.OnCompleted += OnMeshRebuilt;
-			Mesh.CurrentWorker.GenerateMesh(this, ThreadingMode, force, RenderLayers.x, RenderLayers.y);
+			Mesh.CurrentWorker.GenerateMesh(this, ThreadingMode, force, CullLayers.x, CullLayers.y);
 			m_lastMeshHash = Mesh.Hash;
 		}
 

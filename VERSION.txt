@@ -1,1 +1,9 @@
+0.0.2
+
+- Altered VoxelRenderer.MinLayer & VoxelRenderer.MaxLayer to be a single "min-max" struct `CullLayers`.
+- Created "optimiser" workflow which should hopefully serve as a flexible framework for injecting arbitrary little bits of computation into the off-thread baking process.
+- Moved internal face optimisation to new "optimiser" workflow.
+
 0.0.1
+
+- Initial release.
