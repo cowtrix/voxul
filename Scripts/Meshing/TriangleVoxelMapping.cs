@@ -5,20 +5,52 @@ using Voxul.Utilities;
 
 namespace Voxul.Meshing
 {
-	public struct VoxelFace
+	public class VoxelFace
 	{
-		public VoxelFaceCoordinate Coordinate;
 		public SurfaceData Surface;
-		public Vector2 Size;
-		public float Offset;
 		public EMaterialMode MaterialMode;
 	}
 
 	[Serializable]
 	public struct VoxelFaceCoordinate
 	{
-		public VoxelCoordinate Coordinate;
+		public sbyte Layer;
+		public Vector2 Size;
+		public Vector3 Offset;
 		public EVoxelDirection Direction;
+
+		public override bool Equals(object obj)
+		{
+			return obj is VoxelFaceCoordinate coordinate &&
+				   Layer == coordinate.Layer &&
+				   Size.Equals(coordinate.Size) &&
+				   Offset.Equals(coordinate.Offset) &&
+				   Direction == coordinate.Direction;
+		}
+
+		public override int GetHashCode()
+		{
+			int hashCode = -19254490;
+			hashCode = hashCode * -1521134295 + Layer.GetHashCode();
+			hashCode = hashCode * -1521134295 + Size.GetHashCode();
+			hashCode = hashCode * -1521134295 + Offset.GetHashCode();
+			hashCode = hashCode * -1521134295 + Direction.GetHashCode();
+			return hashCode;
+		}
+
+		public override string ToString() => $"{Offset}::{Size}::{Direction}";
+
+		public static bool operator ==(VoxelFaceCoordinate left, VoxelFaceCoordinate right)
+		{
+			return left.Equals(right);
+		}
+
+		public static bool operator !=(VoxelFaceCoordinate left, VoxelFaceCoordinate right)
+		{
+			return !(left == right);
+		}
+
+		public Plane ToPlane() => new Plane(Offset, VoxelCoordinate.DirectionToCoordinate(Direction, Layer).ToVector3());
 	}
 
 	/// <summary>

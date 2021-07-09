@@ -11,7 +11,6 @@ namespace Voxul.Meshing
 	public class IntermediateVoxelMeshData
 	{
 		// Input
-		public TriangleVoxelMapping TriangleVoxelMapping;
 		public VoxelMapping Voxels;
 
 		// Intermediate face data
@@ -31,8 +30,6 @@ namespace Voxul.Meshing
 		public void Initialise(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels)
 		{
 			Voxels = new VoxelMapping(voxels);
-			TriangleVoxelMapping = TriangleVoxelMapping ?? new TriangleVoxelMapping();
-			TriangleVoxelMapping.Clear();
 			Faces = Faces ?? new Dictionary<VoxelFaceCoordinate, VoxelFace>();
 			Faces.Clear();
 			Vertices = Vertices ?? new List<Vector3>(Voxels.Count * 8);
@@ -84,7 +81,6 @@ namespace Voxul.Meshing
 		/// </summary>
 		public void Clear()
 		{
-			TriangleVoxelMapping = null;
 			Voxels = null;
 			Faces = null;
 			Vertices = null;

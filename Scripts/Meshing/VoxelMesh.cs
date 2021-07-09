@@ -13,7 +13,6 @@ namespace Voxul.Meshing
 	public class MeshVoxelData
 	{
 		public Mesh UnityMesh;
-		public TriangleVoxelMapping VoxelMapping = new TriangleVoxelMapping();
 	}
 
 	/// <summary>

@@ -6,7 +6,7 @@ using Voxul.Utilities;
 namespace Voxul.Meshing
 {
 	[CreateAssetMenu]
-	public class DefaultFaceOptimiser : VoxelOptimiserBase
+	public class InternalFaceOptimiser : VoxelOptimiserBase
 	{
 		public override void OnPreFaceStep(IntermediateVoxelMeshData data)
 		{
@@ -15,15 +15,17 @@ namespace Voxul.Meshing
 			{
 				var faceCoord = face.Key;
 				var faceSurf = face.Value;
-
-				var offset = VoxelCoordinate.DirectionToCoordinate(faceCoord.Direction, faceCoord.Coordinate.Layer);
+				
+				var offset = VoxelCoordinate.DirectionToCoordinate(faceCoord.Direction, faceCoord.Layer)
+					.ToVector3();
 				var inverse = new VoxelFaceCoordinate
 				{
-					Coordinate = face.Key.Coordinate + offset,
+					Offset = face.Key.Offset,
 					Direction = face.Key.Direction.FlipDirection(),
+					Size = face.Key.Size,
+					Layer = face.Key.Layer,
 				};
-				if (data.Faces.TryGetValue(inverse, out var neighbour)
-					&& neighbour.Offset == face.Value.Offset)
+				if (data.Faces.TryGetValue(inverse, out var neighbour))
 				{
 					toRemove.Add(faceCoord);
 					toRemove.Add(inverse);

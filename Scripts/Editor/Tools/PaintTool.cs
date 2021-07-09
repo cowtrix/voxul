@@ -48,7 +48,7 @@ namespace Voxul.Edit
 					var dirs = new HashSet<EVoxelDirection>() { hitDir };
 					if (Event.current.shift)
 					{
-						foreach (var d in VoxelMeshWorker.Directions)
+						foreach (var d in VoxelExtensions.Directions)
 						{
 							dirs.Add(d);
 						}

@@ -47,12 +47,11 @@ namespace Voxul.Edit
 				{
 					voxulLogger.Error($"Failed to load debug selection material at {VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
 				}
-				if(m_cursorRenderer?.Renderers != null && m_cursorRenderer.Renderers.Any())
+				if (m_cursorRenderer?.Renderers != null && m_cursorRenderer.Renderers.Any())
 				{
 					foreach (var r in m_cursorRenderer.Renderers)
 					{
 						r.SetupComponents(false);
-						r.MeshRenderer.sharedMaterial = debugMat;
 					}
 				}
 				m_tempVoxelData.Invalidate();
@@ -79,6 +78,8 @@ namespace Voxul.Edit
 				m_cursorRenderer = go.AddComponent<VoxelRenderer>();
 				m_cursorRenderer.Mesh = m_tempVoxelData;
 				m_cursorRenderer.CustomMaterials = true;
+				m_cursorRenderer.OpaqueMaterial = DebugMaterial;
+				m_cursorRenderer.TransparentMaterial = DebugMaterial;
 				m_cursorRenderer.GenerateCollider = false;
 			}
 			m_keepAlive?.KeepAlive();

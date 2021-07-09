@@ -86,8 +86,8 @@ namespace Voxul
 		[ContextMenu("Clear")]
 		public void ClearMesh()
 		{
-			Mesh.Invalidate();
 			Mesh.Voxels.Clear();
+			Mesh.Invalidate();
 			OnClear();
 		}
 
@@ -105,10 +105,6 @@ namespace Voxul
 		[ContextMenu("Force Redraw")]
 		public void ForceRedraw()
 		{
-			foreach(Transform t in transform)
-			{
-				t.gameObject.SafeDestroy();
-			}
 			SetupComponents(false);
 			if (!Mesh)
 			{
@@ -231,47 +227,19 @@ namespace Voxul
 			}
 		}
 
-		public Voxel? GetVoxel(Collider collider, int triangleIndex)
+		public Voxel? GetVoxel(Vector3 worldPos, Vector3 worldNormal)
 		{
-			SetupComponents(false);
-			var renderer = Renderers.SingleOrDefault(s => s.MeshCollider == collider);
-			if (triangleIndex < 0 || !renderer?.MeshRenderer || !renderer.MeshFilter.sharedMesh)
+			var localCoord = transform.worldToLocalMatrix.MultiplyPoint3x4(worldPos);
+			var localNormal = transform.worldToLocalMatrix.MultiplyVector(worldNormal);
+			localCoord -= localNormal * .001f;
+			foreach(var v in Mesh.Voxels)
 			{
-				SetDirty();
-				return null;
+				if (v.Key.ToBounds().Contains(localCoord))
+				{
+					return v.Value;
+				}
 			}
-
-			var meshVoxelData = Mesh.UnityMeshInstances.SingleOrDefault(m => m.UnityMesh == renderer.MeshFilter.sharedMesh);
-			if (meshVoxelData == null)
-			{
-				return null;
-			}
-
-			int limit = triangleIndex * 3;
-			int submesh;
-			for (submesh = 0; submesh < renderer.MeshFilter.sharedMesh.subMeshCount; submesh++)
-			{
-				int numIndices = renderer.MeshFilter.sharedMesh.GetTriangles(submesh).Length;
-
-				if (numIndices > limit)
-					break;
-				triangleIndex -= numIndices / 3;
-				limit -= numIndices;
-			}
-
-			
-			if (!meshVoxelData.VoxelMapping.TryGetValue(submesh, out var innermap))
-			{
-				throw new Exception($"Couldn't find submesh mapping for {submesh}");
-			}
-
-			var triMapping = innermap[triangleIndex];
-			var vox = Mesh.Voxels.Where(v => v.Key == triMapping.Coordinate);
-			if (!vox.Any())
-			{
-				return null;
-			}
-			return vox.Single().Value;
+			return null;
 		}
 	}
 }

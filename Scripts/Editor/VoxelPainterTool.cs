@@ -55,7 +55,7 @@ namespace Voxul.Edit
 		{
 			hitNorm = renderer.transform.worldToLocalMatrix.MultiplyVector(hitNorm);
 			VoxelCoordinate.VectorToDirection(hitNorm, out hitDir);
-			var voxelN = renderer.GetVoxel(collider, triIndex);
+			var voxelN = renderer.GetVoxel(hitPoint, hitNorm);
 			if (voxelN.HasValue)
 			{
 				selection = new List<VoxelCoordinate> { voxelN.Value.Coordinate };

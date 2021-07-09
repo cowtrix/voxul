@@ -9,6 +9,11 @@ namespace Voxul
 {
 	public static class VoxelExtensions
 	{
+		/// <summary>
+		/// Stored for quick lookup.
+		/// </summary>
+		public static readonly EVoxelDirection[] Directions = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>().ToArray();
+
 		public static int EstimateVertexCount(this ERenderMode mode)
 		{
 			switch (mode)

@@ -140,7 +140,7 @@ namespace Voxul.Edit
 				voxelPainter.SetSelection(CreateVoxel(creationList, renderer).ToList());
 				if (m_cursor)
 				{
-					m_cursor.SafeDestroy();
+					m_cursor.gameObject.SafeDestroy();
 				}
 			}
 			return false;

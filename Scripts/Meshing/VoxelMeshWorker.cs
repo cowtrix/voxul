@@ -19,10 +19,6 @@ namespace Voxul.Meshing
 	public class VoxelMeshWorker
 	{
 		/// <summary>
-		/// Stored for quick lookup.
-		/// </summary>
-		public static readonly EVoxelDirection[] Directions = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>().ToArray();
-		/// <summary>
 		/// A list of the intermediate data objects which are used while the job is running.
 		/// </summary>
 		public List<IntermediateVoxelMeshData> IntermediateData = new List<IntermediateVoxelMeshData>();
@@ -147,13 +143,13 @@ namespace Voxul.Meshing
 						break;
 					}
 				}
-				foreach(var opt in VoxelMesh.Optimisers)
+				foreach (var opt in VoxelMesh.Optimisers)
 				{
 					opt.OnPreFaceStep(data);
 				}
 				ConvertPlanesToMesh(data);
 			}
-			foreach(var data in IntermediateData)
+			foreach (var data in IntermediateData)
 			{
 				foreach (var opt in VoxelMesh.Optimisers)
 				{
@@ -198,27 +194,24 @@ namespace Voxul.Meshing
 #endif
 			)
 					{
-
+						meshData.UnityMesh = new Mesh();
+						meshData.UnityMesh.MarkDynamic();
 #if UNITY_EDITOR
 						if (UnityEditor.AssetDatabase.Contains(VoxelMesh))
 						{
 							var assetPath = UnityEditor.AssetDatabase.GetAssetPath(VoxelMesh);
-							UnityEditor.AssetDatabase.AddObjectToAsset(meshData.UnityMesh, assetPath);
+							if (meshData.UnityMesh)
+								UnityEditor.AssetDatabase.AddObjectToAsset(meshData.UnityMesh, assetPath);
+							UnityEditor.EditorUtility.SetDirty(VoxelMesh);
 						}
-						else
 #endif
-						{
-							meshData.UnityMesh = new Mesh();
-							meshData.UnityMesh.MarkDynamic();
-						}
 					}
 					meshData.UnityMesh.name = $"{VoxelMesh.name}_mesh_{VoxelMesh.Hash}_0";
 					IntermediateVoxelMeshData result = IntermediateData[i];
 					meshData.UnityMesh = voxData.SetMesh(meshData.UnityMesh);
-					meshData.VoxelMapping = voxData.TriangleVoxelMapping;
 				}
 
-				for (var i = VoxelMesh.UnityMeshInstances.Count - 1; i > IntermediateData.Count; --i)
+				for (var i = VoxelMesh.UnityMeshInstances.Count - 1; i >= IntermediateData.Count; --i)
 				{
 					var m = VoxelMesh.UnityMeshInstances[i];
 					voxulLogger.Debug($"Destroying mesh {m}");
@@ -226,10 +219,7 @@ namespace Voxul.Meshing
 					VoxelMesh.UnityMeshInstances.RemoveAt(i);
 				}
 
-				foreach (var data in IntermediateData)
-				{
-					data.Clear();
-				}
+				IntermediateData.Clear();
 			}
 			OnCompleted.Invoke(this, VoxelMesh);
 			m_handler.Release();
@@ -246,18 +236,17 @@ namespace Voxul.Meshing
 			for (int i = 0; i < dirs.Length; i++)
 			{
 				EVoxelDirection dir = dirs[i];
+				var scale = vox.Coordinate.GetScale();
 				var faceCoord = new VoxelFaceCoordinate
 				{
-					Coordinate = vox.Coordinate,
-					Direction = dir
+					Offset = vox.Coordinate.ToVector3(),
+					Direction = dir,
+					Size = new Vector2(scale, scale),
+					Layer = vox.Coordinate.Layer,
 				};
-				var scale = vox.Coordinate.GetScale();
 				var face = new VoxelFace
 				{
-					Coordinate = faceCoord,
 					Surface = vox.Material.GetSurface(dir),
-					Offset = 0,
-					Size = new Vector2(scale, scale),
 					MaterialMode = vox.Material.MaterialMode,
 				};
 				data.Faces.Add(faceCoord, face);
@@ -266,21 +255,23 @@ namespace Voxul.Meshing
 
 		public static void GenerateFaces_Cube(Voxel vox, IntermediateVoxelMeshData data)
 		{
-			for (int i = 0; i < Directions.Length; i++)
+			for (int i = 0; i < VoxelExtensions.Directions.Length; i++)
 			{
-				EVoxelDirection dir = Directions[i];
+				EVoxelDirection dir = VoxelExtensions.Directions[i];
+				var offset = VoxelCoordinate.DirectionToCoordinate(dir, vox.Coordinate.Layer)
+					.ToVector3();
+				var scale = vox.Coordinate.GetScale();
 				var faceCoord = new VoxelFaceCoordinate
 				{
-					Coordinate = vox.Coordinate,
-					Direction = dir
+					Offset = vox.Coordinate.ToVector3() + offset  * .5f,
+					Size = new Vector2(scale, scale),
+					Direction = dir,
+					Layer = vox.Coordinate.Layer,
 				};
-				var scale = vox.Coordinate.GetScale();
 				var face = new VoxelFace
 				{
-					Coordinate = faceCoord,
 					Surface = vox.Material.GetSurface(dir),
-					Offset = scale * .5f,
-					Size = new Vector2(scale, scale),
+					MaterialMode = vox.Material.MaterialMode,
 				};
 				data.Faces.Add(faceCoord, face);
 			}
@@ -295,27 +286,21 @@ namespace Voxul.Meshing
 				{
 					tris = new List<int>(data.Voxels.Count * 16 * 3);
 					data.Triangles[submeshIndex] = tris;
-					if (data.TriangleVoxelMapping != null)
-					{
-						data.TriangleVoxelMapping[submeshIndex] = new TriangleVoxelMapping.InnerMapping();
-					}
 				}
-				var startTri = tris.Count / 3;
+
 				var surface = voxelFace.Value.Surface;
-				var size = voxelFace.Value.Size;
+				var size = voxelFace.Key.Size;
 				var cubeLength = size.x;
 				var cubeHeight = size.y;
-
-				var offset = voxelFace.Value.Offset;
-				var origin = voxelFace.Key.Coordinate.ToVector3();
+				var origin = voxelFace.Key.Offset; ;
 
 				var rot = VoxelCoordinate.DirectionToQuaternion(voxelFace.Key.Direction);
 
 				// Vertices
-				Vector3 v1 = origin + rot * new Vector3(-cubeLength * .5f, offset, -cubeHeight * .5f);
-				Vector3 v2 = origin + rot * new Vector3(cubeLength * .5f, offset, -cubeHeight * .5f);
-				Vector3 v3 = origin + rot * new Vector3(cubeLength * .5f, offset, cubeHeight * .5f);
-				Vector3 v4 = origin + rot * new Vector3(-cubeLength * .5f, offset, cubeHeight * .5f);
+				Vector3 v1 = origin + rot * new Vector3(-cubeLength * .5f, 0, -cubeHeight * .5f);
+				Vector3 v2 = origin + rot * new Vector3(cubeLength * .5f, 0, -cubeHeight * .5f);
+				Vector3 v3 = origin + rot * new Vector3(cubeLength * .5f, 0, cubeHeight * .5f);
+				Vector3 v4 = origin + rot * new Vector3(-cubeLength * .5f, 0, cubeHeight * .5f);
 				var vOffset = data.Vertices.Count;
 				data.Vertices.AddRange(new[] { v1, v2, v3, v4 });
 
@@ -325,7 +310,7 @@ namespace Voxul.Meshing
 					submeshList = new System.Collections.Generic.List<int>();
 					data.Triangles[submeshIndex] = submeshList;
 				}
-				submeshList.AddRange(new[]  { 
+				submeshList.AddRange(new[]  {
 					3 + vOffset, 1 + vOffset, 0 + vOffset,
 					3 + vOffset, 2 + vOffset, 1 + vOffset,
 				});
@@ -392,14 +377,7 @@ namespace Voxul.Meshing
 						}
 						break;
 				}
-				var endTri = tris.Count / 3;
-				for (var j = startTri; j < endTri; ++j)
-				{
-					if (data.TriangleVoxelMapping != null)
-					{
-						data.TriangleVoxelMapping[submeshIndex][j] = voxelFace.Key;
-					}
-				}
+
 			}
 		}
 

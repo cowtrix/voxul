@@ -78,7 +78,7 @@ namespace Voxul
 			{
 				DefaultOptimisers = new List<VoxelOptimiserBase>()
 				{
-					Resources.Load<VoxelOptimiserBase>($"{RESOURCES_FOLDER}/{nameof(DefaultFaceOptimiser)}"),
+					Resources.Load<VoxelOptimiserBase>($"{RESOURCES_FOLDER}/{nameof(InternalFaceOptimiser)}"),
 				};
 			}
 			if (!DefaultMaterial || DefaultMaterial == null)
