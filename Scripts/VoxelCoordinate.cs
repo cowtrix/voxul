@@ -24,8 +24,8 @@ namespace Voxul
 		/// 
 		/// </summary>
 		public static int LayerRatio => VoxelManager.Instance.LayerRatio;
-		public readonly sbyte Layer;
-		public readonly int X, Y, Z;
+		public sbyte Layer;
+		public int X, Y, Z;
 
 		public VoxelCoordinate(int x, int y, int z, sbyte layer)
 		{

@@ -52,15 +52,4 @@ namespace Voxul.Meshing
 
 		public Plane ToPlane() => new Plane(Offset, VoxelCoordinate.DirectionToCoordinate(Direction, Layer).ToVector3());
 	}
-
-	/// <summary>
-	/// This data structure is used to get a voxel from a collider triangle hit index.
-	/// </summary>
-	[Serializable]
-	public class TriangleVoxelMapping : SerializableDictionary<int, TriangleVoxelMapping.InnerMapping>
-	{
-
-		[Serializable]
-		public class InnerMapping : SerializableDictionary<int, VoxelFaceCoordinate> { }
-	}
 }
