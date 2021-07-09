@@ -75,6 +75,26 @@ namespace Voxul
 			throw new NotSupportedException($"{dir} not supported");
 		}
 
+		public static Vector3 DirectionToVector3(EVoxelDirection dir)
+		{
+			switch (dir)
+			{
+				case EVoxelDirection.XPos:
+					return new Vector3(1, 0, 0);
+				case EVoxelDirection.XNeg:
+					return new Vector3(-1, 0, 0);
+				case EVoxelDirection.YPos:
+					return new Vector3(0, 1, 0);
+				case EVoxelDirection.YNeg:
+					return new Vector3(0, -1, 0);
+				case EVoxelDirection.ZPos:
+					return new Vector3(0, 0, 1);
+				case EVoxelDirection.ZNeg:
+					return new Vector3(0, 0, -1);
+			}
+			throw new NotSupportedException($"{dir} not supported");
+		}
+
 		public static bool VectorToDirection(Vector3 hitNorm, out EVoxelDirection dir)
 		{
 			hitNorm = hitNorm.normalized;

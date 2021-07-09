@@ -1,9 +1,20 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Voxul.Utilities
 {
 	public static class Util
 	{
+		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> collection)
+		{
+			var hash = new HashSet<T>();
+			foreach(var item in collection)
+			{
+				hash.Add(item);
+			}
+			return hash;
+		}
+
 		public static void SafeDestroy(this UnityEngine.Object obj)
 		{
 			if(obj == null || !obj)

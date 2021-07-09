@@ -248,6 +248,7 @@ namespace Voxul.Meshing
 				{
 					Surface = vox.Material.GetSurface(dir),
 					MaterialMode = vox.Material.MaterialMode,
+					RenderMode = vox.Material.RenderMode,
 				};
 				data.Faces.Add(faceCoord, face);
 			}
@@ -272,6 +273,7 @@ namespace Voxul.Meshing
 				{
 					Surface = vox.Material.GetSurface(dir),
 					MaterialMode = vox.Material.MaterialMode,
+					RenderMode = vox.Material.RenderMode,
 				};
 				data.Faces.Add(faceCoord, face);
 			}

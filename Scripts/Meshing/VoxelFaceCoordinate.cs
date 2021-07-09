@@ -9,6 +9,7 @@ namespace Voxul.Meshing
 	{
 		public SurfaceData Surface;
 		public EMaterialMode MaterialMode;
+		public ERenderMode RenderMode;
 	}
 
 	[Serializable]
@@ -50,6 +51,6 @@ namespace Voxul.Meshing
 			return !(left == right);
 		}
 
-		public Plane ToPlane() => new Plane(Offset, VoxelCoordinate.DirectionToCoordinate(Direction, Layer).ToVector3());
+		public Plane ToPlane() => new Plane(Offset, VoxelCoordinate.DirectionToVector3(Direction));
 	}
 }

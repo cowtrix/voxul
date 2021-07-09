@@ -15,6 +15,11 @@ namespace Voxul.Meshing
 			{
 				var faceCoord = face.Key;
 				var faceSurf = face.Value;
+
+				if(faceSurf.RenderMode != ERenderMode.Block)
+				{
+					continue;
+				}
 				
 				var offset = VoxelCoordinate.DirectionToCoordinate(faceCoord.Direction, faceCoord.Layer)
 					.ToVector3();
