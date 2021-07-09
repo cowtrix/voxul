@@ -36,7 +36,6 @@ namespace Voxul
 					MeshCollider = gameObject.GetOrAddComponent<MeshCollider>();
 				}
 				MeshCollider.convex = false;
-				MeshCollider.cookingOptions = MeshColliderCookingOptions.None;
 			}
 		}
 

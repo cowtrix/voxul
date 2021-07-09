@@ -162,7 +162,7 @@ namespace Voxul
 				var data = voxelMesh.UnityMeshInstances[i];
 				var unityMesh = data.UnityMesh;
 				VoxelRendererSubmesh submesh;
-				if (Renderers.Count <= voxelMesh.UnityMeshInstances.Count)
+				if (Renderers.Count < voxelMesh.UnityMeshInstances.Count)
 				{
 					submesh = new GameObject($"{name}_submesh_hidden")
 						.AddComponent<VoxelRendererSubmesh>();
@@ -177,6 +177,7 @@ namespace Voxul
 				submesh.MeshFilter.sharedMesh = unityMesh;
 				if (GenerateCollider)
 				{
+					voxulLogger.Debug($"Set MeshCollider mesh");
 					submesh.MeshCollider.sharedMesh = unityMesh;
 				}
 				if (!CustomMaterials)
