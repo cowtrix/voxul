@@ -194,6 +194,7 @@ namespace Voxul.Meshing
 #endif
 			)
 					{
+						voxulLogger.Debug($"Created new mesh for {VoxelMesh}", Dispatcher);
 						meshData.UnityMesh = new Mesh();
 						meshData.UnityMesh.MarkDynamic();
 #if UNITY_EDITOR

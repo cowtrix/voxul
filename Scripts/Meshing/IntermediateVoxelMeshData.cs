@@ -53,7 +53,7 @@ namespace Voxul.Meshing
 		{
 			if (!mesh)
 			{
-				mesh = new Mesh();
+				throw new System.NullReferenceException("Mesh cannot be null at this point");
 			}
 			lock (mesh)
 			{
