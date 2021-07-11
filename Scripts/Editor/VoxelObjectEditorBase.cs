@@ -28,6 +28,7 @@ namespace Voxul.Edit
 			var r = go.AddComponent<VoxelSprite>();
 			EditorGUIUtility.PingObject(go);
 		}
+
 		public VoxelRenderer Renderer => target as VoxelRenderer;
 
 		public override void OnInspectorGUI()

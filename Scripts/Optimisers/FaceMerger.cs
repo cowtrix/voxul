@@ -5,7 +5,6 @@ using Voxul.Utilities;
 
 namespace Voxul.Meshing
 {
-	[CreateAssetMenu]
 	public class FaceMerger : VoxelOptimiserBase
 	{
 		static VoxelFace MergeFaces((VoxelFaceCoordinate, VoxelFace) a, (VoxelFaceCoordinate, VoxelFace) b)

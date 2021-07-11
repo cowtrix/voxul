@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace Voxul.Edit
@@ -8,6 +9,7 @@ namespace Voxul.Edit
 	[Serializable]
 	internal class SubdivideTool : VoxelPainterTool
 	{
+		public override GUIContent Icon => EditorGUIUtility.IconContent("d_PreMatCube");
 		protected override EPaintingTool ToolID => EPaintingTool.Subdivide;
 
 		public override bool DrawInspectorGUI(VoxelPainter voxelPainter)

@@ -23,7 +23,7 @@ namespace Voxul.Edit
 		None, X, Y, Z
 	}
 
-	[CustomEditor(typeof(VoxelRenderer))]
+	[CustomEditor(typeof(VoxelRenderer), false)]
 	internal class VoxelPainter : VoxelObjectEditorBase
 	{
 		Dictionary<EPaintingTool, VoxelPainterTool> m_tools = new Dictionary<EPaintingTool, VoxelPainterTool>
@@ -81,6 +81,7 @@ namespace Voxul.Edit
 			}
 		}
 
+		public HashSet<Rect> Deadzones = new HashSet<Rect>();
 		public IEnumerable<VoxelCoordinate> CurrentSelection => m_selection;
 		private HashSet<VoxelCoordinate> m_selection = new HashSet<VoxelCoordinate>();
 		private bool m_selectionDirty = true;
@@ -136,14 +137,13 @@ namespace Voxul.Edit
 
 		public override void OnInspectorGUI()
 		{
-			if(target.GetType() != typeof(VoxelRenderer))
+			if (target.GetType() != typeof(VoxelRenderer))
 			{
 				base.OnInspectorGUI();
 				return;
 			}
 
 			Tab = GUILayout.Toolbar(Tab, Tabs);
-
 			if (Tab == 1)
 			{
 				base.OnInspectorGUI();
@@ -205,6 +205,7 @@ namespace Voxul.Edit
 
 		void OnSceneGUI()
 		{
+			Deadzones.Clear();
 			if (!Enabled || !Renderer || !Renderer.Mesh)
 			{
 				return;
@@ -217,6 +218,8 @@ namespace Voxul.Edit
 			Handles.DrawLine(tran.position - tran.up * 100, tran.position + tran.up * 100);
 			Handles.DrawLine(tran.position - tran.right * 100, tran.position + tran.right * 100);
 			Handles.DrawLine(tran.position - tran.forward * 100, tran.position + tran.forward * 100);
+			
+			DrawToolsIcons();
 
 			var t = m_tools[CurrentTool];
 			t.DrawSceneGUI(this, Renderer, Event.current, CurrentLayer);
@@ -231,6 +234,93 @@ namespace Voxul.Edit
 			}
 			m_selectionDirty = false;
 			SelectionCursor.Update();
+		}
+
+		private void DrawToolsIcons()
+		{
+			Handles.BeginGUI();
+			float buttonSize = 32;
+			var toolEnums = Enum.GetValues(typeof(EPaintingTool)).Cast<EPaintingTool>().ToList();
+			var names = Enum.GetNames(typeof(EPaintingTool));
+			var windowPosition = new Rect(5, 5, 2 * buttonSize + 15, (toolEnums.Count / 2) * buttonSize + 48);
+			Deadzones.Add(windowPosition);
+			GUI.Label(windowPosition, "Tool", "Window");
+			windowPosition = new Rect(windowPosition.position.x + 5, windowPosition.position.y + 24, windowPosition.size.x - 10, windowPosition.size.y - 32);
+			var position = windowPosition.position;
+			foreach (var toolEnum in toolEnums)
+			{
+				var tool = m_tools[toolEnum];
+				var content = tool.Icon.WithTooltip(names[(int)toolEnum]);
+				var rect = new Rect(position.x, position.y, 32, 32);
+				if(toolEnum == CurrentTool)
+				{
+					GUI.enabled = false;
+				}
+				if(GUI.Button(rect, content))
+				{
+					CurrentTool = toolEnum;
+				}
+				GUI.enabled = true;
+				if (position.x > windowPosition.position.x)
+				{
+					position.x = windowPosition.x;
+					position.y += buttonSize + 5;
+				}
+				else
+				{
+					position.x += buttonSize + 5;
+				}
+			}
+
+			var settingsRect = new Rect(5, windowPosition.yMax + 15, 100, 100);
+			Deadzones.Add(settingsRect);
+			GUILayout.BeginArea(settingsRect, "Brush", "Window");
+			GUILayout.BeginHorizontal();
+
+			GUILayout.Label(EditorGUIUtility.IconContent("Mirror")
+				.WithTooltip("Painting Mirroring Mode"));
+			if (GUILayout.Button("X", EditorStyles.miniButtonLeft
+				.WithColor(MirrorMode == eMirrorMode.X ? Color.green : Color.white)
+				.Bold(MirrorMode == eMirrorMode.X)))
+			{
+				if(MirrorMode == eMirrorMode.X)
+				{
+					MirrorMode = eMirrorMode.None;
+				}
+				else
+				{
+					MirrorMode = eMirrorMode.X;
+				}
+			}
+			if (GUILayout.Button("Y", EditorStyles.miniButtonMid
+				.WithColor(MirrorMode == eMirrorMode.Y ? Color.green : Color.white)
+				.Bold(MirrorMode == eMirrorMode.Y)))
+			{
+				if (MirrorMode == eMirrorMode.Y)
+				{
+					MirrorMode = eMirrorMode.None;
+				}
+				else
+				{
+					MirrorMode = eMirrorMode.Y;
+				}
+			}
+			if (GUILayout.Button("Z", EditorStyles.miniButtonRight
+				.WithColor(MirrorMode == eMirrorMode.Z ? Color.green : Color.white)
+				.Bold(MirrorMode == eMirrorMode.Z)))
+			{
+				if (MirrorMode == eMirrorMode.Z)
+				{
+					MirrorMode = eMirrorMode.None;
+				}
+				else
+				{
+					MirrorMode = eMirrorMode.Z;
+				}
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.EndArea();
+			Handles.EndGUI();
 		}
 
 		public void OnDisable()

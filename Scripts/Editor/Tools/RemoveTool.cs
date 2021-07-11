@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace Voxul.Edit
@@ -7,6 +8,7 @@ namespace Voxul.Edit
 	[Serializable]
 	internal class RemoveTool : VoxelPainterTool
 	{
+		public override GUIContent Icon => EditorGUIUtility.IconContent("TreeEditor.Trash");
 		protected override EPaintingTool ToolID => EPaintingTool.Remove;
 
 		public override bool DrawInspectorGUI(VoxelPainter voxelPainter)

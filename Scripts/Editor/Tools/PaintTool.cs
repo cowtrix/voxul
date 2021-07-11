@@ -11,6 +11,7 @@ namespace Voxul.Edit
 	[Serializable]
 	internal class PaintTool : VoxelPainterTool
 	{
+		public override GUIContent Icon => EditorGUIUtility.IconContent("ClothInspector.PaintTool");
 		private double m_lastAdd;
 		private VoxelMesh m_previewMesh;
 		private Color LerpColor { get => EditorPrefUtility.GetPref("voxul_lerpcolor", Color.white); set => EditorPrefUtility.SetPref("voxul_lerpcolor", value); }

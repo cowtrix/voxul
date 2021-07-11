@@ -11,6 +11,7 @@ namespace Voxul.Edit
 	[Serializable]
 	internal class SelectTool : VoxelPainterTool
 	{
+		public override GUIContent Icon => EditorGUIUtility.IconContent("Selectable Icon");
 		public Bounds SelectionBounds;
 		protected override EPaintingTool ToolID => EPaintingTool.Select;
 

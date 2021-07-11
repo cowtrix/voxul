@@ -5,7 +5,6 @@ using Voxul.Utilities;
 
 namespace Voxul.Meshing
 {
-	[CreateAssetMenu]
 	public class InternalFaceOptimiser : VoxelOptimiserBase
 	{
 		public override void OnPreFaceStep(IntermediateVoxelMeshData data)

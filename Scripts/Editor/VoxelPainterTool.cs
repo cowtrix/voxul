@@ -11,6 +11,8 @@ namespace Voxul.Edit
 {
 	internal abstract class VoxelPainterTool
 	{
+		public abstract GUIContent Icon { get; }
+
 		private Editor m_cachedBrushEditor;
 		private bool m_cachedEditorNeedsRefresh = true;
 		private List<string> m_brushes = new List<string>();
@@ -43,12 +45,12 @@ namespace Voxul.Edit
 		protected abstract EPaintingTool ToolID { get; }
 
 		protected virtual bool GetVoxelDataFromPoint(
-			VoxelPainter voxelPainterTool, 
-			VoxelRenderer renderer, 
+			VoxelPainter voxelPainterTool,
+			VoxelRenderer renderer,
 			MeshCollider collider,
-			Vector3 hitPoint, 
-			Vector3 hitNorm, 
-			int triIndex, 
+			Vector3 hitPoint,
+			Vector3 hitNorm,
+			int triIndex,
 			sbyte layer,
 			out List<VoxelCoordinate> selection,
 			out EVoxelDirection hitDir)
@@ -68,9 +70,15 @@ namespace Voxul.Edit
 
 		public void DrawSceneGUI(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent, sbyte painterLayer)
 		{
-			if(!renderer.Mesh)
+			DrawToolsGUI(currentEvent, voxelPainter);
+			if (!renderer.Mesh)
 			{
 				renderer.SetupComponents(true);
+				return;
+			}
+
+			if(voxelPainter.Deadzones.Any(d => d.Contains(Event.current.mousePosition)))
+			{
 				return;
 			}
 
@@ -79,7 +87,7 @@ namespace Voxul.Edit
 			var hitNorm = Vector3.up;
 			var triIndex = -1;
 			MeshCollider collider = null;
-			foreach(var r in renderer.Renderers)
+			foreach (var r in renderer.Renderers)
 			{
 				if (!r.MeshCollider)
 				{
@@ -91,7 +99,7 @@ namespace Voxul.Edit
 					hitNorm = hitInfo.normal;
 					triIndex = hitInfo.triangleIndex;
 					collider = r.MeshCollider;
-				}				
+				}
 			}
 			if (!collider)
 			{
@@ -115,23 +123,17 @@ namespace Voxul.Edit
 				foreach (var brushCoord in selection)
 				{
 					var layerScale = VoxelCoordinate.LayerToScale(brushCoord.Layer);
-					var voxelWorldPos = brushCoord.ToVector3(); // renderer.transform.localToWorldMatrix.MultiplyPoint3x4();
+					var voxelWorldPos = brushCoord.ToVector3();
 					var voxelScale = layerScale * Vector3.one * .51f;
-					//voxelScale.Scale(renderer.transform.localToWorldMatrix.GetScale());
-
 					Handles.matrix = renderer.transform.localToWorldMatrix;
 					HandleExtensions.DrawWireCube(voxelWorldPos, voxelScale, Quaternion.identity, Color.cyan);
 					Handles.Label(voxelWorldPos, brushCoord.ToString(), EditorStyles.textField);
 				}
 			}
 
-			Handles.BeginGUI();
 			if (currentEvent.alt)
 			{
-				GUI.Label(new Rect(5, 5, 180, 64),
-					"PICKING\nRelease ALT to stop"
-					, "Window");
-				if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
+				if(currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 				{
 					var vox = selection.First();
 					CurrentBrush = voxelPainter.Renderer.Mesh.Voxels[vox].Material.Copy();
@@ -147,20 +149,34 @@ namespace Voxul.Edit
 				}
 				return;
 			}
-			else
-			{
-				GUI.Label(new Rect(5, 5, 180, 64),
-				"ALT to change to picker", "Window");
-			}
-			Handles.EndGUI();
-
+			
 			if (DrawSceneGUIInternal(voxelPainter, renderer, currentEvent, selection, hitDir))
 			{
 				renderer.Mesh.Hash = System.Guid.NewGuid().ToString();
 				EditorUtility.SetDirty(renderer.Mesh);
 				Event.current.Use();
 			}
-			
+
+		}
+
+		public virtual void DrawToolsGUI(Event currentEvent, VoxelPainter voxelPainter)
+		{
+			Handles.BeginGUI();
+			var screenViewRect = SceneView.currentDrawingSceneView.position;
+			var statusWidth = 160f;
+			var rect = new Rect(screenViewRect.width / 2 - statusWidth / 2, 5, statusWidth, 25);
+			if (currentEvent.alt)
+			{
+				GUI.Label(rect,
+					"PICKING\nRelease ALT to stop"
+					, "Box");				
+				return;
+			}
+			else
+			{
+				GUI.Label(rect,
+				"ALT to change to picker", "Box");
+			}
 		}
 
 		public virtual bool DrawInspectorGUI(VoxelPainter voxelPainter)

@@ -12,6 +12,8 @@ namespace Voxul.Edit
 	[Serializable]
 	internal class AddTool : VoxelPainterTool
 	{
+		public override GUIContent Icon => EditorGUIUtility.IconContent("CreateAddNew");
+
 		private double m_lastAdd;
 		[SerializeField]
 		private VoxelRenderer m_cursor;
@@ -79,6 +81,13 @@ namespace Voxul.Edit
 					break;
 			}
 
+			DoMeshCursorPreview(renderer, selection);
+
+			return true;
+		}
+
+		private void DoMeshCursorPreview(VoxelRenderer renderer, IEnumerable<VoxelCoordinate> selection)
+		{
 			if (!m_cursor || !m_cursor.Mesh)
 			{
 				OnEnable();
@@ -86,7 +95,6 @@ namespace Voxul.Edit
 			m_cursor.gameObject.SetActive(true);
 			m_cursor.GetComponent<AutoDestroyer>().KeepAlive();
 			m_cursor.transform.ApplyTRSMatrix(renderer.transform.localToWorldMatrix);
-			//m_cursor.transform.SetParent(renderer.transform);
 			if (!m_cursor.Mesh.Voxels.Keys.SequenceEqual(selection))
 			{
 				m_cursor.Mesh.Voxels.Clear();
@@ -111,19 +119,15 @@ namespace Voxul.Edit
 				m_cursor.Mesh.Invalidate();
 				m_cursor.Invalidate(true, false);
 			}
-
-			return true;
 		}
 
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer,
 			Event currentEvent, List<VoxelCoordinate> selection, EVoxelDirection hitDir)
 		{
-
 			if (currentEvent.isMouse && currentEvent.type == EventType.MouseDown && currentEvent.button == 0)
 			{
 				if (EditorApplication.timeSinceStartup < m_lastAdd + .5f)
 				{
-					//voxulLogger.Warning($"Swallowed double event");
 					return false;
 				}
 				m_lastAdd = EditorApplication.timeSinceStartup;

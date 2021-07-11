@@ -11,6 +11,7 @@ namespace Voxul.Edit
 	[Serializable]
 	internal class ClipboardTool : VoxelPainterTool
 	{
+		public override GUIContent Icon => EditorGUIUtility.IconContent("Clipboard");
 		public enum ePasteMode
 		{
 			Add,    // Won't override existing voxels
