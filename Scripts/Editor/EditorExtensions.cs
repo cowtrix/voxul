@@ -23,6 +23,9 @@ namespace Voxul.Edit
 		{
 			style = new GUIStyle(style);
 			style.normal.textColor = color;
+			style.focused.textColor = color;
+			style.active.textColor = color;
+			style.hover.textColor = color;
 			return style;
 		}
 

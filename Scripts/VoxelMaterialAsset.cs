@@ -1,6 +1,7 @@
 ﻿using JetBrains.Annotations;
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Voxul
 {
@@ -43,12 +44,14 @@ namespace Voxul
 	public struct DirectionOverride
 	{
 		public EVoxelDirection Direction;
-		public SurfaceData Data;
+		[FormerlySerializedAs("Data")]
+		public SurfaceData Surface;
 	}
 
 	[CreateAssetMenu]
 	public class VoxelMaterialAsset : ScriptableObject
 	{
-		public VoxelMaterial Data;
+		[FormerlySerializedAs("Data")]
+		public VoxelMaterial Material;
 	}
 }

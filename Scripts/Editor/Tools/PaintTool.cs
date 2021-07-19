@@ -14,8 +14,8 @@ namespace Voxul.Edit
 		public override GUIContent Icon => EditorGUIUtility.IconContent("ClothInspector.PaintTool");
 		private double m_lastAdd;
 		private VoxelMesh m_previewMesh;
-		private Color LerpColor { get => EditorPrefUtility.GetPref("voxul_lerpcolor", Color.white); set => EditorPrefUtility.SetPref("voxul_lerpcolor", value); }
-		public bool LerpEnabled { get => EditorPrefUtility.GetPref("voxul_lerpenabled", false); set => EditorPrefUtility.SetPref("voxul_lerpenabled", value); }
+		private SerializableGradient LerpColor { get => EditorPrefUtility.GetPref("voxul_lerpcolor", new SerializableGradient(AddTool.DefaultGradient)); set => EditorPrefUtility.SetPref("voxul_lerpcolor", value); }
+		private bool LerpEnabled { get => EditorPrefUtility.GetPref("voxul_lerpenabled", false); set => EditorPrefUtility.SetPref("voxul_lerpenabled", value); }
 
 		public override void OnEnable()
 		{
@@ -29,17 +29,10 @@ namespace Voxul.Edit
 			m_previewMesh = null;
 		}
 
-		public override bool DrawInspectorGUI(VoxelPainter voxelPainter)
-		{
-			LerpEnabled = EditorGUILayout.Toggle("Enable color lerp", LerpEnabled);
-			LerpColor = EditorGUILayout.ColorField("Lerp Color", LerpColor);
-			return base.DrawInspectorGUI(voxelPainter);
-		}
-
 		protected override bool GetVoxelDataFromPoint(VoxelPainter voxelPainterTool, VoxelRenderer renderer, MeshCollider collider,
-			Vector3 hitPoint, Vector3 hitNorm, int triIndex, sbyte layer, out List<VoxelCoordinate> selection, out EVoxelDirection hitDir)
+			Vector3 hitPoint, Vector3 hitNorm, int triIndex, out List<VoxelCoordinate> selection, out EVoxelDirection hitDir)
 		{
-			var result = base.GetVoxelDataFromPoint(voxelPainterTool, renderer, collider, hitPoint, hitNorm, triIndex, layer, out selection, out hitDir);
+			var result = base.GetVoxelDataFromPoint(voxelPainterTool, renderer, collider, hitPoint, hitNorm, triIndex, out selection, out hitDir);
 			if (result)
 			{
 				Handles.matrix = renderer.transform.localToWorldMatrix;
@@ -97,6 +90,25 @@ namespace Voxul.Edit
 			return false;
 		}
 
+		protected override int GetToolWindowHeight()
+		{
+			return base.GetToolWindowHeight() + 25;
+		}
+
+		protected override void DrawToolLayoutGUI(Rect rect, Event currentEvent, VoxelPainter voxelPainter)
+		{
+			base.DrawToolLayoutGUI(rect, currentEvent, voxelPainter);
+			EditorGUILayout.BeginHorizontal();
+			GUI.color = LerpEnabled ? Color.green : Color.white;
+			if (GUILayout.Button(EditorGUIUtility.IconContent("d_PreTextureRGB")))
+			{
+				LerpEnabled = !LerpEnabled;
+			}
+			GUI.color = Color.white;
+			LerpColor = new SerializableGradient(EditorGUILayout.GradientField(LerpColor.ToGradient()));
+			EditorGUILayout.EndHorizontal();
+		}
+
 		private bool SetVoxelSurface(IEnumerable<VoxelCoordinate> coords, VoxelRenderer renderer, EVoxelDirection dir, Event currentEvent)
 		{
 			var coordList = coords.ToList();
@@ -117,7 +129,7 @@ namespace Voxul.Edit
 
 					if (LerpEnabled)
 					{
-						surface.Albedo = Color.Lerp(surface.Albedo, LerpColor, UnityEngine.Random.value);
+						surface.Albedo = LerpColor.ToGradient().Evaluate(UnityEngine.Random.value);
 					}
 
 					if (vox.Material.Overrides == null)
@@ -127,7 +139,7 @@ namespace Voxul.Edit
 					vox.Material.Overrides = vox.Material.Overrides.Where(o => o.Direction != dir).Append(new DirectionOverride
 					{
 						Direction = dir,
-						Data = surface,
+						Surface = surface,
 					}).ToArray();
 				}
 				renderer.Mesh.Voxels[brushCoord] = vox;

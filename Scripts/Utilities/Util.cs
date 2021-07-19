@@ -1,10 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Voxul.Utilities
 {
 	public static class Util
 	{
+		public static string CamelcaseToSpaces(this string str)
+		{
+			return Regex.Replace(str, "(\\B[A-Z])", " $1");
+		}
+
 		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> collection)
 		{
 			var hash = new HashSet<T>();

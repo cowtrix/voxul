@@ -9,12 +9,23 @@ using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
+
 	internal abstract class VoxelPainterTool
 	{
 		public abstract GUIContent Icon { get; }
 
-		private Editor m_cachedBrushEditor;
-		private bool m_cachedEditorNeedsRefresh = true;
+		public eMirrorMode MirrorMode
+		{
+			get
+			{
+				return EditorPrefUtility.GetPref("VoxelPainter_MirrorMode", eMirrorMode.None);
+			}
+			set
+			{
+				EditorPrefUtility.SetPref("VoxelPainter_MirrorMode", value);
+			}
+		}
+
 		private List<string> m_brushes = new List<string>();
 		protected static VoxelMaterial DefaultMaterial => new VoxelMaterial { Default = new SurfaceData { Albedo = Color.white } };
 
@@ -27,9 +38,9 @@ namespace Voxul.Edit
 				if (!m_asset)
 				{
 					m_asset = ScriptableObject.CreateInstance<VoxelMaterialAsset>();
-					m_asset.Data = EditorPrefUtility.GetPref("VoxelPainter_Brush", DefaultMaterial);
+					m_asset.Material = EditorPrefUtility.GetPref("VoxelPainter_Brush", DefaultMaterial);
 				}
-				return m_asset.Data;
+				return m_asset.Material;
 			}
 			set
 			{
@@ -37,7 +48,7 @@ namespace Voxul.Edit
 				{
 					m_asset = ScriptableObject.CreateInstance<VoxelMaterialAsset>();
 				}
-				m_asset.Data = value;
+				m_asset.Material = value;
 				EditorUtility.SetDirty(m_asset);
 			}
 		}
@@ -45,13 +56,12 @@ namespace Voxul.Edit
 		protected abstract EPaintingTool ToolID { get; }
 
 		protected virtual bool GetVoxelDataFromPoint(
-			VoxelPainter voxelPainterTool,
+			VoxelPainter voxelPainter,
 			VoxelRenderer renderer,
 			MeshCollider collider,
 			Vector3 hitPoint,
 			Vector3 hitNorm,
 			int triIndex,
-			sbyte layer,
 			out List<VoxelCoordinate> selection,
 			out EVoxelDirection hitDir)
 		{
@@ -68,7 +78,7 @@ namespace Voxul.Edit
 			return false;
 		}
 
-		public void DrawSceneGUI(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent, sbyte painterLayer)
+		public void DrawSceneGUI(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent)
 		{
 			DrawToolsGUI(currentEvent, voxelPainter);
 			if (!renderer.Mesh)
@@ -107,12 +117,12 @@ namespace Voxul.Edit
 				if (p.Raycast(worldRay, out var planePoint))
 				{
 					hitPoint = worldRay.origin + worldRay.direction * planePoint;
-					hitNorm = renderer.transform.up; ;
+					hitNorm = renderer.transform.up;
 				}
 			}
 			Handles.DrawWireCube(hitPoint, Vector3.one * .02f);
 			Handles.DrawLine(hitPoint, hitPoint + hitNorm * .2f);
-			if (!GetVoxelDataFromPoint(voxelPainter, renderer, collider, hitPoint, hitNorm, triIndex, painterLayer,
+			if (!GetVoxelDataFromPoint(voxelPainter, renderer, collider, hitPoint, hitNorm, triIndex,
 					out var selection, out var hitDir) && ToolID != EPaintingTool.Clipboard)
 			{
 				return;
@@ -120,14 +130,29 @@ namespace Voxul.Edit
 
 			if (selection != null)
 			{
-				foreach (var brushCoord in selection)
+				for (int i = 0; i < selection.Count; i++)
 				{
-					var layerScale = VoxelCoordinate.LayerToScale(brushCoord.Layer);
-					var voxelWorldPos = brushCoord.ToVector3();
+					VoxelCoordinate coord = selection[i];
+
+					switch (MirrorMode)
+					{
+						case eMirrorMode.X:
+							selection.Add(new VoxelCoordinate(-coord.X, coord.Y, coord.Z, coord.Layer));
+							break;
+						case eMirrorMode.Y:
+							selection.Add(new VoxelCoordinate(coord.X, -coord.Y, coord.Z, coord.Layer));
+							break;
+						case eMirrorMode.Z:
+							selection.Add(new VoxelCoordinate(coord.X, coord.Y, -coord.Z, coord.Layer));
+							break;
+					}
+
+					var layerScale = VoxelCoordinate.LayerToScale(coord.Layer);
+					var voxelWorldPos = coord.ToVector3();
 					var voxelScale = layerScale * Vector3.one * .51f;
 					Handles.matrix = renderer.transform.localToWorldMatrix;
 					HandleExtensions.DrawWireCube(voxelWorldPos, voxelScale, Quaternion.identity, Color.cyan);
-					Handles.Label(voxelWorldPos, brushCoord.ToString(), EditorStyles.textField);
+					Handles.Label(voxelWorldPos, coord.ToString(), EditorStyles.textField);
 				}
 			}
 
@@ -177,32 +202,80 @@ namespace Voxul.Edit
 				GUI.Label(rect,
 				"ALT to change to picker", "Box");
 			}
+
+			var settingsRect = new Rect(5, 155, 100, GetToolWindowHeight());
+			voxelPainter.Deadzones.Add(settingsRect);
+			GUILayout.BeginArea(settingsRect, "Brush", "Window");
+			DrawToolLayoutGUI(settingsRect, currentEvent, voxelPainter);
+			GUILayout.EndArea();
+			Handles.EndGUI();
+		}
+
+		protected virtual int GetToolWindowHeight() => 45;
+
+		protected virtual void DrawToolLayoutGUI(Rect rect, Event currentEvent, VoxelPainter voxelPainter)
+		{
+			GUILayout.BeginHorizontal();
+
+			GUILayout.Label(EditorGUIUtility.IconContent("Mirror")
+				.WithTooltip("Painting Mirroring Mode"));
+			if (GUILayout.Button("X", EditorStyles.miniButtonLeft
+				.WithColor(MirrorMode == eMirrorMode.X ? Color.green : Color.white)
+				.Bold(MirrorMode == eMirrorMode.X)))
+			{
+				if (MirrorMode == eMirrorMode.X)
+				{
+					MirrorMode = eMirrorMode.None;
+				}
+				else
+				{
+					MirrorMode = eMirrorMode.X;
+				}
+			}
+			if (GUILayout.Button("Y", EditorStyles.miniButtonMid
+				.WithColor(MirrorMode == eMirrorMode.Y ? Color.green : Color.white)
+				.Bold(MirrorMode == eMirrorMode.Y)))
+			{
+				if (MirrorMode == eMirrorMode.Y)
+				{
+					MirrorMode = eMirrorMode.None;
+				}
+				else
+				{
+					MirrorMode = eMirrorMode.Y;
+				}
+			}
+			if (GUILayout.Button("Z", EditorStyles.miniButtonRight
+				.WithColor(MirrorMode == eMirrorMode.Z ? Color.green : Color.white)
+				.Bold(MirrorMode == eMirrorMode.Z)))
+			{
+				if (MirrorMode == eMirrorMode.Z)
+				{
+					MirrorMode = eMirrorMode.None;
+				}
+				else
+				{
+					MirrorMode = eMirrorMode.Z;
+				}
+			}
+			GUILayout.EndHorizontal();
+			
 		}
 
 		public virtual bool DrawInspectorGUI(VoxelPainter voxelPainter)
 		{
-			bool dirty = false;
 			GUILayout.BeginVertical("Box");
 			GUILayout.Label("Presets");
 			var selIndex = GUILayout.SelectionGrid(-1,
 				m_brushes.Select(b => new GUIContent(Path.GetFileNameWithoutExtension(b))).ToArray(), 3);
 			if (selIndex >= 0)
 			{
-				dirty = true;
-				CurrentBrush = AssetDatabase.LoadAssetAtPath<VoxelMaterialAsset>(m_brushes.ElementAt(selIndex)).Data;
+				CurrentBrush = AssetDatabase.LoadAssetAtPath<VoxelMaterialAsset>(m_brushes.ElementAt(selIndex)).Material;
 				voxulLogger.Debug($"Loaded brush from {m_brushes.ElementAt(selIndex)}");
 			}
 			GUILayout.EndVertical();
-			if (dirty || m_cachedBrushEditor == null || !m_cachedBrushEditor || m_cachedEditorNeedsRefresh || Event.current.alt)
-			{
-				if (m_cachedBrushEditor)
-				{
-					UnityEngine.Object.DestroyImmediate(m_cachedBrushEditor);
-				}
-				m_cachedBrushEditor = Editor.CreateEditor(m_asset);
-				m_cachedEditorNeedsRefresh = false;
-			}
-			m_cachedBrushEditor?.DrawDefaultInspector();
+			var wrapper = NativeEditorUtility.GetWrapper<VoxelMaterialAsset>();
+			wrapper.DrawGUI(m_asset);
 			EditorPrefUtility.SetPref("VoxelPainter_Brush", CurrentBrush);
 			return false;
 		}

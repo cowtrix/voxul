@@ -14,11 +14,41 @@ namespace Voxul.Edit
 	{
 		public override GUIContent Icon => EditorGUIUtility.IconContent("CreateAddNew");
 
+		public static Gradient DefaultGradient = new Gradient
+		{
+			colorKeys = new[]
+			{
+				new GradientColorKey
+				{
+					color = Color.white,
+					time = 0,
+				},
+				new GradientColorKey
+				{
+					color = Color.black,
+					time = 0,
+				},
+			}
+		};
+
 		private double m_lastAdd;
 		[SerializeField]
 		private VoxelRenderer m_cursor;
-		private Color LerpColor { get => EditorPrefUtility.GetPref("voxul_lerpcolor", Color.white); set => EditorPrefUtility.SetPref("voxul_lerpcolor", value); }
-		public bool LerpEnabled { get => EditorPrefUtility.GetPref("voxul_lerpenabled", false); set => EditorPrefUtility.SetPref("voxul_lerpenabled", value); }
+		private SerializableGradient LerpColor { get => EditorPrefUtility.GetPref("voxul_lerpcolor", new SerializableGradient(DefaultGradient)); set => EditorPrefUtility.SetPref("voxul_lerpcolor", value); }
+		private bool LerpEnabled { get => EditorPrefUtility.GetPref("voxul_lerpenabled", false); set => EditorPrefUtility.SetPref("voxul_lerpenabled", value); }
+
+		public sbyte CurrentLayer
+		{
+			get
+			{
+				return EditorPrefUtility.GetPref("VoxelPainter_CurrentLayer", default(sbyte));
+			}
+			set
+			{
+				EditorPrefUtility.SetPref("VoxelPainter_CurrentLayer", value);
+			}
+		}
+
 		public override void OnEnable()
 		{
 			if (!m_cursor)
@@ -43,44 +73,24 @@ namespace Voxul.Edit
 			}
 		}
 
-		public override bool DrawInspectorGUI(VoxelPainter voxelPainter)
-		{
-			LerpEnabled = EditorGUILayout.Toggle("Enable color lerp", LerpEnabled);
-			LerpColor = EditorGUILayout.ColorField("Lerp Color", LerpColor);
-			return base.DrawInspectorGUI(voxelPainter);
-		}
-
 		protected override EPaintingTool ToolID => EPaintingTool.Add;
 
 		protected override bool GetVoxelDataFromPoint(VoxelPainter painter, VoxelRenderer renderer, MeshCollider collider, Vector3 hitPoint,
-			Vector3 hitNorm, int triIndex, sbyte layer,
-			out List<VoxelCoordinate> selection, out EVoxelDirection hitDir)
+			Vector3 hitNorm, int triIndex, out List<VoxelCoordinate> selection, out EVoxelDirection hitDir)
 		{
 			if (Event.current.alt)
 			{
 				m_cursor?.gameObject.SetActive(false);
-				return base.GetVoxelDataFromPoint(painter, renderer, collider, hitPoint, hitNorm, triIndex, layer, out selection, out hitDir);
+				return base.GetVoxelDataFromPoint(painter, renderer, collider, hitPoint, hitNorm, triIndex, out selection, out hitDir);
 			}
 
 			hitPoint = renderer.transform.worldToLocalMatrix.MultiplyPoint3x4(hitPoint);
 			hitNorm = renderer.transform.worldToLocalMatrix.MultiplyVector(hitNorm);
 			VoxelCoordinate.VectorToDirection(hitNorm, out hitDir);
-			var scale = VoxelCoordinate.LayerToScale(layer);
-			var singleCoord = VoxelCoordinate.FromVector3(hitPoint + hitNorm * scale / 2f, layer);
+			var scale = VoxelCoordinate.LayerToScale(CurrentLayer);
+			var singleCoord = VoxelCoordinate.FromVector3(hitPoint + hitNorm * (scale / 2f) * (collider ? 1 : 0), CurrentLayer);
 			selection = new List<VoxelCoordinate>() { singleCoord };
-			switch (painter.MirrorMode)
-			{
-				case eMirrorMode.X:
-					selection.Add(new VoxelCoordinate(-singleCoord.X, singleCoord.Y, singleCoord.Z, singleCoord.Layer));
-					break;
-				case eMirrorMode.Y:
-					selection.Add(new VoxelCoordinate(singleCoord.X, -singleCoord.Y, singleCoord.Z, singleCoord.Layer));
-					break;
-				case eMirrorMode.Z:
-					selection.Add(new VoxelCoordinate(singleCoord.X, singleCoord.Y, -singleCoord.Z, singleCoord.Layer));
-					break;
-			}
-
+			
 			DoMeshCursorPreview(renderer, selection);
 
 			return true;
@@ -103,13 +113,14 @@ namespace Voxul.Edit
 					var v = CurrentBrush.Copy();
 					if (LerpEnabled)
 					{
+						var gradient = LerpColor.ToGradient();
 						UnityEngine.Random.InitState(s.GetHashCode());
 						var surf = v.Default;
-						surf.Albedo = Color.Lerp(surf.Albedo, LerpColor, UnityEngine.Random.value);
+						surf.Albedo = Color.Lerp(surf.Albedo, gradient.Evaluate(UnityEngine.Random.value), UnityEngine.Random.value);
 						v.Default = surf;
 						var ov = v.Overrides.Select(o =>
 						{
-							o.Data.Albedo = Color.Lerp(o.Data.Albedo, LerpColor, UnityEngine.Random.value);
+							o.Surface.Albedo = Color.Lerp(o.Surface.Albedo, gradient.Evaluate(UnityEngine.Random.value), UnityEngine.Random.value);
 							return o;
 						}).ToArray();
 						v.Overrides = ov;
@@ -136,7 +147,7 @@ namespace Voxul.Edit
 				{
 					var bounds = voxelPainter.CurrentSelection.GetBounds();
 					bounds.Encapsulate(selection.GetBounds());
-					foreach (VoxelCoordinate coord in bounds.GetVoxelCoordinates(voxelPainter.CurrentLayer))
+					foreach (VoxelCoordinate coord in bounds.GetVoxelCoordinates(CurrentLayer))
 					{
 						creationList.Add(coord);
 					}
@@ -150,6 +161,41 @@ namespace Voxul.Edit
 			return false;
 		}
 
+		protected override int GetToolWindowHeight()
+		{
+			return base.GetToolWindowHeight() + 40;
+		}
+
+		protected override void DrawToolLayoutGUI(Rect rect, Event currentEvent, VoxelPainter voxelPainter)
+		{
+			base.DrawToolLayoutGUI(rect, currentEvent, voxelPainter);
+			EditorGUILayout.BeginHorizontal();
+			GUILayout.Label(EditorGUIUtility.IconContent("d_ToggleUVOverlay")
+				.WithTooltip("Current Layer"), EditorStyles.miniLabel, GUILayout.Width(25));
+
+			if (GUILayout.Button("-", EditorStyles.miniButtonLeft))
+			{
+				CurrentLayer--;
+			}
+			CurrentLayer = (sbyte)EditorGUILayout.IntField((int)CurrentLayer, GUILayout.Width(32));
+			if (GUILayout.Button("+", EditorStyles.miniButtonLeft))
+			{
+				CurrentLayer++;
+			}
+
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.BeginHorizontal();
+			GUI.color = LerpEnabled ? Color.green : Color.white;
+			if (GUILayout.Button(EditorGUIUtility.IconContent("d_PreTextureRGB")
+				.WithTooltip("Enable Gradient Painting")))
+			{
+				LerpEnabled = !LerpEnabled;
+			}
+			GUI.color = Color.white;
+			LerpColor = new SerializableGradient(EditorGUILayout.GradientField(LerpColor.ToGradient()));
+			EditorGUILayout.EndHorizontal();
+		}
+
 		private IEnumerable<VoxelCoordinate> CreateVoxel(IEnumerable<VoxelCoordinate> coords, VoxelRenderer renderer)
 		{
 			foreach (var brushCoord in coords)
@@ -157,13 +203,14 @@ namespace Voxul.Edit
 				var v = CurrentBrush.Copy();
 				if (LerpEnabled)
 				{
+					var gradient = LerpColor.ToGradient();
 					UnityEngine.Random.InitState(brushCoord.GetHashCode());
 					var s = v.Default;
-					s.Albedo = Color.Lerp(s.Albedo, LerpColor, UnityEngine.Random.value);
+					s.Albedo = gradient.Evaluate(UnityEngine.Random.value);
 					v.Default = s;
 					var ov = v.Overrides.Select(o =>
 					{
-						o.Data.Albedo = Color.Lerp(o.Data.Albedo, LerpColor, UnityEngine.Random.value);
+						o.Surface.Albedo = Color.Lerp(o.Surface.Albedo, gradient.Evaluate(UnityEngine.Random.value), UnityEngine.Random.value);
 						return o;
 					}).ToArray();
 					v.Overrides = ov;

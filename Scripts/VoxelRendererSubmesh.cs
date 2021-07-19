@@ -17,6 +17,11 @@ namespace Voxul
 
 		public void SetupComponents(bool collider)
 		{
+			if (!this)
+			{
+				voxulLogger.Warning("Attempting to setup VoxelRendererSubmesh but it has been destroyed.");
+				return;
+			}
 			gameObject.hideFlags = HideFlags.HideInHierarchy;
 			gameObject.transform.localPosition = Vector3.zero;
 			gameObject.transform.localRotation = Quaternion.identity;

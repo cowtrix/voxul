@@ -12,11 +12,9 @@ namespace Voxul.Edit
 		public sbyte MaxLayer = 3;
 
 		public VoxelMesh TargetVoxelMesh;
-		public MeshCollider Collider;
+		public Collider Collider;
 
 		public SurfaceData Surface;
-
-		public Mesh TargetMesh => Collider.sharedMesh;
 
 		[MenuItem("Tools/Voxul/Voxelize Mesh")]
 		public static void OpenWindow()
@@ -32,7 +30,7 @@ namespace Voxul.Edit
 				return;
 			}
 			TargetVoxelMesh.Voxels.Clear();
-			var bounds = Collider.sharedMesh.bounds;
+			var bounds = Collider.bounds;
 			var step = VoxelCoordinate.LayerToScale(MaxLayer);
 			var worldStep = Collider.transform.lossyScale.x;
 			for (var x = bounds.min.x; x < bounds.max.x; x += step)
@@ -59,6 +57,8 @@ namespace Voxul.Edit
 				}
 			}
 			TargetVoxelMesh.Invalidate();
+			var go = new GameObject(TargetVoxelMesh.name);
+			go.AddComponent<VoxelRenderer>().Mesh = TargetVoxelMesh;
 		}
 
 		private bool CheckParams(out string error)

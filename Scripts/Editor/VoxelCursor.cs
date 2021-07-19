@@ -47,13 +47,6 @@ namespace Voxul.Edit
 				{
 					voxulLogger.Error($"Failed to load debug selection material at {VoxelManager.RESOURCES_FOLDER}/voxul_Selection");
 				}
-				if (m_cursorRenderer?.Renderers != null && m_cursorRenderer.Renderers.Any())
-				{
-					foreach (var r in m_cursorRenderer.Renderers)
-					{
-						r.SetupComponents(false);
-					}
-				}
 				m_tempVoxelData.Invalidate();
 				m_dirty = true;
 			}
@@ -80,8 +73,8 @@ namespace Voxul.Edit
 				m_cursorRenderer.CustomMaterials = true;
 				m_cursorRenderer.OpaqueMaterial = DebugMaterial;
 				m_cursorRenderer.TransparentMaterial = DebugMaterial;
-				m_cursorRenderer.GenerateCollider = false;
 			}
+			m_cursorRenderer.GenerateCollider = false;
 			m_keepAlive?.KeepAlive();
 			if (m_dirty)
 			{
@@ -96,6 +89,7 @@ namespace Voxul.Edit
 			if (m_cursorRenderer)
 			{
 				m_cursorRenderer.gameObject.SafeDestroy();
+				m_cursorRenderer = null;
 			}
 		}
 	}

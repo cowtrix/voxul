@@ -1,40 +1,45 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
-	public class VoxelObjectEditorBase : Editor
+	public abstract class VoxelObjectEditorBase<T> : Editor where T:VoxelRenderer
 	{
-		[MenuItem("GameObject/3D Object/Voxul Object")]
-		public static void CreateNew()
+		protected int Tab
 		{
-			var go = new GameObject("New Voxel Object");
-			var r = go.AddComponent<VoxelRenderer>();
-			EditorGUIUtility.PingObject(go);
+			get
+			{
+				return EditorPrefs.GetInt("VoxelPainter_Tab", 0);
+			}
+			set
+			{
+				EditorPrefs.SetInt("VoxelPainter_Tab", value);
+			}
 		}
 
-		[MenuItem("GameObject/3D Object/Voxul Text")]
-		public static void CreateNewText()
-		{
-			var go = new GameObject("New Voxel Text");
-			var r = go.AddComponent<VoxelText>();
-			EditorGUIUtility.PingObject(go);
-		}
+		protected GUIContent[] Tabs => new[] { new GUIContent(GetType().Name.CamelcaseToSpaces().Replace("Editor", "").Trim()), new GUIContent("Settings") };
 
-		[MenuItem("GameObject/3D Object/Voxul Sprite")]
-		public static void CreateNewSprite()
-		{
-			var go = new GameObject("New Voxel Sprite");
-			var r = go.AddComponent<VoxelSprite>();
-			EditorGUIUtility.PingObject(go);
-		}
-
-		public VoxelRenderer Renderer => target as VoxelRenderer;
+		public T Renderer => target as T;
 
 		public override void OnInspectorGUI()
 		{
+			Tab = GUILayout.Toolbar(Tab, Tabs);
+			if (Tab == 1)
+			{
+				base.OnInspectorGUI();
+				return;
+			}
 
-			base.OnInspectorGUI();
+			if (!Renderer.Mesh)
+			{
+				EditorGUILayout.HelpBox("Mesh (Voxel Mesh) asset cannot be null. Set it in the Settings tab.", MessageType.Warning);
+				return;
+			}
+
+			DrawSpecificGUI();
 		}
+
+		protected abstract void DrawSpecificGUI();
 	}
 }

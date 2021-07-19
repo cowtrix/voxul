@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Voxul
 {
@@ -20,7 +21,7 @@ namespace Voxul
 				var ov = Overrides.Where(o => o.Direction == dir);
 				if (ov.Any())
 				{
-					return ov.First().Data;
+					return ov.First().Surface;
 				}
 			}
 

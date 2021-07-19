@@ -29,7 +29,9 @@ namespace Voxul.Meshing
 					Size = face.Key.Size,
 					Layer = face.Key.Layer,
 				};
-				if (data.Faces.TryGetValue(inverse, out var neighbour))
+				if (data.Faces.TryGetValue(inverse, out var neighbour)
+					&& neighbour.RenderMode == ERenderMode.Block
+					&& neighbour.MaterialMode == face.Value.MaterialMode)
 				{
 					toRemove.Add(faceCoord);
 					toRemove.Add(inverse);

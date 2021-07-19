@@ -24,8 +24,16 @@ namespace Voxul.Edit
 	}
 
 	[CustomEditor(typeof(VoxelRenderer), false)]
-	internal class VoxelPainter : VoxelObjectEditorBase
+	internal class VoxelPainter : VoxelObjectEditorBase<VoxelRenderer>
 	{
+		[MenuItem("GameObject/3D Object/voxul/Voxel Object")]
+		public static void CreateNew()
+		{
+			var go = new GameObject("New Voxel Object");
+			var r = go.AddComponent<VoxelRenderer>();
+			EditorGUIUtility.PingObject(go);
+		}
+
 		Dictionary<EPaintingTool, VoxelPainterTool> m_tools = new Dictionary<EPaintingTool, VoxelPainterTool>
 	{
 		{ EPaintingTool.Select, new SelectTool() },
@@ -36,17 +44,6 @@ namespace Voxul.Edit
 		{ EPaintingTool.Clipboard, new ClipboardTool() },
 	};
 
-		public eMirrorMode MirrorMode
-		{
-			get
-			{
-				return EditorPrefUtility.GetPref("VoxelPainter_MirrorMode", eMirrorMode.None);
-			}
-			set
-			{
-				EditorPrefUtility.SetPref("VoxelPainter_MirrorMode", value);
-			}
-		}
 		public bool Enabled
 		{
 			get
@@ -56,17 +53,6 @@ namespace Voxul.Edit
 			set
 			{
 				EditorPrefUtility.SetPref("VoxelPainter_Enabled", value);
-			}
-		}
-		public sbyte CurrentLayer
-		{
-			get
-			{
-				return EditorPrefUtility.GetPref("VoxelPainter_CurrentLayer", default(sbyte));
-			}
-			set
-			{
-				EditorPrefUtility.SetPref("VoxelPainter_CurrentLayer", value);
 			}
 		}
 		public EPaintingTool CurrentTool
@@ -119,50 +105,18 @@ namespace Voxul.Edit
 		}
 		private VoxelCursor __selectionCursor;
 
-		public static int Tab
-		{
-			get
-			{
-				return EditorPrefs.GetInt("VoxelPainter_Tab", 0);
-			}
-			set
-			{
-				EditorPrefs.SetInt("VoxelPainter_Tab", value);
-			}
-		}
-
-		public static GUIContent[] Tabs => new[] { new GUIContent("Edit Mesh"), new GUIContent("Settings") };
 
 		public override bool RequiresConstantRepaint() => true;
 
-		public override void OnInspectorGUI()
+		protected override void DrawSpecificGUI()
 		{
-			if (target.GetType() != typeof(VoxelRenderer))
-			{
-				base.OnInspectorGUI();
-				return;
-			}
-
-			Tab = GUILayout.Toolbar(Tab, Tabs);
-			if (Tab == 1)
-			{
-				base.OnInspectorGUI();
-				return;
-			}
-
-			Enabled = EditorGUILayout.Toggle("Painting Enabled", Enabled);
-			if (!Renderer.Mesh)
-			{
-				EditorGUILayout.HelpBox("Mesh (Voxel Mesh) asset cannot be null", MessageType.Info);
-				return;
-			}
+			Enabled = EditorGUILayout.Toggle("Painting Enabled", Enabled);			
 			EditorGUILayout.LabelField("Painter", EditorStyles.whiteLargeLabel);
 			EditorGUILayout.BeginVertical("Box");
 			GUI.enabled = Enabled;
 
-			MirrorMode = (eMirrorMode)EditorGUILayout.EnumPopup("Mirror Mode", MirrorMode);
 			var oldTool = CurrentTool;
-			CurrentLayer = (sbyte)EditorGUILayout.IntSlider("Current Layer", CurrentLayer, -5, 5);
+			//CurrentLayer = (sbyte)EditorGUILayout.IntSlider("Current Layer", CurrentLayer, -5, 5);
 			var newTool = (EPaintingTool)GUILayout.Toolbar((int)CurrentTool, Enum.GetNames(typeof(EPaintingTool)));
 			bool dirty = newTool != CurrentTool;
 			CurrentTool = newTool;
@@ -218,11 +172,11 @@ namespace Voxul.Edit
 			Handles.DrawLine(tran.position - tran.up * 100, tran.position + tran.up * 100);
 			Handles.DrawLine(tran.position - tran.right * 100, tran.position + tran.right * 100);
 			Handles.DrawLine(tran.position - tran.forward * 100, tran.position + tran.forward * 100);
-			
-			DrawToolsIcons();
+
+			DrawSceneGUIToolsIcons();
 
 			var t = m_tools[CurrentTool];
-			t.DrawSceneGUI(this, Renderer, Event.current, CurrentLayer);
+			t.DrawSceneGUI(this, Renderer, Event.current);
 
 			if (m_selectionDirty)
 			{
@@ -236,7 +190,7 @@ namespace Voxul.Edit
 			SelectionCursor.Update();
 		}
 
-		private void DrawToolsIcons()
+		private void DrawSceneGUIToolsIcons()
 		{
 			Handles.BeginGUI();
 			float buttonSize = 32;
@@ -252,15 +206,19 @@ namespace Voxul.Edit
 				var tool = m_tools[toolEnum];
 				var content = tool.Icon.WithTooltip(names[(int)toolEnum]);
 				var rect = new Rect(position.x, position.y, 32, 32);
-				if(toolEnum == CurrentTool)
+				if (toolEnum == CurrentTool)
 				{
-					GUI.enabled = false;
+					GUI.color = Color.green;
+					GUI.Label(rect, content, "Button");
+					GUI.color = Color.white;
 				}
-				if(GUI.Button(rect, content))
+				else
 				{
-					CurrentTool = toolEnum;
+					if (GUI.Button(rect, content))
+					{
+						CurrentTool = toolEnum;
+					}
 				}
-				GUI.enabled = true;
 				if (position.x > windowPosition.position.x)
 				{
 					position.x = windowPosition.x;
@@ -271,55 +229,6 @@ namespace Voxul.Edit
 					position.x += buttonSize + 5;
 				}
 			}
-
-			var settingsRect = new Rect(5, windowPosition.yMax + 15, 100, 100);
-			Deadzones.Add(settingsRect);
-			GUILayout.BeginArea(settingsRect, "Brush", "Window");
-			GUILayout.BeginHorizontal();
-
-			GUILayout.Label(EditorGUIUtility.IconContent("Mirror")
-				.WithTooltip("Painting Mirroring Mode"));
-			if (GUILayout.Button("X", EditorStyles.miniButtonLeft
-				.WithColor(MirrorMode == eMirrorMode.X ? Color.green : Color.white)
-				.Bold(MirrorMode == eMirrorMode.X)))
-			{
-				if(MirrorMode == eMirrorMode.X)
-				{
-					MirrorMode = eMirrorMode.None;
-				}
-				else
-				{
-					MirrorMode = eMirrorMode.X;
-				}
-			}
-			if (GUILayout.Button("Y", EditorStyles.miniButtonMid
-				.WithColor(MirrorMode == eMirrorMode.Y ? Color.green : Color.white)
-				.Bold(MirrorMode == eMirrorMode.Y)))
-			{
-				if (MirrorMode == eMirrorMode.Y)
-				{
-					MirrorMode = eMirrorMode.None;
-				}
-				else
-				{
-					MirrorMode = eMirrorMode.Y;
-				}
-			}
-			if (GUILayout.Button("Z", EditorStyles.miniButtonRight
-				.WithColor(MirrorMode == eMirrorMode.Z ? Color.green : Color.white)
-				.Bold(MirrorMode == eMirrorMode.Z)))
-			{
-				if (MirrorMode == eMirrorMode.Z)
-				{
-					MirrorMode = eMirrorMode.None;
-				}
-				else
-				{
-					MirrorMode = eMirrorMode.Z;
-				}
-			}
-			GUILayout.EndHorizontal();
-			GUILayout.EndArea();
 			Handles.EndGUI();
 		}
 
@@ -328,5 +237,7 @@ namespace Voxul.Edit
 			m_tools[CurrentTool]?.OnDisable();
 			SceneView.duringSceneGui -= DuringSceneGUI;
 		}
+
+
 	}
 }
