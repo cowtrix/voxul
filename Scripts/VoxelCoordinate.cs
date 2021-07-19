@@ -196,7 +196,9 @@ namespace Voxul
 		{
 			if (left.Layer != right.Layer)
 			{
-				throw new Exception("Layer mismatch");
+				var maxLayer = (sbyte)Mathf.Max(left.Layer, right.Layer);
+				left = left.ChangeLayer(maxLayer);
+				right = right.ChangeLayer(maxLayer);
 			}
 			return new VoxelCoordinate(left.X + right.X, left.Y + right.Y, left.Z + right.Z, left.Layer);
 		}
@@ -205,7 +207,9 @@ namespace Voxul
 		{
 			if (left.Layer != right.Layer)
 			{
-				throw new Exception("Layer mismatch");
+				var maxLayer = (sbyte)Mathf.Max(left.Layer, right.Layer);
+				left = left.ChangeLayer(maxLayer);
+				right = right.ChangeLayer(maxLayer);
 			}
 			return new VoxelCoordinate(left.X - right.X, left.Y - right.Y, left.Z - right.Z, left.Layer);
 		}

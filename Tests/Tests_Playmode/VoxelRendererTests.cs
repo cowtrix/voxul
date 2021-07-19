@@ -14,6 +14,8 @@ namespace Voxul.Test
             TestUtil.PopulateVoxelMesh(100, m);
             var r = new GameObject("TestRenderer")
                 .AddComponent<VoxelRenderer>();
+
+            // Set mesh and recalculate
             r.Mesh = m;
             r.Invalidate(false, false);
             Assert.That(!string.IsNullOrEmpty(m.Hash));

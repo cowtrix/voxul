@@ -22,13 +22,14 @@ namespace Voxul.Test
                 .ElementAt(Random.Range(0, values.Length));
 		}
 
+        private const int RANDOM_COORD_RANGE = 2000;
         public static VoxelCoordinate RandomCoord =>
             new VoxelCoordinate
             {
-                X = Random.Range(-200, 200),    // TODO bigger values
-                Y = Random.Range(-200, 200),
-                Z = Random.Range(-200, 200),
-                Layer = (sbyte)Random.Range(-20, 20)
+                X = Random.Range(-RANDOM_COORD_RANGE, RANDOM_COORD_RANGE),    // TODO bigger values
+                Y = Random.Range(-RANDOM_COORD_RANGE, RANDOM_COORD_RANGE),
+                Z = Random.Range(-RANDOM_COORD_RANGE, RANDOM_COORD_RANGE),
+                Layer = (sbyte)Random.Range(-10, 10)
             };
 
         public static SurfaceData RandomSurf =>
