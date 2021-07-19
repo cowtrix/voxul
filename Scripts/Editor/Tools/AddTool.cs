@@ -71,6 +71,7 @@ namespace Voxul.Edit
 				m_cursor.gameObject.SafeDestroy();
 				m_cursor = null;
 			}
+			base.OnDisable();
 		}
 
 		protected override EPaintingTool ToolID => EPaintingTool.Add;
@@ -157,6 +158,7 @@ namespace Voxul.Edit
 				{
 					m_cursor.gameObject.SafeDestroy();
 				}
+				UseEvent(currentEvent);
 			}
 			return false;
 		}

@@ -26,6 +26,7 @@ namespace Voxul.Edit
 					renderer.Mesh.Voxels.Remove(brushCoord);
 				}
 				voxelPainter.SetSelection(null);
+				UseEvent(currentEvent);
 				return true;
 			}
 			return false;

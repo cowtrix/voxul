@@ -96,6 +96,8 @@ namespace Voxul.Edit
 						}
 					}
 				}
+
+				UseEvent(currentEvent);
 			}
 
 			Handles.matrix = renderer.transform.localToWorldMatrix;

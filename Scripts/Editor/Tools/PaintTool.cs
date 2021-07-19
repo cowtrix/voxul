@@ -27,6 +27,7 @@ namespace Voxul.Edit
 		{
 			GameObject.DestroyImmediate(m_previewMesh);
 			m_previewMesh = null;
+			base.OnDisable();
 		}
 
 		protected override bool GetVoxelDataFromPoint(VoxelPainter voxelPainterTool, VoxelRenderer renderer, MeshCollider collider,
@@ -86,6 +87,7 @@ namespace Voxul.Edit
 				{
 					voxelPainter.SetSelection(creationList);
 				}
+				UseEvent(currentEvent);
 			}
 			return false;
 		}

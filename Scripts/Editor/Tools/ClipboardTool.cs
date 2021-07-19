@@ -268,6 +268,7 @@ namespace Voxul.Edit
 							}
 						}
 					}
+					UseEvent(currentEvent);
 				}
 				HandleExtensions.DrawWireCube(SelectionBounds.center, SelectionBounds.extents, Quaternion.identity, Color.magenta);
 			}

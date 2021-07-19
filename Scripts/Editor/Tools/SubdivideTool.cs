@@ -31,6 +31,7 @@ namespace Voxul.Edit
 						renderer.Mesh.Voxels[sub] = new Voxel(sub, vox.Material.Copy());
 					}
 				}
+				UseEvent(currentEvent);
 				return true;
 			}
 			return false;

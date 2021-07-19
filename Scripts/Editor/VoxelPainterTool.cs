@@ -12,6 +12,8 @@ namespace Voxul.Edit
 
 	internal abstract class VoxelPainterTool
 	{
+		private bool m_destroyed;
+
 		public abstract GUIContent Icon { get; }
 
 		public eMirrorMode MirrorMode
@@ -80,6 +82,23 @@ namespace Voxul.Edit
 
 		public void DrawSceneGUI(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent)
 		{
+			// Block all clicks from propagating to the scene view.
+			HandleUtility.AddDefaultControl(-1);
+
+			Event e = Event.current;
+			if (e.type == EventType.MouseUp && e.isMouse)
+			{
+				// This returns a picked object as it normally does, but does not select it yet.
+				GameObject picked = HandleUtility.PickGameObject(e.mousePosition, false);
+
+				if (picked == renderer.gameObject || !picked)
+				{
+					// We select it, if valid for our needs.
+					Selection.activeObject = renderer.gameObject;
+					e.Use();
+				}
+			}
+
 			DrawToolsGUI(currentEvent, voxelPainter);
 			if (!renderer.Mesh)
 			{
@@ -87,7 +106,7 @@ namespace Voxul.Edit
 				return;
 			}
 
-			if(voxelPainter.Deadzones.Any(d => d.Contains(Event.current.mousePosition)))
+			if (voxelPainter.Deadzones.Any(d => d.Contains(Event.current.mousePosition)))
 			{
 				return;
 			}
@@ -158,7 +177,7 @@ namespace Voxul.Edit
 
 			if (currentEvent.alt)
 			{
-				if(currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
+				if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 				{
 					var vox = selection.First();
 					CurrentBrush = voxelPainter.Renderer.Mesh.Voxels[vox].Material.Copy();
@@ -170,18 +189,25 @@ namespace Voxul.Edit
 						cb.Default = surface;
 						CurrentBrush = cb;
 					}
-					currentEvent.Use();
+					UseEvent(currentEvent);
+					Debug.Log("Used event");
+					UnityMainThreadDispatcher.EnsureSubscribed();
+					UnityMainThreadDispatcher.Enqueue(() => Selection.activeObject = voxelPainter.Renderer.gameObject);
 				}
 				return;
 			}
-			
+
 			if (DrawSceneGUIInternal(voxelPainter, renderer, currentEvent, selection, hitDir))
 			{
 				renderer.Mesh.Hash = System.Guid.NewGuid().ToString();
 				EditorUtility.SetDirty(renderer.Mesh);
-				Event.current.Use();
+				Debug.Log("Used event");
 			}
+		}
 
+		protected void UseEvent(Event ev)
+		{
+			ev.Use();
 		}
 
 		public virtual void DrawToolsGUI(Event currentEvent, VoxelPainter voxelPainter)
@@ -194,7 +220,7 @@ namespace Voxul.Edit
 			{
 				GUI.Label(rect,
 					"PICKING\nRelease ALT to stop"
-					, "Box");				
+					, "Box");
 				return;
 			}
 			else
@@ -259,7 +285,7 @@ namespace Voxul.Edit
 				}
 			}
 			GUILayout.EndHorizontal();
-			
+
 		}
 
 		public virtual bool DrawInspectorGUI(VoxelPainter voxelPainter)
@@ -292,6 +318,7 @@ namespace Voxul.Edit
 
 		public virtual void OnDisable()
 		{
+			m_destroyed = true;
 		}
 	}
 }
