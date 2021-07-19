@@ -43,6 +43,9 @@ namespace Voxul.Meshing
 
 		public List<VoxelOptimiserBase> Optimisers = new List<VoxelOptimiserBase>();
 
-		public void Invalidate() => Hash = Guid.NewGuid().ToString();
+		public void Invalidate()
+		{
+			Hash = Guid.NewGuid().ToString();
+		}
 	}
 }

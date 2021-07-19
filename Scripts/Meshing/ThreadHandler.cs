@@ -22,7 +22,7 @@ namespace Voxul.Utilities
 		private int m_lock;
 		private CancellationTokenSource m_cancellationToken;
 
-		public bool IsRecalculating => m_lock > 0 && (m_cancellationToken != null && !m_cancellationToken.IsCancellationRequested);
+		public bool IsRecalculating => m_lock > 0 && (m_cancellationToken == null || !m_cancellationToken.IsCancellationRequested);
 
 		public ThreadHandler(string label)
 		{
@@ -31,17 +31,16 @@ namespace Voxul.Utilities
 
 		public void Start(bool force, EThreadingMode mode)
 		{
-			if(m_lastMode != mode)
+			if (m_lastMode != mode)
 			{
 				force = true;
 			}
-			m_lastMode = mode;
 			if (!force && IsRecalculating)
 			{
 				return;
 			}
-			UnityMainThreadDispatcher.EnsureSubscribed();
 			Interlocked.Increment(ref m_lock);
+			UnityMainThreadDispatcher.EnsureSubscribed();
 			m_lastMode = mode;
 			switch (mode)
 			{

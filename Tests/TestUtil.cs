@@ -1,10 +1,20 @@
 ﻿using UnityEngine;
 using System.Linq;
+using Voxul.Meshing;
 
 namespace Voxul.Test
 {
 	public static class TestUtil
 	{
+        public static void PopulateVoxelMesh(int randomVoxelCount, VoxelMesh mesh)
+		{
+            for(var i = 0; i < randomVoxelCount; ++i)
+			{
+                mesh.Voxels.AddSafe(RandomVoxel);
+			}
+            mesh.Invalidate();
+		}
+
         public static T RandomEnum<T>() where T: System.Enum
 		{
             var values = System.Enum.GetValues(typeof(T));
@@ -18,7 +28,7 @@ namespace Voxul.Test
                 X = Random.Range(-200, 200),    // TODO bigger values
                 Y = Random.Range(-200, 200),
                 Z = Random.Range(-200, 200),
-                Layer = (sbyte)Random.Range(sbyte.MinValue, sbyte.MaxValue)
+                Layer = (sbyte)Random.Range(-20, 20)
             };
 
         public static SurfaceData RandomSurf =>

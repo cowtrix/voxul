@@ -60,6 +60,10 @@ namespace Voxul
 		/// </summary>
 		private int m_fontUpdate;
 
+		public VoxelTextWorker(VoxelMesh mesh) : base(mesh)
+		{
+		}
+
 		/// <summary>
 		/// There are two reasons we need to do this bit of work before we can access the font texture data:
 		///		1 - The font texture isn't readable so we can't sample it

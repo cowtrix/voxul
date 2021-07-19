@@ -22,11 +22,16 @@ namespace Voxul.Meshing
 		/// A list of the intermediate data objects which are used while the job is running.
 		/// </summary>
 		public List<IntermediateVoxelMeshData> IntermediateData = new List<IntermediateVoxelMeshData>();
-		public VoxelRenderer Dispatcher { get; private set; }
+
+		public VoxelMeshWorker(VoxelMesh mesh)
+		{
+			VoxelMesh = mesh;
+		}
+
 		/// <summary>
 		/// The voxel mesh which contains this worker.
 		/// </summary>
-		public VoxelMesh VoxelMesh => Dispatcher?.Mesh;
+		public VoxelMesh VoxelMesh;
 		public event VoxelRebuildMeshEvent OnCompleted;
 
 		protected float m_maxCoroutineUpdateTime;
@@ -39,8 +44,12 @@ namespace Voxul.Meshing
 
 		private void CancelCurrentJob() => m_handler?.Cancel();
 
-		public void GenerateMesh(VoxelRenderer dispatcher, EThreadingMode mode, bool force = false, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
+		public void GenerateMesh(EThreadingMode mode, bool force = false, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
 		{
+			if (!VoxelMesh)
+			{
+				throw new ArgumentNullException(nameof(VoxelMesh));
+			}
 			voxulLogger.Debug($"VoxelMeshWorker: GenerateMesh for {VoxelMesh}", VoxelMesh);
 			if (IsRecalculating)
 			{
@@ -51,7 +60,6 @@ namespace Voxul.Meshing
 				}
 				CancelCurrentJob();
 			}
-			Dispatcher = dispatcher;
 			IntermediateData.Clear();
 			if (m_handler == null)
 			{
@@ -194,7 +202,7 @@ namespace Voxul.Meshing
 #endif
 			)
 					{
-						voxulLogger.Debug($"Created new mesh for {VoxelMesh}", Dispatcher);
+						voxulLogger.Debug($"Created new mesh for {VoxelMesh}", VoxelMesh);
 						meshData.UnityMesh = new Mesh();
 						meshData.UnityMesh.MarkDynamic();
 #if UNITY_EDITOR

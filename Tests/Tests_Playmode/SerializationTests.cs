@@ -7,6 +7,7 @@ using Voxul.Meshing;
 
 namespace Voxul.Test
 {
+
 	public class SerializationTests
     {
         [Test]

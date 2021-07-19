@@ -27,7 +27,6 @@ namespace Voxul
 		public sbyte SnapLayer = 0;
 
 		[Header("Rendering")]
-		public sbyte2 CullLayers = new sbyte2 { x = sbyte.MinValue, y = sbyte.MaxValue };
 		public EThreadingMode ThreadingMode;
 
 		[DrawIf(nameof(ThreadingMode), EThreadingMode.Coroutine, ComparisonType.Equals)]
@@ -43,7 +42,7 @@ namespace Voxul
 		{
 			if (m_voxWorker == null)
 			{
-				m_voxWorker = new VoxelMeshWorker();
+				m_voxWorker = new VoxelMeshWorker(Mesh);
 			}
 			return m_voxWorker;
 		}
@@ -126,10 +125,6 @@ namespace Voxul
 			{
 				return;
 			}
-			if (CullLayers.x > CullLayers.y)
-			{
-				CullLayers = new sbyte2 { x = CullLayers.y, y = CullLayers.y };
-			}
 			if (Mesh && (Mesh.Optimisers == null || !Mesh.Optimisers.Any()))
 			{
 				Mesh.Optimisers = VoxelManager.Instance.DefaultOptimisers.ToList();
@@ -140,7 +135,8 @@ namespace Voxul
 			Mesh.CurrentWorker = GetVoxelMeshWorker();
 			Mesh.CurrentWorker.OnCompleted -= OnMeshRebuilt;
 			Mesh.CurrentWorker.OnCompleted += OnMeshRebuilt;
-			Mesh.CurrentWorker.GenerateMesh(this, ThreadingMode, force, CullLayers.x, CullLayers.y);
+			Mesh.CurrentWorker.GenerateMesh(ThreadingMode, force);
+
 			m_lastMeshHash = Mesh.Hash;
 		}
 

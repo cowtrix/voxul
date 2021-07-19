@@ -114,7 +114,7 @@ namespace Voxul
 			// We override this to provide & lazy initialize our custom Text worker
 			if(m_textWorker == null)
 			{
-				m_textWorker = new VoxelTextWorker();
+				m_textWorker = new VoxelTextWorker(Mesh);
 			}
 			return m_textWorker;
 		}
