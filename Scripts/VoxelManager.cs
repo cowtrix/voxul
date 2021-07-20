@@ -116,7 +116,7 @@ namespace Voxul
 				UnityEditor.AssetDatabase.ImportAsset(currentPath);
 
 				BaseTextureArray = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2DArray>(currentPath);
-				DefaultMaterial.SetTexture("Texture2DArray_8875E265", BaseTextureArray);
+				DefaultMaterial.SetTexture("AlbedoSpritesheet", BaseTextureArray);
 				UnityEditor.EditorUtility.SetDirty(DefaultMaterial);
 				DefaultMaterialTransparent.SetTexture("AlbedoSpritesheet", BaseTextureArray);
 				UnityEditor.EditorUtility.SetDirty(DefaultMaterialTransparent);
