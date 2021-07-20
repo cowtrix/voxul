@@ -60,6 +60,7 @@ namespace Voxul.Meshing
 				}
 				CancelCurrentJob();
 			}
+			IntermediateData = IntermediateData ?? new List<IntermediateVoxelMeshData>();
 			IntermediateData.Clear();
 			if (m_handler == null)
 			{
@@ -78,6 +79,7 @@ namespace Voxul.Meshing
 			m_lastGenID = thisJobGuid;
 			int voxelCount = 0;
 			List<KeyValuePair<VoxelCoordinate, Voxel>> allVoxels;
+			m_threadObjectLock = m_threadObjectLock ?? new object();
 			lock (m_threadObjectLock)
 			{
 				allVoxels = VoxelMesh.Voxels

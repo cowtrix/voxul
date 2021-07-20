@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
@@ -49,7 +50,7 @@ namespace Voxul.Edit
 				if (!vm.Sprites.Contains(newTex))
 				{
 					vm.Sprites.Add(newTex);
-					vm.RegenerateSpritesheet();
+					UnityMainThreadDispatcher.Enqueue(() => vm.RegenerateSpritesheet());
 				}
 				var index = vm.Sprites.IndexOf(newTex);
 				prop.intValue = index;

@@ -109,7 +109,8 @@ namespace Voxul
 				newArray.filterMode = FilterMode.Point;
 				newArray.wrapMode = TextureWrapMode.Repeat;
 				var currentPath = texArray ? UnityEditor.AssetDatabase.GetAssetPath(texArray) : $"Assets/Resources/{RESOURCES_FOLDER}/spritesheet.asset";
-				var tmpPath = AssetCreationHelper.CreateAssetInCurrentDirectory(newArray, "tmp.asset");
+				var tmpPath = "Assets/tmp.asset";
+				UnityEditor.AssetDatabase.CreateAsset(newArray, tmpPath);
 				File.WriteAllBytes(currentPath, File.ReadAllBytes(tmpPath));
 				UnityEditor.AssetDatabase.DeleteAsset(tmpPath);
 				UnityEditor.AssetDatabase.ImportAsset(currentPath);

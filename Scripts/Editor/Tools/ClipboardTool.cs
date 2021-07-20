@@ -239,7 +239,7 @@ namespace Voxul.Edit
 			Handles.matrix = mat;
 			if (CurrentClipboard == null)
 			{
-				if (currentEvent.type == EventType.MouseDown && currentEvent.button == 0)
+				if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 				{
 					if (!currentEvent.shift)
 					{

@@ -19,7 +19,7 @@ namespace Voxul.Edit
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer,
 			Event currentEvent, List<VoxelCoordinate> selection, EVoxelDirection hitDir)
 		{
-			if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
+			if (Event.current.type == EventType.MouseUp && Event.current.button == 0)
 			{
 				foreach (var brushCoord in selection)
 				{

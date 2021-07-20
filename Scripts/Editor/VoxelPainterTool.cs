@@ -12,8 +12,6 @@ namespace Voxul.Edit
 
 	internal abstract class VoxelPainterTool
 	{
-		private bool m_destroyed;
-
 		public abstract GUIContent Icon { get; }
 
 		public eMirrorMode MirrorMode
@@ -86,7 +84,7 @@ namespace Voxul.Edit
 			HandleUtility.AddDefaultControl(-1);
 
 			Event e = Event.current;
-			if (e.type == EventType.MouseUp && e.isMouse)
+			if (e.type == EventType.MouseUp && e.isMouse && !voxelPainter.Deadzones.Any(d => d.Contains(currentEvent.mousePosition)))
 			{
 				// This returns a picked object as it normally does, but does not select it yet.
 				GameObject picked = HandleUtility.PickGameObject(e.mousePosition, false);
@@ -95,7 +93,7 @@ namespace Voxul.Edit
 				{
 					// We select it, if valid for our needs.
 					Selection.activeObject = renderer.gameObject;
-					e.Use();
+					//e.Use();
 				}
 			}
 
@@ -201,7 +199,6 @@ namespace Voxul.Edit
 			{
 				renderer.Mesh.Hash = System.Guid.NewGuid().ToString();
 				EditorUtility.SetDirty(renderer.Mesh);
-				Debug.Log("Used event");
 			}
 		}
 
@@ -318,7 +315,6 @@ namespace Voxul.Edit
 
 		public virtual void OnDisable()
 		{
-			m_destroyed = true;
 		}
 	}
 }

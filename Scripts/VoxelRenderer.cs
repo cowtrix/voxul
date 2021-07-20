@@ -135,6 +135,7 @@ namespace Voxul
 			Mesh.CurrentWorker = GetVoxelMeshWorker();
 			Mesh.CurrentWorker.OnCompleted -= OnMeshRebuilt;
 			Mesh.CurrentWorker.OnCompleted += OnMeshRebuilt;
+			Mesh.CurrentWorker.VoxelMesh = Mesh;
 			Mesh.CurrentWorker.GenerateMesh(ThreadingMode, force);
 
 			m_lastMeshHash = Mesh.Hash;
