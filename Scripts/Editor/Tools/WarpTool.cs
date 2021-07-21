@@ -21,14 +21,25 @@ namespace Voxul.Edit
 
 		public override bool DrawInspectorGUI(VoxelPainter voxelPainter)
 		{
+			var renderer = voxelPainter.Renderer;
+			GUILayout.BeginVertical("Box");
+			EditorGUILayout.LabelField("Warp Data:", renderer.Mesh.PointMapping.Count.ToString());
+			GUILayout.EndVertical();
+			if(GUILayout.Button("Clear Warp Data"))
+			{
+				Offset = default;
+				
+				renderer.Mesh.PointMapping.Clear();
+				renderer.Mesh.Invalidate();
+				renderer.Invalidate(false, false);
+			}
 			var newOffset = EditorGUILayout.Vector3Field("Offset", Offset);
 			if(newOffset != Offset)
 			{
 				Offset = newOffset;
-				var r = voxelPainter.Renderer;
-				r.Mesh.PointMapping[CurrentWarpPosition] = Offset;
-				r.Mesh.Invalidate();
-				r.Invalidate(false, false);
+				renderer.Mesh.PointMapping[CurrentWarpPosition] = Offset;
+				renderer.Mesh.Invalidate();
+				renderer.Invalidate(false, false);
 			}
 			return false;
 		}
