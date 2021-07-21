@@ -11,7 +11,7 @@ namespace Voxul.Utilities
 			return Regex.Replace(str, "(\\B[A-Z])", " $1");
 		}
 
-		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> collection)
+		public static ISet<T> ToSet<T>(this IEnumerable<T> collection)
 		{
 			var hash = new HashSet<T>();
 			foreach(var item in collection)

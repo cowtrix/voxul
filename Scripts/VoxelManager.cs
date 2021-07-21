@@ -110,10 +110,15 @@ namespace Voxul
 				newArray.wrapMode = TextureWrapMode.Repeat;
 				var currentPath = texArray ? UnityEditor.AssetDatabase.GetAssetPath(texArray) : $"Assets/Resources/{RESOURCES_FOLDER}/spritesheet.asset";
 				var tmpPath = "Assets/tmp.asset";
-				UnityEditor.AssetDatabase.CreateAsset(newArray, tmpPath);
-				File.WriteAllBytes(currentPath, File.ReadAllBytes(tmpPath));
-				UnityEditor.AssetDatabase.DeleteAsset(tmpPath);
-				UnityEditor.AssetDatabase.ImportAsset(currentPath);
+				
+				try
+				{
+					UnityEditor.AssetDatabase.CreateAsset(newArray, tmpPath);
+					File.WriteAllBytes(currentPath, File.ReadAllBytes(tmpPath));
+					UnityEditor.AssetDatabase.DeleteAsset(tmpPath);
+					UnityEditor.AssetDatabase.ImportAsset(currentPath);
+				}
+				catch { }
 
 				BaseTextureArray = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2DArray>(currentPath);
 				DefaultMaterial.SetTexture("AlbedoSpritesheet", BaseTextureArray);

@@ -14,6 +14,15 @@ namespace Voxul
 		/// </summary>
 		public static readonly EVoxelDirection[] Directions = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>().ToArray();
 
+		public static IEnumerable<VoxelCoordinate> GetNeighbours(this VoxelCoordinate coord)
+		{
+			foreach(var dir in Directions)
+			{
+				var scaledDir = VoxelCoordinate.DirectionToCoordinate(dir, coord.Layer);
+				yield return coord + scaledDir;
+			}
+		}
+
 		public static int EstimateVertexCount(this ERenderMode mode)
 		{
 			switch (mode)
