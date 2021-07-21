@@ -12,6 +12,7 @@ namespace Voxul.Meshing
 	{
 		// Input
 		public VoxelMapping Voxels;
+		public VoxelPointMapping PointOffsets;
 
 		// Intermediate face data
 		public Dictionary<VoxelFaceCoordinate, VoxelFace> Faces;
@@ -27,9 +28,10 @@ namespace Voxul.Meshing
 		/// Copy data from voxels and initialize data structures if null.
 		/// </summary>
 		/// <param name="voxels"></param>
-		public void Initialise(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels)
+		public void Initialise(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels, VoxelPointMapping pointOffsets)
 		{
 			Voxels = new VoxelMapping(voxels);
+			PointOffsets = pointOffsets;
 			Faces = Faces ?? new Dictionary<VoxelFaceCoordinate, VoxelFace>();
 			Faces.Clear();
 			Vertices = Vertices ?? new List<Vector3>(Voxels.Count * 8);
@@ -81,6 +83,7 @@ namespace Voxul.Meshing
 		/// </summary>
 		public void Clear()
 		{
+			PointOffsets = null;
 			Voxels = null;
 			Faces = null;
 			Vertices = null;

@@ -47,6 +47,8 @@ namespace Voxul.Edit
 			}
 		}
 
+		protected override bool DrawSceneGUIWithNoSelection => true;
+
 		public enum ERotationAxis
 		{
 			X, Y, Z
@@ -232,7 +234,7 @@ namespace Voxul.Edit
 		}
 
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent,
-			List<VoxelCoordinate> selection, EVoxelDirection hitDir)
+			List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
 		{
 			var mat = renderer.transform.localToWorldMatrix;
 

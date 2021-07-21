@@ -15,6 +15,20 @@ namespace Voxul.Meshing
 		public Mesh UnityMesh;
 	}
 
+	[Serializable]
+	public class VoxelPointMapping : SerializableDictionary<Vector3, Vector3>
+	{
+		public VoxelPointMapping() { }
+
+		public VoxelPointMapping(VoxelPointMapping pointOffsets)
+		{
+			foreach (var p in pointOffsets)
+			{
+				this[p.Key] = p.Value;
+			}
+		}
+	}
+
 	/// <summary>
 	/// This is the asset object representing a voxel mesh. It contains the voxel information itself,
 	/// as well as the bake data if the Voxel Mesh has been invalidated yet.
@@ -28,6 +42,9 @@ namespace Voxul.Meshing
 		public VoxelMeshWorker CurrentWorker;
 
 		public List<MeshVoxelData> UnityMeshInstances = new List<MeshVoxelData>();
+
+		[HideInInspector]
+		public VoxelPointMapping PointMapping = new VoxelPointMapping();
 
 		/// <summary>
 		/// The hash is a random string used to detect asset version changes. It is set below in `Invalidate()`

@@ -228,7 +228,8 @@ namespace Voxul
 		public Voxel? GetVoxel(Vector3 worldPos, Vector3 worldNormal)
 		{
 			var localCoord = transform.worldToLocalMatrix.MultiplyPoint3x4(worldPos);
-			var localNormal = transform.worldToLocalMatrix.MultiplyVector(worldNormal);
+			var localNormal = transform.worldToLocalMatrix.MultiplyVector(worldNormal)
+				.ClosestAxisNormal();
 			localCoord -= localNormal * .001f;
 			foreach(var v in Mesh.Voxels)
 			{

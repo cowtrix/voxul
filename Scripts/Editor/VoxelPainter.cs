@@ -16,6 +16,7 @@ namespace Voxul.Edit
 		Subdivide,
 		Paint,
 		Clipboard,
+		Warp,
 	}
 
 	internal enum eMirrorMode
@@ -42,6 +43,7 @@ namespace Voxul.Edit
 		{ EPaintingTool.Subdivide, new SubdivideTool() },
 		{ EPaintingTool.Paint, new PaintTool() },
 		{ EPaintingTool.Clipboard, new ClipboardTool() },
+		{ EPaintingTool.Warp, new WarpTool() },
 	};
 
 		public bool Enabled
@@ -66,7 +68,7 @@ namespace Voxul.Edit
 				EditorPrefUtility.SetPref("VoxelPainter_CurrentTool", value);
 			}
 		}
-
+		public float ToolsPanelHeight { get; private set; }
 		public HashSet<Rect> Deadzones = new HashSet<Rect>();
 		public IEnumerable<VoxelCoordinate> CurrentSelection => m_selection;
 		private HashSet<VoxelCoordinate> m_selection = new HashSet<VoxelCoordinate>();
@@ -196,10 +198,11 @@ namespace Voxul.Edit
 			float buttonSize = 32;
 			var toolEnums = Enum.GetValues(typeof(EPaintingTool)).Cast<EPaintingTool>().ToList();
 			var names = Enum.GetNames(typeof(EPaintingTool));
-			var windowPosition = new Rect(5, 5, 2 * buttonSize + 15, (toolEnums.Count / 2) * buttonSize + 48);
+			var windowPosition = new Rect(5, 5, 2 * buttonSize + 15, Mathf.Ceil(toolEnums.Count / 2f) * buttonSize + 48);
 			Deadzones.Add(windowPosition);
 			GUI.Label(windowPosition, "Tool", "Window");
 			windowPosition = new Rect(windowPosition.position.x + 5, windowPosition.position.y + 24, windowPosition.size.x - 10, windowPosition.size.y - 32);
+			ToolsPanelHeight = windowPosition.yMax;
 			var position = windowPosition.position;
 			foreach (var toolEnum in toolEnums)
 			{
@@ -229,6 +232,7 @@ namespace Voxul.Edit
 					position.x += buttonSize + 5;
 				}
 			}
+
 			Handles.EndGUI();
 		}
 

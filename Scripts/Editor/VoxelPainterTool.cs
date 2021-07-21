@@ -29,6 +29,8 @@ namespace Voxul.Edit
 		private List<string> m_brushes = new List<string>();
 		protected static VoxelMaterial DefaultMaterial => new VoxelMaterial { Default = new SurfaceData { Albedo = Color.white } };
 
+		protected virtual bool DrawSceneGUIWithNoSelection => false;
+
 		protected static VoxelMaterialAsset m_asset;
 
 		protected static VoxelMaterial CurrentBrush
@@ -65,7 +67,6 @@ namespace Voxul.Edit
 			out List<VoxelCoordinate> selection,
 			out EVoxelDirection hitDir)
 		{
-			hitNorm = renderer.transform.worldToLocalMatrix.MultiplyVector(hitNorm);
 			VoxelCoordinate.VectorToDirection(hitNorm, out hitDir);
 			var voxelN = renderer.GetVoxel(hitPoint, hitNorm);
 			if (voxelN.HasValue)
@@ -140,7 +141,7 @@ namespace Voxul.Edit
 			Handles.DrawWireCube(hitPoint, Vector3.one * .02f);
 			Handles.DrawLine(hitPoint, hitPoint + hitNorm * .2f);
 			if (!GetVoxelDataFromPoint(voxelPainter, renderer, collider, hitPoint, hitNorm, triIndex,
-					out var selection, out var hitDir) && ToolID != EPaintingTool.Clipboard)
+					out var selection, out var hitDir) && !DrawSceneGUIWithNoSelection)
 			{
 				return;
 			}
@@ -195,7 +196,7 @@ namespace Voxul.Edit
 				return;
 			}
 
-			if (DrawSceneGUIInternal(voxelPainter, renderer, currentEvent, selection, hitDir))
+			if (DrawSceneGUIInternal(voxelPainter, renderer, currentEvent, selection, hitDir, hitPoint))
 			{
 				renderer.Mesh.Hash = System.Guid.NewGuid().ToString();
 				EditorUtility.SetDirty(renderer.Mesh);
@@ -226,7 +227,7 @@ namespace Voxul.Edit
 				"ALT to change to picker", "Box");
 			}
 
-			var settingsRect = new Rect(5, 155, 100, GetToolWindowHeight());
+			var settingsRect = new Rect(5, voxelPainter.ToolsPanelHeight + 15, 100, GetToolWindowHeight());
 			voxelPainter.Deadzones.Add(settingsRect);
 			GUILayout.BeginArea(settingsRect, "Brush", "Window");
 			DrawToolLayoutGUI(settingsRect, currentEvent, voxelPainter);
@@ -304,7 +305,7 @@ namespace Voxul.Edit
 		}
 
 		protected abstract bool DrawSceneGUIInternal(VoxelPainter painter, VoxelRenderer Renderer, Event currentEvent,
-			List<VoxelCoordinate> selection, EVoxelDirection hitDir);
+			List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos);
 
 		public virtual void OnEnable()
 		{

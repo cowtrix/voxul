@@ -8,6 +8,7 @@ using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
+
 	[Serializable]
 	internal class SelectTool : VoxelPainterTool
 	{
@@ -62,7 +63,7 @@ namespace Voxul.Edit
 			return result;
 		}
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent,
-			List<VoxelCoordinate> selection, EVoxelDirection hitDir)
+			List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
 		{
 			if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 			{

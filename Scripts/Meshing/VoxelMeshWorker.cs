@@ -79,6 +79,7 @@ namespace Voxul.Meshing
 			m_lastGenID = thisJobGuid;
 			int voxelCount = 0;
 			List<KeyValuePair<VoxelCoordinate, Voxel>> allVoxels;
+			VoxelPointMapping pointMapping;
 			m_threadObjectLock = m_threadObjectLock ?? new object();
 			lock (m_threadObjectLock)
 			{
@@ -86,13 +87,14 @@ namespace Voxul.Meshing
 					.Where(v => v.Key.Layer >= minLayer && v.Key.Layer <= maxLayer)
 					.OrderBy(v => v.Value.Material.MaterialMode)
 					.ToList();
+				pointMapping = new VoxelPointMapping(VoxelMesh.PointMapping);
 			}
 			// Iterate through all voxels and transform into face data
 			int vertexCounter = 0;
 			while (voxelCount < allVoxels.Count)
 			{
 				var data = new IntermediateVoxelMeshData();
-				data.Initialise(allVoxels);
+				data.Initialise(allVoxels, pointMapping);
 				IntermediateData.Add(data);
 				int startVoxCount = voxelCount;
 				foreach (var vox in allVoxels.Skip(startVoxCount))
@@ -292,6 +294,15 @@ namespace Voxul.Meshing
 
 		public static void ConvertPlanesToMesh(IntermediateVoxelMeshData data)
 		{
+			Vector3 GetOffset(Vector3 point)
+			{
+				if(data.PointOffsets.TryGetValue(point, out var offset))
+				{
+					return offset;
+				}
+				return Vector3.zero;
+			}
+
 			foreach (var voxelFace in data.Faces)
 			{
 				var submeshIndex = (int)voxelFace.Value.MaterialMode;
@@ -311,9 +322,13 @@ namespace Voxul.Meshing
 
 				// Vertices
 				Vector3 v1 = origin + rot * new Vector3(-cubeLength * .5f, 0, -cubeHeight * .5f);
+				v1 += GetOffset(v1);
 				Vector3 v2 = origin + rot * new Vector3(cubeLength * .5f, 0, -cubeHeight * .5f);
+				v2 += GetOffset(v2);
 				Vector3 v3 = origin + rot * new Vector3(cubeLength * .5f, 0, cubeHeight * .5f);
+				v3 += GetOffset(v3);
 				Vector3 v4 = origin + rot * new Vector3(-cubeLength * .5f, 0, cubeHeight * .5f);
+				v4 += GetOffset(v4);
 				var vOffset = data.Vertices.Count;
 				data.Vertices.AddRange(new[] { v1, v2, v3, v4 });
 

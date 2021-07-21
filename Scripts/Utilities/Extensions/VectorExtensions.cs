@@ -5,6 +5,22 @@ namespace Voxul.Utilities
 {
 	public static class VectorExtensions
 	{
+		public static IEnumerable<Vector3> EnumerateVertices(this Bounds bounds)
+		{
+			var w = bounds.size.x / 2f;
+			var h = bounds.size.y / 2f;
+			var l = bounds.size.z / 2f;
+			var c = bounds.center;
+			yield return c + new Vector3(w, h, l);
+			yield return c + new Vector3(w, -h, l);
+			yield return c + new Vector3(w, h, -l);
+			yield return c + new Vector3(w, -h, -l);
+			yield return c + new Vector3(-w, h, l);
+			yield return c + new Vector3(-w, -h, l);
+			yield return c + new Vector3(-w, h, -l);
+			yield return c + new Vector3(-w, -h, -l);
+		}
+
 		public static Vector3 QuadLerp(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float u, float v)
 		{
 			Vector3 abu = Vector3.Lerp(a, b, u);
