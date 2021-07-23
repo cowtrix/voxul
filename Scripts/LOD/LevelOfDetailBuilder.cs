@@ -9,13 +9,7 @@ namespace Voxul.LevelOfDetail
 {
     public static class LevelOfDetailBuilder
     {
-        [Serializable]
-        public class RenderPlane
-		{
-            public Vector3 Position;
-            public Quaternion Rotation;
-            public Vector2 Size;
-		}
+        
 
         public static IEnumerable<Voxel> RetargetToLayer(IEnumerable<Voxel> data, sbyte layer)
 		{
@@ -32,60 +26,35 @@ namespace Voxul.LevelOfDetail
                         var stepCoord = VoxelCoordinate.FromVector3(stepPoint, layer);
                         if(tree.TryGetValue(stepCoord, out VoxelTree<VoxelMaterial>.Node n))
 						{
-                            var allChildren = n.GetAllDescendants();
-                            var mat = AverageMaterials(allChildren.Select(c => c.Item2));
-                            yield return new Voxel
-                            {
-                                Coordinate = stepCoord,
-                                Material = mat,
-                            };
+                            if(n is VoxelTree<VoxelMaterial>.LeafNode leaf)
+							{
+                                yield return new Voxel
+                                {
+                                    Coordinate = stepCoord,
+                                    Material = leaf.Value,
+                                };
+                            }
+							else
+							{
+                                var allChildren = n.GetAllDescendants().ToList();
+                                var ratio = VoxelCoordinate.LayerRatio;
+								if (!allChildren.Any() || allChildren.Count < ratio * ratio * ratio * .5f)
+								{
+                                    continue;
+								}
+                                var mat = allChildren.Select(c => c.Item2).Average();
+                                yield return new Voxel
+                                {
+                                    Coordinate = stepCoord,
+                                    Material = mat,
+                                };
+                            }
 						}
                     }
                 }
             }
 		}
 
-        public static IEnumerable<SurfaceData> GetAllSurfacesWithDirection(this IEnumerable<VoxelMaterial> materials, EVoxelDirection dir)
-		{
-            foreach(var mat in materials)
-			{
-                yield return mat.GetSurface(dir);
-			}
-		}
-
-        public static SurfaceData AverageSurfaces(this IEnumerable<SurfaceData> surfaces)
-        {
-            return new SurfaceData
-            {
-                Albedo = surfaces.Select(s => s.Albedo).AverageColor(),
-                Metallic = surfaces.Average(s => s.Metallic),
-                Smoothness = surfaces.Average(s => s.Smoothness),
-                TextureFade = surfaces.Max(s => s.TextureFade),
-                Texture = surfaces.GroupBy(s => s.Texture)
-                    .OrderByDescending(g => g.Count())
-                    .First().Key,
-                UVMode = surfaces.GroupBy(s => s.UVMode)
-                    .OrderByDescending(g => g.Count())
-                    .First().Key,
-            };
-        }
-
-        public static VoxelMaterial AverageMaterials(IEnumerable<VoxelMaterial> materials)
-		{
-            var mat = new VoxelMaterial
-            {
-                Overrides = new DirectionOverride[6],
-                MaterialMode = EMaterialMode.Opaque,
-                RenderMode = ERenderMode.Block,
-            };
-			for (int i = 0; i < VoxelExtensions.Directions.Length; i++)
-			{
-				EVoxelDirection dir = VoxelExtensions.Directions[i];
-				var allSurfaces = materials.GetAllSurfacesWithDirection(dir);
-                var averageSurface = allSurfaces.AverageSurfaces();
-                mat.Overrides[i] = new DirectionOverride { Direction = dir, Surface = averageSurface };
-			}
-            return mat;
-		}
+        
     }
 }

@@ -257,6 +257,35 @@ namespace Voxul.Utilities
 				snapValue * Mathf.Round(v.z / snapValue)
 			);
 		}
+
+		public static Vector3 FloorToIncrement(this Vector3 v, float snapValue)
+		{
+			return new Vector3
+			(
+				snapValue * Mathf.Floor(v.x / snapValue),
+				snapValue * Mathf.Floor(v.y / snapValue),
+				snapValue * Mathf.Floor(v.z / snapValue)
+			);
+		}
+
+		public static Vector2 RoundToIncrement(this Vector2 v, float snapValue)
+		{
+			return new Vector3
+			(
+				snapValue * Mathf.Round(v.x / snapValue),
+				snapValue * Mathf.Round(v.y / snapValue)
+			);
+		}
+
+		public static Vector2 FloorToIncrement(this Vector2 v, float snapValue)
+		{
+			return new Vector3
+			(
+				snapValue * Mathf.Floor(v.x / snapValue),
+				snapValue * Mathf.Floor(v.y / snapValue)
+			);
+		}
+
 		public static float ManhattenDistance(this Vector3 a, Vector3 b)
 		{
 			return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y) + Mathf.Abs(a.z - b.z);

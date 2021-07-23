@@ -159,7 +159,7 @@ namespace Voxul.Meshing
 				{
 					opt.OnPreFaceStep(data);
 				}
-				ConvertPlanesToMesh(data);
+				ConvertFacesToMesh(data);
 			}
 			foreach (var data in IntermediateData)
 			{
@@ -292,11 +292,11 @@ namespace Voxul.Meshing
 			}
 		}
 
-		public static void ConvertPlanesToMesh(IntermediateVoxelMeshData data)
+		public static void ConvertFacesToMesh(IntermediateVoxelMeshData data)
 		{
 			Vector3 GetOffset(Vector3 point)
 			{
-				if(data.PointOffsets.TryGetValue(point, out var offset))
+				if(data.PointOffsets != null && data.PointOffsets.TryGetValue(point, out var offset))
 				{
 					return offset;
 				}

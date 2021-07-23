@@ -8,45 +8,6 @@ namespace Voxul.Meshing
 {
 	public class FaceMerger : VoxelOptimiserBase
 	{
-		private static Vector2 SwizzleForDir(Vector3 vec, EVoxelDirection dir, out float discard)
-		{
-			switch (dir)
-			{
-				case EVoxelDirection.XNeg:
-				case EVoxelDirection.XPos:
-					discard = vec.x;
-					return new Vector2(vec.y, vec.z);
-				case EVoxelDirection.YNeg:
-				case EVoxelDirection.YPos:
-					discard = vec.y;
-					return new Vector2(vec.x, vec.z);
-				case EVoxelDirection.ZNeg:
-				case EVoxelDirection.ZPos:
-					discard = vec.z;
-					return new Vector2(vec.x, vec.y);
-				default:
-					throw new ArgumentException($"Invalid direction {dir}");
-			}
-		}
-
-		private static Vector3 ReverseSwizzleForDir(Vector2 vec, float input, EVoxelDirection dir)
-		{
-			switch (dir)
-			{
-				case EVoxelDirection.XNeg:
-				case EVoxelDirection.XPos:
-					return new Vector3(input, vec.y, vec.y);
-				case EVoxelDirection.YNeg:
-				case EVoxelDirection.YPos:
-					return new Vector3(vec.x, input, vec.y);
-				case EVoxelDirection.ZNeg:
-				case EVoxelDirection.ZPos:
-					return new Vector3(vec.x, vec.y, input);
-				default:
-					throw new ArgumentException($"Invalid direction {dir}");
-			}
-		}
-
 		static (VoxelFaceCoordinate, VoxelFace) MergeFaces((VoxelFaceCoordinate, VoxelFace) a, (VoxelFaceCoordinate, VoxelFace) b)
 		{
 			var dir = a.Item1.Direction;
@@ -54,8 +15,8 @@ namespace Voxul.Meshing
 			var faceCoordA = a.Item1;
 			var faceCoordB = b.Item1;
 
-			var rectA = new Rect(SwizzleForDir(faceCoordA.Offset, dir, out var discardA), faceCoordA.Size);
-			var rectB = new Rect(SwizzleForDir(faceCoordB.Offset, dir, out var discardB), faceCoordB.Size);
+			var rectA = new Rect(faceCoordA.Offset.SwizzleForDir(dir, out var discardA), faceCoordA.Size);
+			var rectB = new Rect(faceCoordB.Offset.SwizzleForDir(dir, out var discardB), faceCoordB.Size);
 
 			var combinedRect = Rect.MinMaxRect(
 				Mathf.Min(rectA.xMin, rectB.xMin),
@@ -66,7 +27,7 @@ namespace Voxul.Meshing
 			return (new VoxelFaceCoordinate
 			{
 				Direction = a.Item1.Direction,
-				Offset = ReverseSwizzleForDir(combinedRect.center, discardA, dir),
+				Offset = combinedRect.center.ReverseSwizzleForDir(discardA, dir),
 				Layer = a.Item1.Layer,
 				Size = combinedRect.size,
 			}, a.Item2);

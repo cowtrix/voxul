@@ -14,6 +14,110 @@ namespace Voxul
 		/// </summary>
 		public static readonly EVoxelDirection[] Directions = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>().ToArray();
 
+		public static Vector2 SwizzleForDir(this Vector3 vec, EVoxelDirection dir, out float discard)
+		{
+			switch (dir)
+			{
+				case EVoxelDirection.XNeg:
+				case EVoxelDirection.XPos:
+					discard = vec.x;
+					return new Vector2(vec.y, vec.z);
+				case EVoxelDirection.YNeg:
+				case EVoxelDirection.YPos:
+					discard = vec.y;
+					return new Vector2(vec.x, vec.z);
+				case EVoxelDirection.ZNeg:
+				case EVoxelDirection.ZPos:
+					discard = vec.z;
+					return new Vector2(vec.x, vec.y);
+				default:
+					throw new ArgumentException($"Invalid direction {dir}");
+			}
+		}
+
+		public static Vector3 ReverseSwizzleForDir(this Vector2 vec, float input, EVoxelDirection dir)
+		{
+			switch (dir)
+			{
+				case EVoxelDirection.XNeg:
+				case EVoxelDirection.XPos:
+					return new Vector3(input, vec.x, vec.y);
+				case EVoxelDirection.YNeg:
+				case EVoxelDirection.YPos:
+					return new Vector3(vec.x, input, vec.y);
+				case EVoxelDirection.ZNeg:
+				case EVoxelDirection.ZPos:
+					return new Vector3(vec.x, vec.y, input);
+				default:
+					throw new ArgumentException($"Invalid direction {dir}");
+			}
+		}
+
+		public static Vector3 ReverseSwizzleForDir(this Vector3 vec, float input, EVoxelDirection dir)
+		{
+			switch (dir)
+			{
+				case EVoxelDirection.XNeg:
+				case EVoxelDirection.XPos:
+					return new Vector3(input, vec.y, vec.z);
+				case EVoxelDirection.YNeg:
+				case EVoxelDirection.YPos:
+					return new Vector3(vec.x, input, vec.z);
+				case EVoxelDirection.ZNeg:
+				case EVoxelDirection.ZPos:
+					return new Vector3(vec.x, vec.y, input);
+				default:
+					throw new ArgumentException($"Invalid direction {dir}");
+			}
+		}
+
+		public static IEnumerable<SurfaceData> GetAllSurfacesWithDirection(this IEnumerable<VoxelMaterial> materials, EVoxelDirection dir)
+		{
+			foreach (var mat in materials)
+			{
+				yield return mat.GetSurface(dir);
+			}
+		}
+
+		public static SurfaceData AverageSurfaces(this IEnumerable<SurfaceData> surfaces)
+		{
+			if(surfaces == null || !surfaces.Any())
+			{
+				return default;
+			}
+			return new SurfaceData
+			{
+				Albedo = surfaces.Select(s => s.Albedo).AverageColor(),
+				Metallic = surfaces.Average(s => s.Metallic),
+				Smoothness = surfaces.Average(s => s.Smoothness),
+				TextureFade = surfaces.Max(s => s.TextureFade),
+				Texture = surfaces.GroupBy(s => s.Texture)
+					.OrderByDescending(g => g.Count())
+					.First().Key,
+				UVMode = surfaces.GroupBy(s => s.UVMode)
+					.OrderByDescending(g => g.Count())
+					.First().Key,
+			};
+		}
+
+		public static VoxelMaterial Average(this IEnumerable<VoxelMaterial> materials)
+		{
+			var mat = new VoxelMaterial
+			{
+				Overrides = new DirectionOverride[6],
+				MaterialMode = EMaterialMode.Opaque,
+				RenderMode = ERenderMode.Block,
+			};
+			for (int i = 0; i < VoxelExtensions.Directions.Length; i++)
+			{
+				EVoxelDirection dir = VoxelExtensions.Directions[i];
+				var allSurfaces = materials.GetAllSurfacesWithDirection(dir);
+				var averageSurface = allSurfaces.AverageSurfaces();
+				mat.Overrides[i] = new DirectionOverride { Direction = dir, Surface = averageSurface };
+			}
+			return mat;
+		}
+
 		public static IEnumerable<VoxelCoordinate> GetNeighbours(this VoxelCoordinate coord)
 		{
 			foreach(var dir in Directions)
@@ -184,6 +288,20 @@ namespace Voxul
 			var dir = renderer.transform.worldToLocalMatrix.MultiplyVector(ray.direction);
 			var localRay = new Ray(origin, dir);
 			return renderer.Mesh.Voxels.Any(v => v.Key.ToBounds().IntersectRay(localRay));
+		}
+
+		public static bool Raycast(this IEnumerable<VoxelCoordinate> coords, Ray localRay, out VoxelCoordinate hit)
+		{
+			var cast = coords.Where(v => v.ToBounds().IntersectRay(localRay))
+				.OrderBy(v => Vector3.Distance(localRay.origin, v.ToVector3()))
+				.ToList();
+			if(cast.Count == 0)
+			{
+				hit = default;
+				return false;
+			}
+			hit = cast.First();
+			return true;
 		}
 
 		public static IEnumerable<Voxel> Optimise(this IEnumerable<Voxel> voxels)

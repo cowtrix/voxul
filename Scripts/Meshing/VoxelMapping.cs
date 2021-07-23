@@ -22,6 +22,10 @@ namespace Voxul.Meshing
 
 		public VoxelMapping(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels)
 		{
+			if(voxels == null)
+			{
+				return;
+			}
 			foreach (var v in voxels)
 			{
 				this[v.Key] = v.Value;
