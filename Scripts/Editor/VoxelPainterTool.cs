@@ -183,13 +183,12 @@ namespace Voxul.Edit
 					if (ToolID == EPaintingTool.Paint)
 					{
 						var cb = CurrentBrush;
-						cb.Overrides = null;
+						cb.Overrides = new DirectionOverride[0];
 						var surface = CurrentBrush.GetSurface(hitDir);
 						cb.Default = surface;
 						CurrentBrush = cb;
 					}
 					UseEvent(currentEvent);
-					Debug.Log("Used event");
 					UnityMainThreadDispatcher.EnsureSubscribed();
 					UnityMainThreadDispatcher.Enqueue(() => Selection.activeObject = voxelPainter.Renderer.gameObject);
 				}
@@ -288,6 +287,10 @@ namespace Voxul.Edit
 
 		public virtual bool DrawInspectorGUI(VoxelPainter voxelPainter)
 		{
+			if (!m_asset)
+			{
+				return false;
+			}
 			GUILayout.BeginVertical("Box");
 			GUILayout.Label("Presets");
 			var selIndex = GUILayout.SelectionGrid(-1,

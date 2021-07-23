@@ -37,6 +37,11 @@ namespace Voxul.Edit
 			}
 
 			EditorGUILayout.EndScrollView();
+			if(GUILayout.Button("Clean Mesh"))
+			{
+				Mesh.CleanMesh();
+				EditorUtility.SetDirty(Mesh);
+			}
 		}
 	}
 }

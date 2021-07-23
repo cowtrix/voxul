@@ -47,6 +47,10 @@ namespace Voxul.Utilities
         /// <returns></returns>
         public static T GetNestedObject<T>(this object obj, string path)
         {
+            if(obj == null || path == null)
+			{
+                return default;
+			}
             foreach (string part in path.Split('.'))
             {
                 obj = obj.GetFieldOrProperty<T>(part);

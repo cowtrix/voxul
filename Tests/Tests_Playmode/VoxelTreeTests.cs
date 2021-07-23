@@ -12,7 +12,7 @@ namespace Voxul.Test
             var coord = TestUtil.RandomCoord;
             var inVal = 3;
             tree.Insert(coord, inVal);
-            Assert.That(tree.TryGetValue(coord, out var outVal));
+            Assert.That(tree.TryGetValue(coord, out int outVal));
             Assert.AreEqual(inVal, outVal);
         }
 

@@ -49,7 +49,7 @@ namespace Voxul.Edit
 			var localHitPos = Renderer.transform.worldToLocalMatrix.MultiplyPoint3x4(hitPos);
 			var firstVox = selection?.FirstOrDefault();
 
-			Tools.current = Tool.Custom;
+			//Tools.current = Tool.Custom;
 			Handles.matrix = Renderer.transform.localToWorldMatrix;
 
 			if (firstVox.HasValue && currentEvent.shift)

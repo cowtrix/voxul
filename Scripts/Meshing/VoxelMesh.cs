@@ -60,6 +60,33 @@ namespace Voxul.Meshing
 
 		public List<VoxelOptimiserBase> Optimisers = new List<VoxelOptimiserBase>();
 
+		public void CleanMesh()
+		{
+			var data = new VoxelMapping(Voxels);
+			Voxels.Clear();
+			foreach (var v in data)
+			{
+				var mat = v.Value.Material;
+				if (mat.MaterialMode == EMaterialMode.Transparent && mat.Default.Albedo.a > .99f && mat.Overrides.All(o => o.Surface.Albedo.a > .99f))
+				{
+					mat.MaterialMode = EMaterialMode.Opaque;
+				}
+				if (mat.MaterialMode == EMaterialMode.Opaque)
+				{
+					mat.Default.Albedo = mat.Default.Albedo.WithAlpha(1);
+					for (int i = 0; i < mat.Overrides.Length; i++)
+					{
+						DirectionOverride ov = mat.Overrides[i];
+						ov.Surface.Albedo = ov.Surface.Albedo.WithAlpha(1);
+						mat.Overrides[i] = ov;
+					}
+				}
+				var vox = v.Value;
+				vox.Material = mat;
+				Voxels.AddSafe(vox);
+			}
+		}
+
 		public void Invalidate()
 		{
 			Hash = Guid.NewGuid().ToString();

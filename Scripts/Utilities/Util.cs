@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -9,6 +10,18 @@ namespace Voxul.Utilities
 		public static string CamelcaseToSpaces(this string str)
 		{
 			return Regex.Replace(str, "(\\B[A-Z])", " $1");
+		}
+
+		public static Color AverageColor(this IEnumerable<Color> cols)
+		{
+			var result = Color.clear;
+			int count = 0;
+			foreach(var c in cols)
+			{
+				result += c;
+				count++;
+			}
+			return result / count;
 		}
 
 		public static ISet<T> ToSet<T>(this IEnumerable<T> collection)

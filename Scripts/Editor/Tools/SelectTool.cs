@@ -15,10 +15,16 @@ namespace Voxul.Edit
 		public override GUIContent Icon => EditorGUIUtility.IconContent("Selectable Icon");
 		public Bounds SelectionBounds;
 		protected override EPaintingTool ToolID => EPaintingTool.Select;
+		protected override bool DrawSceneGUIWithNoSelection => true;
 
 		public override bool DrawInspectorGUI(VoxelPainter voxelPainter)
 		{
 			var result = base.DrawInspectorGUI(voxelPainter);
+			if(GUILayout.Button("Invert Selection"))
+			{
+				var currentSelection = voxelPainter.CurrentSelection.ToList();
+				voxelPainter.SetSelection(voxelPainter.Renderer.Mesh.Voxels.Keys.Where(k => !currentSelection.Contains(k)));
+			}
 			if (GUILayout.Button("Apply Material To Selection (SHIFT + M)") ||
 				(Event.current.isKey && Event.current.shift && Event.current.keyCode == KeyCode.M))
 			{
@@ -65,6 +71,18 @@ namespace Voxul.Edit
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent,
 			List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
 		{
+			if (voxelPainter.CurrentSelection.Any() && currentEvent.isKey && currentEvent.keyCode == KeyCode.Delete)
+			{
+				foreach (var c in voxelPainter.CurrentSelection)
+				{
+					renderer.Mesh.Voxels.Remove(c);
+				}
+				voxelPainter.SetSelection(null);
+				SelectionBounds = default;
+				UseEvent(currentEvent);
+				return true;
+			}
+
 			if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 			{
 				if (!currentEvent.shift)
@@ -103,17 +121,6 @@ namespace Voxul.Edit
 
 			Handles.matrix = renderer.transform.localToWorldMatrix;
 			HandleExtensions.DrawWireCube(SelectionBounds.center, SelectionBounds.extents, Quaternion.identity, Color.magenta);
-
-			if (voxelPainter.CurrentSelection.Any() && currentEvent.isKey && currentEvent.keyCode == KeyCode.Delete)
-			{
-				foreach (var c in voxelPainter.CurrentSelection)
-				{
-					renderer.Mesh.Voxels.Remove(c);
-				}
-				voxelPainter.SetSelection(null);
-				SelectionBounds = default;
-				return true;
-			}
 
 			return false;
 		}

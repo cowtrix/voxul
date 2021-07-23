@@ -28,7 +28,7 @@ namespace Voxul.Utilities
 			giz(m_root);
 		}
 
-		protected abstract class Node 
+		public abstract class Node 
 		{
 			public VoxelCoordinate Coordinate { get; }
 
@@ -38,9 +38,27 @@ namespace Voxul.Utilities
 			{
 				Coordinate = coordinate;
 			}
+
+			internal IEnumerable<(VoxelCoordinate, T)> GetAllDescendants()
+			{
+				foreach(var childNode in Children)
+				{
+					if(childNode.Value is LeafNode leaf)
+					{
+						yield return (leaf.Coordinate, leaf.Value);
+					}
+					else if (childNode.Value is Partition partition)
+					{
+						foreach(var descendant in partition.GetAllDescendants())
+						{
+							yield return descendant;
+						}
+					}
+				}
+			}
 		}
 
-		protected class LeafNode : Node
+		public class LeafNode : Node
 		{
 			public T Value;
 
@@ -50,7 +68,7 @@ namespace Voxul.Utilities
 			}
 		}
 
-		protected class Partition : Node
+		public class Partition : Node
 		{
 			public Partition(VoxelCoordinate coordinate) : base(coordinate)
 			{
@@ -84,7 +102,7 @@ namespace Voxul.Utilities
 			return false;
 		}
 
-		protected bool TryGetValue(VoxelCoordinate coord, out Node value)
+		public bool TryGetValue(VoxelCoordinate coord, out Node value)
 		{
 			if(coord.Layer < MinLayer)
 			{

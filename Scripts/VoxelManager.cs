@@ -11,8 +11,11 @@ namespace Voxul
 	public class VoxelManager : ScriptableObject
 	{
 		public const string RESOURCES_FOLDER = "voxul";
+
 		public static VoxelManager Instance => m_instance.Value;
 		private static LazyReference<VoxelManager> m_instance = new LazyReference<VoxelManager>(BuildVoxelManager);
+
+		public static string GetVoxelManagerPath() => $"Assets/Resources/{RESOURCES_FOLDER}/{nameof(VoxelManager)}.asset";
 
 		static VoxelManager BuildVoxelManager()
 		{
@@ -20,33 +23,15 @@ namespace Voxul
 			var vm = Resources.Load<VoxelManager>(path);
 			if (!vm)
 			{
-#if UNITY_EDITOR
-				var firstManagerInProject = UnityEditor.AssetDatabase.FindAssets($"t: {nameof(VoxelManager)}")
-					.FirstOrDefault(s => s.Contains("Resources"));
-				if (string.IsNullOrEmpty(firstManagerInProject))
+				var rscPath = $"{Application.dataPath}/Resources/{RESOURCES_FOLDER}";
+				if (!Directory.Exists(rscPath))
 				{
-					var rscPath = $"{Application.dataPath}/Resources/{RESOURCES_FOLDER}";
-					if (!Directory.Exists(rscPath))
-					{
-						Directory.CreateDirectory(rscPath);
-						UnityEditor.AssetDatabase.Refresh();
-					}
-					UnityEditor.AssetDatabase.CreateAsset(CreateInstance<VoxelManager>(), $"Assets/Resources/{RESOURCES_FOLDER}/{nameof(VoxelManager)}.asset");
+					Directory.CreateDirectory(rscPath);
 					UnityEditor.AssetDatabase.Refresh();
 				}
-				else
-				{
-					path = firstManagerInProject;
-				}
+				UnityEditor.AssetDatabase.CreateAsset(CreateInstance<VoxelManager>(), GetVoxelManagerPath());
+				UnityEditor.AssetDatabase.Refresh();
 				vm = Resources.Load<VoxelManager>(path);
-
-#else
-				throw new Exception($"Could not find VoxelManager resource at {path}");
-#endif
-			}
-			if (!vm)
-			{
-				voxulLogger.Error("Failed to initialize ResourceManager singleton");
 			}
 			return vm;
 		}
@@ -85,6 +70,8 @@ namespace Voxul
 			{
 				DefaultMaterial = new Material(Shader.Find("voxul/DefaultVoxel"));
 #if UNITY_EDITOR
+				UnityEditor.AssetDatabase.AddObjectToAsset(DefaultMaterial, GetVoxelManagerPath());
+				Debug.Log(UnityEditor.AssetDatabase.GetAssetPath(DefaultMaterial));
 				UnityEditor.EditorUtility.SetDirty(this);
 #endif
 			}
@@ -92,6 +79,7 @@ namespace Voxul
 			{
 				DefaultMaterialTransparent = new Material(Shader.Find("voxul/DefaultVoxelTransparent"));
 #if UNITY_EDITOR
+				UnityEditor.AssetDatabase.AddObjectToAsset(DefaultMaterialTransparent, GetVoxelManagerPath());
 				UnityEditor.EditorUtility.SetDirty(this);
 #endif
 			}
@@ -110,10 +98,11 @@ namespace Voxul
 				newArray.wrapMode = TextureWrapMode.Repeat;
 				var currentPath = texArray ? UnityEditor.AssetDatabase.GetAssetPath(texArray) : $"Assets/Resources/{RESOURCES_FOLDER}/spritesheet.asset";
 				var tmpPath = "Assets/tmp.asset";
-				
+
 				try
 				{
 					UnityEditor.AssetDatabase.CreateAsset(newArray, tmpPath);
+					UnityEditor.AssetDatabase.Refresh();
 					File.WriteAllBytes(currentPath, File.ReadAllBytes(tmpPath));
 					UnityEditor.AssetDatabase.DeleteAsset(tmpPath);
 					UnityEditor.AssetDatabase.ImportAsset(currentPath);

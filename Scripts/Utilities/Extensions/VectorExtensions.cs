@@ -5,6 +5,11 @@ namespace Voxul.Utilities
 {
 	public static class VectorExtensions
 	{
+		public static bool Approximately(this Vector3 a, Vector3 b)
+		{
+			return Mathf.Approximately(a.x, b.x) && Mathf.Approximately(a.y, b.y) && Mathf.Approximately(a.z, b.z);
+		}
+
 		public static IEnumerable<Vector3> EnumerateVertices(this Bounds bounds)
 		{
 			var w = bounds.size.x / 2f;

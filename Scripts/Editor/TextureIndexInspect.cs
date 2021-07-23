@@ -50,7 +50,10 @@ namespace Voxul.Edit
 				if (!vm.Sprites.Contains(newTex))
 				{
 					vm.Sprites.Add(newTex);
-					UnityMainThreadDispatcher.Enqueue(() => vm.RegenerateSpritesheet());
+					if (!EditorApplication.isCompiling)
+					{
+						UnityMainThreadDispatcher.Enqueue(() => vm.RegenerateSpritesheet());
+					}
 				}
 				var index = vm.Sprites.IndexOf(newTex);
 				prop.intValue = index;

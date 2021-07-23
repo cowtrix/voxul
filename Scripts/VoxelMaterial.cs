@@ -57,7 +57,7 @@ namespace Voxul
 				   RenderMode == material.RenderMode &&
 				   NormalMode == material.NormalMode &&
 				   Default.Equals(material.Default) &&
-				   ((Overrides == null && material.Overrides == null) || !Overrides.Any(o => !material.Overrides.Contains(o)));
+				   ((Overrides == null && material.Overrides == null) || (material.Overrides != null && !Overrides.Any(o => !material.Overrides.Contains(o))));
 		}
 
 		public override int GetHashCode()

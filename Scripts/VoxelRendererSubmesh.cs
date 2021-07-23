@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.Rendering;
 using Voxul.Utilities;
 
 namespace Voxul
@@ -11,18 +14,20 @@ namespace Voxul
 	/// </summary>
 	public class VoxelRendererSubmesh : MonoBehaviour
 	{
+		public VoxelRenderer Parent;
 		public MeshFilter MeshFilter;
 		public MeshRenderer MeshRenderer;
 		public MeshCollider MeshCollider;
 
-		public void SetupComponents(bool collider)
+		public void SetupComponents(VoxelRenderer r, bool collider)
 		{
 			if (!this)
 			{
 				voxulLogger.Warning("Attempting to setup VoxelRendererSubmesh but it has been destroyed.");
 				return;
 			}
-			gameObject.hideFlags = HideFlags.HideInHierarchy;
+			Parent = r;
+			gameObject.hideFlags = HideFlags.NotEditable;
 			gameObject.transform.localPosition = Vector3.zero;
 			gameObject.transform.localRotation = Quaternion.identity;
 			gameObject.transform.localScale = Vector3.one;
@@ -40,10 +45,27 @@ namespace Voxul
 				{
 					MeshCollider = gameObject.GetOrAddComponent<MeshCollider>();
 				}
-				MeshCollider.convex = false;
+				if (MeshCollider.convex)
+				{
+					MeshCollider.convex = false;
+				}
 			}
 		}
 
 		public Bounds Bounds => MeshRenderer.bounds;
+
+#if UNITY_EDITOR
+		internal void SetDirty()
+		{
+			UnityEditor.EditorUtility.SetDirty(gameObject);
+			UnityEditor.EditorUtility.SetDirty(this);
+			if (MeshRenderer)
+				UnityEditor.EditorUtility.SetDirty(MeshRenderer);
+			if (MeshFilter)
+				UnityEditor.EditorUtility.SetDirty(MeshFilter);
+			if (MeshCollider)
+				UnityEditor.EditorUtility.SetDirty(MeshCollider);
+		}
+#endif
 	}
 }

@@ -164,6 +164,20 @@ namespace Voxul
 			return b;
 		}
 
+		public static Bounds GetBounds(this IEnumerable<Voxel> voxels)
+		{
+			if (voxels == null || !voxels.Any())
+			{
+				return default;
+			}
+			var b = voxels.First().Coordinate.ToBounds();
+			foreach (var b2 in voxels.Skip(1))
+			{
+				b.Encapsulate(b2.Coordinate.ToBounds());
+			}
+			return b;
+		}
+
 		public static bool Raycast(this VoxelRenderer renderer, Ray ray)
 		{
 			var origin = renderer.transform.worldToLocalMatrix.MultiplyPoint3x4(ray.origin);

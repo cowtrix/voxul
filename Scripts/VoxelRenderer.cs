@@ -63,6 +63,14 @@ namespace Voxul
 				var scale = VoxelCoordinate.LayerToScale(SnapLayer);
 				transform.localPosition = transform.localPosition.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
 			}
+			foreach(var r in Renderers)
+			{
+				if (!r)
+				{
+					continue;
+				}
+				r.SetupComponents(this, GenerateCollider);
+			}
 			if (m_isDirty || Mesh?.Hash != m_lastMeshHash)
 			{
 				Invalidate(false, false);
@@ -94,10 +102,11 @@ namespace Voxul
 
 		public void SetupComponents(bool forceCollider)
 		{
-			Renderers = new List<VoxelRendererSubmesh>(GetComponentsInChildren<VoxelRendererSubmesh>());
+			Renderers = new List<VoxelRendererSubmesh>(GetComponentsInChildren<VoxelRendererSubmesh>()
+				.Where(r => r.Parent == this));
 			foreach(var r in Renderers)
 			{
-				r.SetupComponents(GenerateCollider || forceCollider);
+				r.SetupComponents(this, GenerateCollider || forceCollider);
 			}
 		}
 
@@ -112,10 +121,6 @@ namespace Voxul
 			}
 			Mesh.Invalidate();
 			Invalidate(true, false);
-#if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(gameObject);
-			UnityEditor.EditorUtility.SetDirty(Mesh);
-#endif
 		}
 
 		public virtual void Invalidate(bool force, bool forceCollider)
@@ -170,7 +175,7 @@ namespace Voxul
 				{
 					submesh = Renderers[i];
 				}
-				submesh.SetupComponents(GenerateCollider);
+				submesh.SetupComponents(this, GenerateCollider);
 				submesh.MeshFilter.sharedMesh = unityMesh;
 				if (GenerateCollider)
 				{
@@ -194,7 +199,7 @@ namespace Voxul
 			for (int i = 0; i < Mesh.UnityMeshInstances.Count; i++)
 			{
 				var m = Mesh.UnityMeshInstances[i];
-				Renderers[i].SetupComponents(false);
+				Renderers[i].SetupComponents(this, false);
 				Renderers[i].MeshFilter.sharedMesh = m.UnityMesh;
 			}
 			for (var i = Renderers.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)
@@ -208,6 +213,14 @@ namespace Voxul
 				Renderers.RemoveAt(i);
 			}
 			m_lastMeshHash = Mesh.Hash;
+#if UNITY_EDITOR
+			foreach (var r in Renderers)
+			{
+				r.SetDirty();
+			}
+			UnityEditor.EditorUtility.SetDirty(gameObject);
+			UnityEditor.EditorUtility.SetDirty(Mesh);
+#endif
 		}
 
 		private void SetMaterials(VoxelRendererSubmesh submesh, Material opaque, Material transparent)
