@@ -14,6 +14,11 @@ namespace Voxul
 		/// </summary>
 		public static readonly EVoxelDirection[] Directions = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>().ToArray();
 
+		public static Vector3Int ToRawVector3Int(this VoxelCoordinate vec) => new Vector3Int(vec.X, vec.Y, vec.Z);
+
+		public static Vector2 SwizzleForDir(this Vector3Int vec, EVoxelDirection dir, out float discard) =>
+			SwizzleForDir(vec.ToVector3(), dir, out discard);
+
 		public static Vector2 SwizzleForDir(this Vector3 vec, EVoxelDirection dir, out float discard)
 		{
 			switch (dir)
@@ -35,6 +40,9 @@ namespace Voxul
 			}
 		}
 
+		public static Vector3Int ReverseSwizzleForDir(this Vector2Int vec, float input, EVoxelDirection dir) =>
+			ReverseSwizzleForDir((Vector2)vec, input, dir).RoundToVector3Int();
+
 		public static Vector3 ReverseSwizzleForDir(this Vector2 vec, float input, EVoxelDirection dir)
 		{
 			switch (dir)
@@ -52,6 +60,9 @@ namespace Voxul
 					throw new ArgumentException($"Invalid direction {dir}");
 			}
 		}
+
+		public static Vector3Int ReverseSwizzleForDir(this Vector3Int vec, float input, EVoxelDirection dir) => 
+			ReverseSwizzleForDir((Vector3)vec, input, dir).RoundToVector3Int();
 
 		public static Vector3 ReverseSwizzleForDir(this Vector3 vec, float input, EVoxelDirection dir)
 		{
@@ -158,6 +169,19 @@ namespace Voxul
 			return mesh?.Voxels
 				.Where(v => (v.Key.ToVector3() - localPos).sqrMagnitude < (radius * radius))
 				.Select(v => v.Value);
+		}
+
+		public static bool IsNegative(this EVoxelDirection vox)
+		{
+			switch (vox)
+			{
+				case EVoxelDirection.XNeg:
+				case EVoxelDirection.YNeg:
+				case EVoxelDirection.ZNeg:
+					return true;
+				default:
+					return false;
+			}
 		}
 
 		public static IEnumerable<VoxelCoordinate> GetVoxelCoordinates(this Bounds bounds, sbyte currentLayer)
@@ -282,17 +306,30 @@ namespace Voxul
 			return b;
 		}
 
-		public static bool Raycast(this VoxelRenderer renderer, Ray ray)
+		public static bool RaycastWorld(this VoxelRenderer renderer, Ray ray, float maxDistance, out VoxelCoordinate hit)
 		{
 			var origin = renderer.transform.worldToLocalMatrix.MultiplyPoint3x4(ray.origin);
 			var dir = renderer.transform.worldToLocalMatrix.MultiplyVector(ray.direction);
 			var localRay = new Ray(origin, dir);
-			return renderer.Mesh.Voxels.Any(v => v.Key.ToBounds().IntersectRay(localRay));
+			return RaycastLocal(renderer.Mesh.Voxels.Keys, localRay, maxDistance, out hit);
 		}
 
-		public static bool Raycast(this IEnumerable<VoxelCoordinate> coords, Ray localRay, out VoxelCoordinate hit)
+		public static bool RaycastLocal(this IEnumerable<VoxelCoordinate> coords, Ray localRay, float maxDistance, out VoxelCoordinate hit)
 		{
-			var cast = coords.Where(v => v.ToBounds().IntersectRay(localRay))
+			var cast = coords
+				.Where(v =>
+				{
+					var vPos = v.ToVector3();
+					if(Vector3.Distance(localRay.origin, vPos) > maxDistance)
+					{
+						return false;
+					}
+					if(Vector3.Dot(localRay.direction.normalized, (localRay.origin - vPos).normalized) < 0)
+					{
+						//return false;
+					}
+					return v.ToBounds().IntersectRay(localRay);
+				})
 				.OrderBy(v => Vector3.Distance(localRay.origin, v.ToVector3()))
 				.ToList();
 			if(cast.Count == 0)

@@ -12,6 +12,13 @@ namespace Voxul.Utilities
 			return Regex.Replace(str, "(\\B[A-Z])", " $1");
 		}
 
+		public static void Swap<T>(ref T first, ref T second)
+		{
+			var tmp = first;
+			first = second;
+			second = tmp;
+		}
+
 		public static Color AverageColor(this IEnumerable<Color> cols)
 		{
 			var result = Color.clear;

@@ -25,7 +25,7 @@ namespace Voxul.Meshing
 			return obj is VoxelFaceCoordinate coordinate &&
 				   Layer == coordinate.Layer &&
 				   Size.Equals(coordinate.Size) &&
-				   Offset.Approximately(coordinate.Offset) &&
+				   Offset == coordinate.Offset &&
 				   Direction == coordinate.Direction;
 		}
 
@@ -34,7 +34,7 @@ namespace Voxul.Meshing
 			int hashCode = -19254490;
 			hashCode = hashCode * -1521134295 + Layer.GetHashCode();
 			hashCode = hashCode * -1521134295 + Size.GetHashCode();
-			hashCode = hashCode * -1521134295 + Offset.Round().GetHashCode();
+			hashCode = hashCode * -1521134295 + Offset.GetHashCode();
 			hashCode = hashCode * -1521134295 + Direction.GetHashCode();
 			return hashCode;
 		}

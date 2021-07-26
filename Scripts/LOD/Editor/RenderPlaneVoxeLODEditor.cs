@@ -1,78 +1,83 @@
-﻿using UnityEditor;
+﻿using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using Voxul.Edit;
 using Voxul.Utilities;
 
 namespace Voxul.LevelOfDetail
 {
+
 	[CanEditMultipleObjects]
 	[CustomEditor(typeof(RenderPlaneVoxelLOD))]
 	public class RenderPlaneVoxeLODEditor : Editor
 	{
-
-		public bool SnapToGrid
-		{
-			get
-			{
-				return EditorPrefUtility.GetPref("VoxelPainterLOD_SnapToGrid", true);
-			}
-			set
-			{
-				EditorPrefUtility.SetPref("VoxelPainterLOD_SnapToGrid", value);
-			}
-		}
-		public sbyte SnapLayer
-		{
-			get
-			{
-				return EditorPrefUtility.GetPref("VoxelPainterLOD_SnapLayer", (sbyte)0);
-			}
-			set
-			{
-				EditorPrefUtility.SetPref("VoxelPainterLOD_SnapLayer", value);
-			}
-		}
-
 		public override void OnInspectorGUI()
 		{
-			base.OnInspectorGUI();
-
-			SnapToGrid = EditorGUILayout.Toggle("Snap to Grid", SnapToGrid);
-			if (SnapToGrid)
+			if (GUILayout.Button("Rebake All"))
 			{
-				SnapLayer = (sbyte)EditorGUILayout.IntSlider("Snap Layer", SnapLayer, -10, 10);
+				foreach (var t in targets)
+				{
+					var l = t as RenderPlaneVoxelLOD;
+					foreach (var p in l.RenderPlanes)
+					{
+						l.Rebake(p);
+					}
+				}
 			}
+			base.OnInspectorGUI();
 		}
 
 		void OnSceneGUI()
 		{
+			void DoVoxelCoordinateSceneView(ref Vector2Int coord, ref int offset, Quaternion rot, sbyte layer, EVoxelDirection dir)
+			{
+				var scale = VoxelCoordinate.LayerToScale(layer);
+				var planePos = coord.ReverseSwizzleForDir(offset, dir).ToVector3() * scale;
+				planePos = Handles.PositionHandle(planePos, rot);
+				coord = (planePos / scale)
+					.RoundToVector3Int()
+					.SwizzleForDir(dir, out var offsetFloat)
+					.RoundToVector2Int();
+				offset = (int)offsetFloat;
+			}
+
 			Tools.hidden = true;
 			var t = (RenderPlaneVoxelLOD)target;
+			Handles.matrix = t.transform.localToWorldMatrix;
 			for (int i = 0; i < t.RenderPlanes.Count; i++)
 			{
 				RenderPlaneVoxelLOD.RenderPlane plane = t.RenderPlanes[i];
 				Handles.matrix = t.transform.localToWorldMatrix;
 
-				var layerScale = VoxelCoordinate.LayerToScale(SnapLayer);
-
-				var rot = VoxelCoordinate.DirectionToQuaternion(plane.Direction);
-				var castDist = plane.CastDepth * layerScale;
-				HandleExtensions.DrawWireCube(plane.Position + rot * Vector3.forward * castDist * .5f, new Vector3(plane.Size.x, castDist, plane.Size.y), rot, Color.white);
-
-				var reverseSwizzleSize = plane.Size.ReverseSwizzleForDir(0, plane.Direction);
-
-				if (Tools.current == Tool.Move)
-					plane.Position = Handles.PositionHandle(plane.Position, rot);
-				if (Tools.current == Tool.Scale)
-					reverseSwizzleSize = Handles.DoScaleHandle(reverseSwizzleSize, plane.Position, t.transform.rotation * rot, 2);
-
-				plane.Size = reverseSwizzleSize.SwizzleForDir(plane.Direction, out _);
-
-				if (SnapToGrid)
+				foreach (var duplicate in t.RenderPlanes.Where(p => p.Albedo == plane.Albedo && p != plane))
 				{
-					plane.Position = plane.Position.FloorToIncrement(layerScale);
-					plane.Size = plane.Size.FloorToIncrement(VoxelCoordinate.LayerToScale(SnapLayer));
+					duplicate.Albedo = null;
 				}
+				if (plane.CastDepth <= 1)
+				{
+					plane.CastDepth = 1;
+				}
+				if (plane.Min.x > plane.Max.x)
+				{
+					var tmp = plane.Min.x;
+					plane.Min.x = plane.Max.x;
+					plane.Max.x = tmp;
+				}
+				if (plane.Min.y > plane.Max.y)
+				{
+					var tmp = plane.Min.y;
+					plane.Min.y = plane.Max.y;
+					plane.Max.y = tmp;
+				}
+
+				DoVoxelCoordinateSceneView(ref plane.Min, ref plane.Offset, t.transform.localRotation, plane.Layer, plane.Direction);
+				DoVoxelCoordinateSceneView(ref plane.Max, ref plane.Offset, t.transform.localRotation, plane.Layer, plane.Direction);
+
+				var b = new VoxelCoordinate(plane.MinVec3, plane.Layer).ToBounds();
+				b.Encapsulate(new VoxelCoordinate(plane.MaxVec3, plane.Layer).ToBounds());
+
+				var dirVec = VoxelCoordinate.DirectionToVector3(plane.Direction) * VoxelCoordinate.LayerToScale(plane.Layer) * .5f;
+				HandleExtensions.DrawWireCube(b.center + dirVec, b.extents.ReverseSwizzleForDir(0, plane.Direction), Quaternion.identity, Color.white);
 
 				if (t.RenderPlanes[i] != plane)
 				{

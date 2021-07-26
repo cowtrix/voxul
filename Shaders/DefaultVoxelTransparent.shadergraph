@@ -5,6 +5,9 @@
     "m_Properties": [
         {
             "m_Id": "aa09ae0a33c23781b68c4c7c18f2a204"
+        },
+        {
+            "m_Id": "16b9a838a8754bbea219275e05d65c63"
         }
     ],
     "m_Keywords": [],
@@ -47,6 +50,9 @@
         },
         {
             "m_Id": "a42f466d1de948138aeda6e13c66a6ea"
+        },
+        {
+            "m_Id": "d15263b240d34e7c8dfccd924b1f1e19"
         }
     ],
     "m_GroupDatas": [],
@@ -251,6 +257,31 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
+    "m_ObjectId": "13891e3f426e4b0e968fbb4f14326d06",
+    "m_Id": 0,
+    "m_DisplayName": "AlbedoTint",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Out",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.ColorRGBMaterialSlot",
     "m_ObjectId": "13c79d65b26140e3a1b92bf7641bfb16",
     "m_Id": 0,
@@ -313,6 +344,30 @@
 }
 
 {
+    "m_SGVersion": 3,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
+    "m_ObjectId": "16b9a838a8754bbea219275e05d65c63",
+    "m_Guid": {
+        "m_GuidSerialized": "a6dbfa93-8ed5-4af4-9a4b-c880fed3a245"
+    },
+    "m_Name": "AlbedoTint",
+    "m_DefaultReferenceName": "Color_16b9a838a8754bbea219275e05d65c63",
+    "m_OverrideReferenceName": "AlbedoTint",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+    },
+    "m_ColorMode": 0
+}
+
+{
     "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "197a336c720a40aead7f1cd8bc1afbcd",
@@ -322,7 +377,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "Occlusion",
     "m_StageCapability": 2,
-    "m_Value": 1.0,
+    "m_Value": 0.5,
     "m_DefaultValue": 1.0,
     "m_Labels": []
 }
@@ -597,10 +652,12 @@
     },
     "m_SerializedSubGraph": "{\n    \"subGraph\": {\n        \"fileID\": -5475051401550479605,\n        \"guid\": \"21c61a545bd6cc74fa437cb317272001\",\n        \"type\": 3\n    }\n}",
     "m_PropertyGuids": [
-        "f89831db-e956-4a53-86a1-d458168cf074"
+        "f89831db-e956-4a53-86a1-d458168cf074",
+        "1a1952c4-7bdf-443d-b142-954c42279266"
     ],
     "m_PropertyIds": [
-        -976323588
+        -976323588,
+        -188344673
     ]
 }
 
@@ -839,7 +896,7 @@
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
     "m_Value": {
-        "m_SerializedTexture": "{\"textureArray\":{\"instanceID\":0}}",
+        "m_SerializedTexture": "{\"textureArray\":{\"fileID\":18700000,\"guid\":\"c6bf001f091942340baa4bfcedd5a6a0\",\"type\":2}}",
         "m_Guid": ""
     },
     "m_Modifiable": true
@@ -974,6 +1031,41 @@
     },
     "m_Labels": [],
     "m_Space": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
+    "m_ObjectId": "d15263b240d34e7c8dfccd924b1f1e19",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "Property",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": -42.000003814697269,
+            "y": 497.0,
+            "width": 135.0,
+            "height": 34.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "13891e3f426e4b0e968fbb4f14326d06"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_Property": {
+        "m_Id": "16b9a838a8754bbea219275e05d65c63"
+    }
 }
 
 {

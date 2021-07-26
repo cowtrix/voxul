@@ -9,7 +9,6 @@ namespace Voxul
     public class VoxelSprite : VoxelRenderer
     {
 		public EMaterialMode MaterialMode;
-		[DrawIf(nameof(MaterialMode), EMaterialMode.Opaque, ComparisonType.Equals)]
 		public float AlphaCuttoff = .5f;
         public Sprite Sprite;
         public sbyte Layer;

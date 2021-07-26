@@ -5,6 +5,30 @@ namespace Voxul.Utilities
 {
 	public static class VectorExtensions
 	{
+		public static Vector3 ToVector3(this Vector3Int intVec) => (Vector3Int)intVec;
+
+		public static Vector2 ToVector2(this Vector2Int intVec) => (Vector2Int)intVec;
+
+		public static Vector2Int RoundToVector2Int(this Vector2 vec)
+		{
+			return new Vector2Int
+			{
+				x = Mathf.RoundToInt(vec.x),
+				y = Mathf.RoundToInt(vec.y),
+			};
+		}
+
+		public static Vector3Int RoundToVector3Int(this Vector3 vec)
+		{
+			return new Vector3Int
+			{
+				x = Mathf.RoundToInt(vec.x),
+				y = Mathf.RoundToInt(vec.y),
+				z = Mathf.RoundToInt(vec.z),
+			};
+		}
+
+
 		public static bool Approximately(this Vector3 a, Vector3 b)
 		{
 			return Mathf.Approximately(a.x, b.x) && Mathf.Approximately(a.y, b.y) && Mathf.Approximately(a.z, b.z);
@@ -202,6 +226,21 @@ namespace Voxul.Utilities
 			}
 
 			return obj;
+		}
+
+		public static float Clamp360(this float angle)
+		{
+			if (angle < -180)
+			{
+				angle += 360;
+			}
+
+			if (angle > 180)
+			{
+				angle -= 360;
+			}
+
+			return angle;
 		}
 
 		public static Vector4 ToVector4(this Vector3 v, float w)

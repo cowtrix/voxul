@@ -23,8 +23,6 @@ namespace Voxul.Meshing
 					continue;
 				}
 
-				var offset = VoxelCoordinate.DirectionToCoordinate(faceCoord.Direction, faceCoord.Layer)
-					.ToVector3();
 				var inverse = new VoxelFaceCoordinate
 				{
 					Offset = face.Key.Offset,
@@ -32,6 +30,7 @@ namespace Voxul.Meshing
 					Size = face.Key.Size,
 					Layer = face.Key.Layer,
 				};
+
 				if (!data.Faces.TryGetValue(inverse, out var neighbour))
 				{
 					continue;

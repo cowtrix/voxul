@@ -411,7 +411,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "Occlusion",
     "m_StageCapability": 2,
-    "m_Value": 1.0,
+    "m_Value": 0.5,
     "m_DefaultValue": 1.0,
     "m_Labels": []
 }
@@ -669,11 +669,13 @@
     "m_SerializedSubGraph": "{\n    \"subGraph\": {\n        \"fileID\": -5475051401550479605,\n        \"guid\": \"21c61a545bd6cc74fa437cb317272001\",\n        \"type\": 3\n    }\n}",
     "m_PropertyGuids": [
         "f89831db-e956-4a53-86a1-d458168cf074",
-        "a8625f1f-b34e-4e3c-8f94-d1eba29e34f9"
+        "a8625f1f-b34e-4e3c-8f94-d1eba29e34f9",
+        "1a1952c4-7bdf-443d-b142-954c42279266"
     ],
     "m_PropertyIds": [
         -976323588,
-        -903081510
+        -903081510,
+        -188344673
     ]
 }
 
@@ -892,7 +894,7 @@
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
     "m_Value": {
-        "m_SerializedTexture": "{\"textureArray\":{\"instanceID\":0}}",
+        "m_SerializedTexture": "{\"textureArray\":{\"fileID\":18700000,\"guid\":\"c6bf001f091942340baa4bfcedd5a6a0\",\"type\":2}}",
         "m_Guid": ""
     },
     "m_Modifiable": true

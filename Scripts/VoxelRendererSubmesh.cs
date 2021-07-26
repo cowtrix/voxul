@@ -27,7 +27,7 @@ namespace Voxul
 				return;
 			}
 			Parent = r;
-			gameObject.hideFlags = HideFlags.NotEditable;
+			gameObject.hideFlags = HideFlags.HideInHierarchy;
 			gameObject.transform.localPosition = Vector3.zero;
 			gameObject.transform.localRotation = Quaternion.identity;
 			gameObject.transform.localScale = Vector3.one;

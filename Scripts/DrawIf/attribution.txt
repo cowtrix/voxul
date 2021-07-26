@@ -1,3 +1,0 @@
-﻿This folder was taken from [this post on the Unity Forum.](https://forum.unity.com/threads/draw-a-field-only-if-a-condition-is-met.448855/), created by user `Or-Aviram`. It is assumed to be released without license. Thank you very much to the creator.
-
-If you are the creator and you would like this code removed from this repository, please raise an issue at https://github.com/cowtrix/voxul/issues/new.

@@ -15,57 +15,170 @@ namespace Voxul.LevelOfDetail
 		[Serializable]
 		public class RenderPlane
 		{
-			public Vector3 Position;
+			public Rect Rect
+			{
+				get
+				{
+					var bounds = new Bounds(new VoxelCoordinate(MinVec3, Layer).ToVector3(), Vector3.zero);
+					bounds.Encapsulate(new VoxelCoordinate(MaxVec3, Layer).ToVector3());
+					var swizzleSize = bounds.size.SwizzleForDir(Direction, out _);
+					var swizzlePos = bounds.center.SwizzleForDir(Direction, out _);
+
+					return new Rect(swizzlePos, swizzleSize);
+				}
+			}
+
+			public Vector3Int MinVec3 => Min.ReverseSwizzleForDir(Offset, Direction);
+			public Vector3Int MaxVec3 => Max.ReverseSwizzleForDir(Offset, Direction);
+
 			public EVoxelDirection Direction;
-			public Vector2 Size = Vector2.one;
+			public Vector2Int Min, Max;
+			public int Offset;
+			[Range(VoxelCoordinate.MIN_LAYER, VoxelCoordinate.MAX_LAYER)]
+			public sbyte Layer;
 			[Range(1, 100)]
 			public int CastDepth = 1;
+			public bool FlipX, FlipY;
+			public Texture2D Albedo;
 
-			[HideInInspector]
-			public Vector2 UVMin;
-			[HideInInspector]
-			public Vector2 UVMax;
-
-			public VoxelFaceCoordinate GetFace(sbyte layer) => new VoxelFaceCoordinate 
-			{ 
-				Direction = Direction, 
-				Layer = 0, 
-				Offset = Position,
-				Size = Size * 2,// - Vector2.one * VoxelCoordinate.LayerToScale(layer)
-			};
-
-			public override bool Equals(object obj)
+			public VoxelFaceCoordinate GetFace()
 			{
-				return obj is RenderPlane plane &&
-					   Position.Equals(plane.Position) &&
-					   Direction == plane.Direction &&
-					   Size.Equals(plane.Size) &&
-					   CastDepth == plane.CastDepth &&
-					   UVMin.Equals(plane.UVMin) &&
-					   UVMax.Equals(plane.UVMax);
+				var bounds = new Bounds(new VoxelCoordinate(MinVec3, Layer).ToVector3(), Vector3.zero);
+				bounds.Encapsulate(new VoxelCoordinate(MaxVec3, Layer).ToVector3());
+
+				var swizzleSize = bounds.size.SwizzleForDir(Direction, out _);
+
+				return new VoxelFaceCoordinate
+				{
+					Direction = Direction,
+					Layer = 0,
+					Offset = bounds.center,
+					Size = swizzleSize,
+				};
 			}
 
-			public override int GetHashCode()
+			public Matrix4x4 GetMatrix()
 			{
-				int hashCode = 10673697;
-				hashCode = hashCode * -1521134295 + Position.GetHashCode();
-				hashCode = hashCode * -1521134295 + Direction.GetHashCode();
-				hashCode = hashCode * -1521134295 + Size.GetHashCode();
-				hashCode = hashCode * -1521134295 + CastDepth.GetHashCode();
-				hashCode = hashCode * -1521134295 + UVMin.GetHashCode();
-				hashCode = hashCode * -1521134295 + UVMax.GetHashCode();
-				return hashCode;
+				var bounds = new VoxelCoordinate(MinVec3, Layer).ToBounds();
+				bounds.Encapsulate(new VoxelCoordinate(MaxVec3, Layer).ToBounds());
+				var dirVec = VoxelCoordinate.DirectionToVector3(Direction.FlipDirection()) * VoxelCoordinate.LayerToScale(Layer);
+				var rot = Quaternion.LookRotation(dirVec);
+				var swizzleSize = bounds.size.SwizzleForDir(Direction, out _);
+
+				if (Direction == EVoxelDirection.XNeg || Direction == EVoxelDirection.XPos)
+				{
+					//swizzleSize = new Vector2(swizzleSize.y, swizzleSize.x);
+					rot *= Quaternion.Euler(0, 0, -90);
+				}
+
+				return Matrix4x4.TRS(
+					bounds.center - dirVec * .5f,
+					rot,
+					new Vector3(swizzleSize.x, swizzleSize.y, 1)
+					);
+			}
+		}
+
+		private void OnValidate()
+		{
+			if (!Source)
+			{
+				Source = GetComponentInParent<VoxelRenderer>();
+			}
+		}
+
+		public void SnapPlane(RenderPlane plane)
+		{
+			if (plane == null)
+			{
+				return;
+			}
+			var layerScale = VoxelCoordinate.LayerToScale(plane.Layer);
+			var objectBounds = Source.Mesh.Voxels.Keys.GetBounds();
+			var size = objectBounds.size.ReverseSwizzleForDir(0, plane.Direction)
+				- (Vector3.one * layerScale).ReverseSwizzleForDir(0, plane.Direction);
+			var newBounds = new Bounds(objectBounds.center, size);
+			plane.Min = VoxelCoordinate.FromVector3(newBounds.min, plane.Layer)
+				.ToRawVector3Int()
+				.SwizzleForDir(plane.Direction, out _)
+				.RoundToVector2Int();
+			plane.Max = VoxelCoordinate.FromVector3(newBounds.max, plane.Layer)
+				.ToRawVector3Int()
+				.SwizzleForDir(plane.Direction, out _)
+				.RoundToVector2Int();
+		}
+
+		public void Rebake(RenderPlane plane)
+		{
+			var minX = plane.Min.x;
+			var maxX = plane.Max.x;
+			var minY = plane.Min.y;
+			var maxY = plane.Max.y;
+
+			var width = maxX - minX + 1;
+			var height = maxY - minY + 1;
+
+			if (plane.Albedo == null || !plane.Albedo)
+			{
+				plane.Albedo = new Texture2D(width, height);
+			}
+			else if (plane.Albedo.width != width || plane.Albedo.height != height)
+			{
+				plane.Albedo.Resize(width, height);
 			}
 
-			public static bool operator ==(RenderPlane left, RenderPlane right)
-			{
-				return EqualityComparer<RenderPlane>.Default.Equals(left, right);
-			}
+			plane.Albedo.filterMode = FilterMode.Point;
+			plane.Albedo.wrapMode = TextureWrapMode.Clamp;
 
-			public static bool operator !=(RenderPlane left, RenderPlane right)
+			var scale = VoxelCoordinate.LayerToScale(plane.Layer);
+			var directionVec = VoxelCoordinate.DirectionToVector3(plane.Direction.FlipDirection());
+			var voxels = Source.Mesh.Voxels;
+
+			for (var x = minX; x <= maxX; ++x)
 			{
-				return !(left == right);
+				for (var y = minY; y <= maxY; ++y)
+				{
+					var p2Dswizzled = new Vector2(x, y).ReverseSwizzleForDir(plane.Offset, plane.Direction) * scale;
+
+					var p = VoxelCoordinate.FromVector3(p2Dswizzled, plane.Layer);
+					var pVecLocal = p.ToVector3() - directionVec * scale;
+					var dirVec = VoxelCoordinate.DirectionToVector3(plane.Direction.FlipDirection());
+					var ray = new Ray(pVecLocal, dirVec);
+					var col = Color.clear;
+					var castDistance = plane.CastDepth * scale;
+					//var worldRay = new Ray(transform.localToWorldMatrix.MultiplyPoint3x4(ray.origin), transform.localToWorldMatrix.MultiplyVector(ray.direction));
+
+					if (voxels.Keys.RaycastLocal(ray, castDistance, out var vox))
+					{
+						var mat = voxels[vox].Material.GetSurface(plane.Direction);
+
+						//DebugHelper.DrawPoint(worldRay.origin, .1f, mat.Albedo, 3);
+						//Debug.DrawLine(worldRay.origin, worldRay.origin + worldRay.direction.normalized * castDistance, mat.Albedo, 3);
+						col = mat.Albedo.WithAlpha(1);
+					}
+					else
+					{
+						//DebugHelper.DrawPoint(worldRay.origin, .1f, Color.red, 3);
+						//Debug.DrawLine(worldRay.origin, worldRay.origin + worldRay.direction.normalized * castDistance, Color.red, 3);
+					}
+
+					var texX = x - minX;
+					var texY = y - minY;
+
+					if (plane.FlipX)
+					{
+						texX = width - texX - 1;
+					}
+					if (plane.FlipY)
+					{
+						texY = height - texY - 1;
+					}
+
+					//Debug.Log($"w = {width}\th = {height}\nx = {x}\ty = {y}\t{texX}\t{texY}\tcol = {col}", plane.Albedo);
+					plane.Albedo.SetPixel(texX, texY, col);
+				}
 			}
+			plane.Albedo.Apply();
 		}
 
 		private static MaterialPropertyBlock m_propertyBlock;
@@ -73,124 +186,36 @@ namespace Voxul.LevelOfDetail
 		public MeshRenderer Renderer => gameObject.GetOrAddComponent<MeshRenderer>();
 		public MeshFilter Filter => gameObject.GetOrAddComponent<MeshFilter>();
 
-		public int TextureResolution = 32;
-		public sbyte Layer;
-		public Texture2D AlbedoData;
 		public VoxelRenderer Source;
 		public List<RenderPlane> RenderPlanes = new List<RenderPlane>();
 
-		public Material Mat;
+		public Material Material;
 		public Mesh Mesh;
+		public Vector3 MeshRotation;
 
-		[ContextMenu("Rebuild")]
-		public void Rebuild()
+		private Matrix4x4[] m_trsArrayCache;
+
+		private void Update()
 		{
-			if (AlbedoData == null || AlbedoData.width != TextureResolution || AlbedoData.height != TextureResolution)
+			if (m_trsArrayCache == null || m_trsArrayCache.Length != RenderPlanes.Count)
 			{
-				if (!AlbedoData)
-					AlbedoData = new Texture2D(TextureResolution, TextureResolution);
-				else
-					AlbedoData.Resize(TextureResolution, TextureResolution);
-			}
-			AlbedoData.filterMode = FilterMode.Point;
-			var intData = new IntermediateVoxelMeshData();
-			intData.Initialise(null, null);
-			foreach (var plane in RenderPlanes)
-			{
-				plane.UVMax = Vector2.one;
-				RenderToTexture(plane, AlbedoData, Layer);
-				intData.Faces.Add(plane.GetFace(Layer), 
-					new VoxelFace { MaterialMode = EMaterialMode.Opaque, RenderMode = ERenderMode.Block, Surface = new SurfaceData { UVMode = EUVMode.Local } });
-			}
-
-			VoxelMeshWorker.ConvertFacesToMesh(intData);
-			if(Mesh == null)
-			{
-				Mesh = new Mesh();
-			}
-
-			AlbedoData.Apply();
-			intData.SetMesh(Mesh);
-			Filter.mesh = Mesh;
-			Renderer.sharedMaterial = Mat;
-		}
-
-		public static Vector2 RotateBy(Vector2 v, float a)
-		{
-			var ca = System.Math.Cos(a);
-			var sa = System.Math.Sin(a);
-			var rx = v.x * ca - v.y * sa;
-
-			return new Vector2((float)rx, (float)(v.x * sa + v.y * ca));
-		}
-
-		protected void RenderToTexture(RenderPlane plane, Texture2D albedo, sbyte layer)
-		{
-			var scale = VoxelCoordinate.LayerToScale(layer);
-			var directionVec = VoxelCoordinate.DirectionToVector3(plane.Direction.FlipDirection());
-
-			var xMin = Mathf.RoundToInt(plane.UVMin.x * albedo.width);
-			var yMin = Mathf.RoundToInt(plane.UVMin.y * albedo.height);
-			var xMax = Mathf.RoundToInt(plane.UVMax.x * albedo.width);
-			var yMax = Mathf.RoundToInt(plane.UVMax.y * albedo.height);
-
-			var voxels = Source.Mesh.Voxels;
-
-			var scaledWidth = plane.Size.x ;
-			var scaledHeight = plane.Size.y ;
-			var scaleOffset = 0;
-
-			for (var u = xMin; u <= xMax; u++)
-			{
-				var uf = (u - xMin) / (float)(xMax - xMin);
-
-				uf -= .5f;
-				uf *= 2f;
-
-				for (var v = yMin; v <= yMax; v++)
-				{
-					var vf = (v - yMin) / (float)(yMax - yMin);
-
-					vf -= .5f;
-					vf *= 2f;
-
-					var normalized2DOffset = new Vector2(uf * scaledWidth + scaleOffset, vf * scaledHeight + scaleOffset);
-					//normalized2DOffset = RotateBy(normalized2DOffset, 3 * Mathf.PI / 2f);
-
-					var raycastPoint2D = plane.Position
-						.SwizzleForDir(plane.Direction, out var swizzleDiscard)
-						+ normalized2DOffset;
-					var raycastPoint3D = raycastPoint2D.ReverseSwizzleForDir(swizzleDiscard, plane.Direction);
-
-					var ray = new Ray(raycastPoint3D, directionVec * plane.CastDepth * scale);
-					var worldRay = new Ray(transform.localToWorldMatrix.MultiplyPoint3x4(ray.origin), transform.localToWorldMatrix.MultiplyVector(ray.direction));
-					if (!voxels.Keys.Raycast(ray, out var hitCoord))
-					{
-						Debug.DrawRay(worldRay.origin, worldRay.direction * 10, Color.red, 5);
-						albedo.SetPixel(u, v, Color.clear);
-						continue;
-					}
-					var vox = voxels[hitCoord];
-					var surf = vox.Material.GetSurface(plane.Direction.FlipDirection());
-					albedo.SetPixel(u, v, surf.Albedo);
-
-					Debug.DrawRay(worldRay.origin, worldRay.direction * 10, surf.Albedo, 5);
-				}
-			}
-		}
-
-		private void OnWillRenderObject()
-		{
-			if (AlbedoData == null)
-			{
-				return;
+				m_trsArrayCache = new Matrix4x4[RenderPlanes.Count];
 			}
 			if (m_propertyBlock == null)
 			{
 				m_propertyBlock = new MaterialPropertyBlock();
 			}
-			m_propertyBlock.SetTexture("_BaseMap", AlbedoData);
-			Renderer.SetPropertyBlock(m_propertyBlock);
+			for (int i = 0; i < RenderPlanes.Count; i++)
+			{
+				var plane = RenderPlanes[i];
+				m_propertyBlock.Clear();
+				if (plane.Albedo)
+				{
+					m_propertyBlock.SetTexture("Albedo", plane.Albedo);
+				}
+				m_trsArrayCache[i] = transform.localToWorldMatrix * Matrix4x4.Rotate(Quaternion.Euler(MeshRotation)) * plane.GetMatrix();
+				Graphics.DrawMesh(Mesh, m_trsArrayCache[i], Material, 0, null, 0, m_propertyBlock);
+			}
 		}
 	}
 }

@@ -16,9 +16,7 @@ namespace Voxul
 
 		[Header("Settings")]
 		public bool CustomMaterials;
-		[DrawIf(nameof(CustomMaterials), true, ComparisonType.Equals)]
 		public Material OpaqueMaterial;
-		[DrawIf(nameof(CustomMaterials), true, ComparisonType.Equals)]
 		public Material TransparentMaterial;
 
 		public bool GenerateCollider = true;
@@ -29,7 +27,6 @@ namespace Voxul
 		[Header("Rendering")]
 		public EThreadingMode ThreadingMode;
 
-		[DrawIf(nameof(ThreadingMode), EThreadingMode.Coroutine, ComparisonType.Equals)]
 		public float MaxCoroutineUpdateTime = 0.5f;
 
 		protected bool m_isDirty;

@@ -9,6 +9,9 @@ namespace Voxul
 	[Serializable]
 	public struct VoxelCoordinate
 	{
+		public const sbyte MAX_LAYER = 5;
+		public const sbyte MIN_LAYER = -5;
+
 		/// <summary>
 		/// The LayerRatio represents how many voxels on a lower below sit within one voxel
 		/// one the layer above. Put visually: With a LayerRatio of 3, consider a voxel on 
@@ -24,6 +27,7 @@ namespace Voxul
 		/// 
 		/// </summary>
 		public static int LayerRatio => VoxelManager.Instance.LayerRatio;
+		[Range(MIN_LAYER, MAX_LAYER)]
 		public sbyte Layer;
 		public int X, Y, Z;
 
@@ -32,6 +36,14 @@ namespace Voxul
 			X = x;
 			Y = y;
 			Z = z;
+			Layer = layer;
+		}
+
+		public VoxelCoordinate(Vector3Int coord, sbyte layer)
+		{
+			X = coord.x;
+			Y = coord.y;
+			Z = coord.z;
 			Layer = layer;
 		}
 
