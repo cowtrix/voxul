@@ -54,6 +54,10 @@ namespace Voxul
 		public int SpriteResolution = 32;
 
 		public List<Texture2D> Sprites = new List<Texture2D>();
+		[HideInInspector]
+		[SerializeField]
+		private List<Texture2D> m_spriteCache = new List<Texture2D>();
+
 		public List<VoxelOptimiserBase> DefaultOptimisers = new List<VoxelOptimiserBase>();
 
 		public void OnValidate()
@@ -89,6 +93,12 @@ namespace Voxul
 		[ContextMenu("Regenerate Spritesheet")]
 		public void RegenerateSpritesheet()
 		{
+			if (Sprites.SequenceEqual(m_spriteCache))
+			{
+				return;
+			}
+			m_spriteCache.Clear();
+			m_spriteCache.AddRange(Sprites);
 #if UNITY_EDITOR
 			var texArray = BaseTextureArray;
 			var newArray = GenerateArray(Sprites, TextureFormat.ARGB32, SpriteResolution);

@@ -248,14 +248,17 @@ namespace Voxul.Meshing
 		{
 			for (int i = 0; i < dirs.Length; i++)
 			{
-				EVoxelDirection dir = dirs[i];
-				var scale = vox.Coordinate.GetScale();
+				var dir = dirs[i];
+				var vec3int = new Vector3Int(vox.Coordinate.X, vox.Coordinate.Y, vox.Coordinate.Z);
+				var swizzle = vec3int.SwizzleForDir(dir, out var depthFloat).RoundToVector2Int();
 				var faceCoord = new VoxelFaceCoordinate
 				{
-					Offset = vox.Coordinate.ToVector3(),
+					Min = swizzle,
+					Max = swizzle,
+					Depth = (int)depthFloat,
 					Direction = dir,
-					Size = new Vector2(scale, scale),
 					Layer = vox.Coordinate.Layer,
+					Offset = 0,
 				};
 				var face = new VoxelFace
 				{
@@ -272,15 +275,16 @@ namespace Voxul.Meshing
 			for (int i = 0; i < VoxelExtensions.Directions.Length; i++)
 			{
 				EVoxelDirection dir = VoxelExtensions.Directions[i];
-				var offset = VoxelCoordinate.DirectionToCoordinate(dir, vox.Coordinate.Layer)
-					.ToVector3();
-				var scale = vox.Coordinate.GetScale();
+				var vec3int = new Vector3Int(vox.Coordinate.X, vox.Coordinate.Y, vox.Coordinate.Z);
+				var swizzle = vec3int.SwizzleForDir(dir, out var depthFloat).RoundToVector2Int();
 				var faceCoord = new VoxelFaceCoordinate
 				{
-					Offset = vox.Coordinate.ToVector3() + offset  * .5f,
-					Size = new Vector2(scale, scale),
+					Min = swizzle,
+					Max = swizzle,
+					Depth = (int)depthFloat,
 					Direction = dir,
 					Layer = vox.Coordinate.Layer,
+					Offset = .5f,
 				};
 				var face = new VoxelFace
 				{
@@ -296,7 +300,7 @@ namespace Voxul.Meshing
 		{
 			Vector3 GetOffset(Vector3 point)
 			{
-				if(data.PointOffsets != null && data.PointOffsets.TryGetValue(point, out var offset))
+				if (data.PointOffsets != null && data.PointOffsets.TryGetValue(point, out var offset))
 				{
 					return offset;
 				}
@@ -313,21 +317,31 @@ namespace Voxul.Meshing
 				}
 
 				var surface = voxelFace.Value.Surface;
-				var size = voxelFace.Key.Size;
-				var cubeLength = size.x;
-				var cubeHeight = size.y;
-				var origin = voxelFace.Key.Offset; ;
+
+				var layerScale = VoxelCoordinate.LayerToScale(voxelFace.Key.Layer);
+
+				var height = voxelFace.Key.Offset * layerScale;
+				var min = new VoxelCoordinate(voxelFace.Key.Min.ReverseSwizzleForDir(voxelFace.Key.Depth, voxelFace.Key.Direction), voxelFace.Key.Layer);
+				var max = new VoxelCoordinate(voxelFace.Key.Max.ReverseSwizzleForDir(voxelFace.Key.Depth, voxelFace.Key.Direction), voxelFace.Key.Layer);
+				var planeSize = ((voxelFace.Key.Max + Vector2.one * .5f) - (voxelFace.Key.Min - Vector2.one * .5f)) * layerScale;
+				if (voxelFace.Key.Direction != EVoxelDirection.ZNeg && voxelFace.Key.Direction != EVoxelDirection.ZPos)
+				{
+					planeSize = new Vector2(planeSize.y, planeSize.x);
+				}
+
+				var bounds = min.ToBounds();
+				bounds.Encapsulate(max.ToBounds());
 
 				var rot = VoxelCoordinate.DirectionToQuaternion(voxelFace.Key.Direction);
 
 				// Vertices
-				Vector3 v1 = origin + rot * new Vector3(-cubeLength * .5f, 0, -cubeHeight * .5f);
+				Vector3 v1 = bounds.center + rot * new Vector3(-planeSize.x * .5f, height, -planeSize.y * .5f);
 				v1 += GetOffset(v1);
-				Vector3 v2 = origin + rot * new Vector3(cubeLength * .5f, 0, -cubeHeight * .5f);
+				Vector3 v2 = bounds.center + rot * new Vector3(planeSize.x * .5f, height, -planeSize.y * .5f);
 				v2 += GetOffset(v2);
-				Vector3 v3 = origin + rot * new Vector3(cubeLength * .5f, 0, cubeHeight * .5f);
+				Vector3 v3 = bounds.center + rot * new Vector3(planeSize.x * .5f, height, planeSize.y * .5f);
 				v3 += GetOffset(v3);
-				Vector3 v4 = origin + rot * new Vector3(-cubeLength * .5f, 0, cubeHeight * .5f);
+				Vector3 v4 = bounds.center + rot * new Vector3(-planeSize.x * .5f, height, planeSize.y * .5f);
 				v4 += GetOffset(v4);
 				var vOffset = data.Vertices.Count;
 				data.Vertices.AddRange(new[] { v1, v2, v3, v4 });
@@ -367,7 +381,7 @@ namespace Voxul.Meshing
 					case EUVMode.LocalScaled:
 						data.UV1.AddRange(new[]
 						{
-					_11_CORDINATES * size.x, _01_CORDINATES * size.x, _00_CORDINATES * size.x, _10_CORDINATES * size.x,
+					_11_CORDINATES * planeSize.x, _01_CORDINATES * planeSize.x, _00_CORDINATES * planeSize.x, _10_CORDINATES * planeSize.x,
 				});
 						break;
 					case EUVMode.Global:
@@ -392,15 +406,15 @@ namespace Voxul.Meshing
 						{
 							case EVoxelDirection.ZNeg:
 							case EVoxelDirection.ZPos:
-								data.UV1.AddRange(new[] { v1.xy() / size.x, v2.xy() / size.x, v3.xy() / size.x, v4.xy() / size.x, });
+								data.UV1.AddRange(new[] { v1.xy() / planeSize.x, v2.xy() / planeSize.x, v3.xy() / planeSize.x, v4.xy() / planeSize.x, });
 								break;
 							case EVoxelDirection.YNeg:
 							case EVoxelDirection.YPos:
-								data.UV1.AddRange(new[] { v1.xz() / size.x, v2.xz() / size.x, v3.xz() / size.x, v4.xz() / size.x, });
+								data.UV1.AddRange(new[] { v1.xz() / planeSize.x, v2.xz() / planeSize.x, v3.xz() / planeSize.x, v4.xz() / planeSize.x, });
 								break;
 							case EVoxelDirection.XNeg:
 							case EVoxelDirection.XPos:
-								data.UV1.AddRange(new[] { v1.yz() / size.x, v2.yz() / size.x, v3.yz() / size.x, v4.yz() / size.x, });
+								data.UV1.AddRange(new[] { v1.yz() / planeSize.x, v2.yz() / planeSize.x, v3.yz() / planeSize.x, v4.yz() / planeSize.x, });
 								break;
 						}
 						break;

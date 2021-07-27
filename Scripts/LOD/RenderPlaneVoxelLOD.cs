@@ -41,22 +41,6 @@ namespace Voxul.LevelOfDetail
 			public bool FlipX, FlipY;
 			public Texture2D Albedo;
 
-			public VoxelFaceCoordinate GetFace()
-			{
-				var bounds = new Bounds(new VoxelCoordinate(MinVec3, Layer).ToVector3(), Vector3.zero);
-				bounds.Encapsulate(new VoxelCoordinate(MaxVec3, Layer).ToVector3());
-
-				var swizzleSize = bounds.size.SwizzleForDir(Direction, out _);
-
-				return new VoxelFaceCoordinate
-				{
-					Direction = Direction,
-					Layer = 0,
-					Offset = bounds.center,
-					Size = swizzleSize,
-				};
-			}
-
 			public Matrix4x4 GetMatrix()
 			{
 				var bounds = new VoxelCoordinate(MinVec3, Layer).ToBounds();

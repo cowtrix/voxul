@@ -10,27 +10,25 @@ namespace Voxul.Meshing
 	{
 		static (VoxelFaceCoordinate, VoxelFace) MergeFaces((VoxelFaceCoordinate, VoxelFace) a, (VoxelFaceCoordinate, VoxelFace) b)
 		{
-			var dir = a.Item1.Direction;
+			var coordA = a.Item1;
+			var faceA = a.Item2;
 
-			var faceCoordA = a.Item1;
-			var faceCoordB = b.Item1;
+			var coordB = b.Item1;
+			var faceB = b.Item2;
 
-			var rectA = new Rect(faceCoordA.Offset.SwizzleForDir(dir, out var discardA), faceCoordA.Size);
-			var rectB = new Rect(faceCoordB.Offset.SwizzleForDir(dir, out var discardB), faceCoordB.Size);
-
-			var combinedRect = Rect.MinMaxRect(
-				Mathf.Min(rectA.xMin, rectB.xMin),
-				Mathf.Min(rectA.yMin, rectB.yMin),
-				Mathf.Max(rectA.xMax, rectB.xMax),
-				Mathf.Max(rectA.yMax, rectB.yMax));
-
-			return (new VoxelFaceCoordinate
+			var mergeCoord = new VoxelFaceCoordinate
 			{
-				Direction = a.Item1.Direction,
-				Offset = combinedRect.center.ReverseSwizzleForDir(discardA, dir),
-				Layer = a.Item1.Layer,
-				Size = combinedRect.size,
-			}, a.Item2);
+				Offset = (coordA.Offset + coordB.Offset) / 2,
+				Depth = (coordA.Depth + coordB.Depth) / 2,
+				Direction = coordA.Direction,
+				Layer = coordA.Layer,
+				Min = new Vector2Int(Mathf.Min(coordA.Min.x, coordB.Min.x, coordA.Max.x, coordB.Max.x), Mathf.Min(coordA.Min.y, coordB.Min.y, coordA.Max.y, coordB.Max.y)),
+				Max = new Vector2Int(Mathf.Max(coordA.Min.x, coordB.Min.x, coordA.Max.x, coordB.Max.x), Mathf.Max(coordA.Min.y, coordB.Min.y, coordA.Max.y, coordB.Max.y)),
+			};
+
+			Debug.Log($"Merginge coord A: {coordA} and B: {coordB} == {mergeCoord}");
+
+			return (mergeCoord, faceA);
 		}
 
 		public override void OnPreFaceStep(IntermediateVoxelMeshData data)
@@ -43,33 +41,48 @@ namespace Voxul.Meshing
 				for (int i = open.Count - 1; i >= 0; i--)
 				{
 					VoxelFaceCoordinate faceCoord = open[i];
+					var minVoxelCoord = new VoxelCoordinate(faceCoord.Min.ReverseSwizzleForDir(faceCoord.Depth, faceCoord.Direction), faceCoord.Layer);
+					var maxVoxelCoord = new VoxelCoordinate(faceCoord.Max.ReverseSwizzleForDir(faceCoord.Depth, faceCoord.Direction), faceCoord.Layer);
 					open.RemoveAt(i);    // Remove this face from open list
 					if (!data.Faces.TryGetValue(faceCoord, out var faceSurf))
 					{
 						continue;
 					}
 					var faceOppDir = faceCoord.Direction.FlipDirection();
-					foreach (var dir in VoxelExtensions.Directions)
+
+					foreach (var mergeDirection in VoxelExtensions.Directions
+						.Where(d => d != faceCoord.Direction && d != faceOppDir))
 					{
-						if (dir == faceCoord.Direction || dir == faceOppDir)
+						var mergeDirectionVector = VoxelCoordinate.DirectionToVector3(mergeDirection);
+						var mergeDirectionScaled = (mergeDirectionVector + Vector3.one) / 2f;
+						var closestPointOnFace = new Vector3Int(
+							(int)Mathf.Lerp(minVoxelCoord.X, maxVoxelCoord.X, mergeDirectionScaled.x),
+							(int)Mathf.Lerp(minVoxelCoord.Y, maxVoxelCoord.Y, mergeDirectionScaled.y),
+							(int)Mathf.Lerp(minVoxelCoord.Z, maxVoxelCoord.Z, mergeDirectionScaled.z));
+
+						var neighbourCoord = (closestPointOnFace + mergeDirectionVector)
+							.SwizzleForDir(faceCoord.Direction, out _)
+							.RoundToVector2Int();
+						var neighbourFaceCoord = new VoxelFaceCoordinate
+						{
+							Depth = faceCoord.Depth,
+							Direction = faceCoord.Direction,
+							Layer = faceCoord.Layer,
+							Offset = faceCoord.Offset,
+							Max = neighbourCoord,
+							Min = neighbourCoord,
+						};
+						if(!data.Faces.TryGetValue(neighbourFaceCoord, out var neighbourFace)
+							|| !neighbourFace.Equals(faceSurf))
 						{
 							continue;
 						}
-						var neighbourOffset = faceCoord.Offset + VoxelCoordinate.DirectionToCoordinate(dir, faceCoord.Layer)
-							.ToVector3();
 
-						var neighbour = data.Faces.SingleOrDefault(s => s.Key.Offset == neighbourOffset && s.Key.Direction == faceCoord.Direction);
-						if(neighbour.Value == null || neighbour.Value == faceSurf)
-						{
-							continue;
-						}
-
-						// Merge these two faces
-						DebugHelper.DrawPoint(neighbour.Key.Offset, .2f, Color.green, 2);
-						data.Faces.Remove(neighbour.Key);
+						data.Faces.Remove(neighbourFaceCoord);
 						data.Faces.Remove(faceCoord);
 
-						var newFace = MergeFaces((faceCoord, faceSurf), (neighbour.Key, neighbour.Value));
+						var newFace = MergeFaces((faceCoord, faceSurf), (neighbourFaceCoord, neighbourFace));
+
 						data.Faces[newFace.Item1] = newFace.Item2;
 
 						mergeCount++;
@@ -82,8 +95,7 @@ namespace Voxul.Meshing
 					break;
 				}
 			}
-			
-			voxulLogger.Debug($"InternalFaceOptimiser removed {mergeCount} faces");
+			voxulLogger.Debug($"FaceMerger merged {mergeCount} faces");
 		}
 	}
 }

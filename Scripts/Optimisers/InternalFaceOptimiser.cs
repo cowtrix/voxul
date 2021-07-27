@@ -23,12 +23,19 @@ namespace Voxul.Meshing
 					continue;
 				}
 
+
+				VoxelCoordinate.DirectionToVector3(face.Key.Direction)
+					.RoundToVector3Int()
+					.SwizzleForDir(face.Key.Direction, out var depth);
+
 				var inverse = new VoxelFaceCoordinate
 				{
-					Offset = face.Key.Offset,
+					Min = face.Key.Min,
+					Max = face.Key.Max,
+					Depth = face.Key.Depth + (int)depth,
 					Direction = face.Key.Direction.FlipDirection(),
-					Size = face.Key.Size,
 					Layer = face.Key.Layer,
+					Offset = face.Key.Offset,
 				};
 
 				if (!data.Faces.TryGetValue(inverse, out var neighbour))
