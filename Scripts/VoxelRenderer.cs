@@ -127,9 +127,10 @@ namespace Voxul
 			{
 				return;
 			}
-			if (Mesh && (Mesh.Optimisers == null || !Mesh.Optimisers.Any()))
+			if (Mesh && (Mesh.Optimisers == null || !Mesh.Optimisers.Data.Any()))
 			{
-				Mesh.Optimisers = VoxelManager.Instance.DefaultOptimisers.ToList();
+				Mesh.Optimisers.Data.Clear();
+				Mesh.Optimisers.Data.AddRange(VoxelManager.Instance.DefaultOptimisers.Data.ToList());
 			}
 
 			SetupComponents(forceCollider || GenerateCollider);
@@ -141,6 +142,9 @@ namespace Voxul
 			Mesh.CurrentWorker.GenerateMesh(ThreadingMode, force);
 
 			m_lastMeshHash = Mesh.Hash;
+#if UNITY_EDITOR
+			UnityEditor.EditorUtility.SetDirty(this);
+#endif
 		}
 
 		protected virtual void OnMeshRebuilt(VoxelMeshWorker worker, VoxelMesh voxelMesh)

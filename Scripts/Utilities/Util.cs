@@ -2,11 +2,21 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using System.Reflection;
+using System;
 
 namespace Voxul.Utilities
 {
 	public static class Util
 	{
+		public static void CopyTo<T>(this T source, T target)
+		{
+			foreach(var f in source.GetType().GetFields())
+			{
+				f.SetValue(target, f.GetValue(source));
+			}
+		}
+
 		public static string CamelcaseToSpaces(this string str)
 		{
 			return Regex.Replace(str, "(\\B[A-Z])", " $1");

@@ -58,16 +58,20 @@ namespace Voxul
 		[SerializeField]
 		private List<Texture2D> m_spriteCache = new List<Texture2D>();
 
-		public List<VoxelOptimiserBase> DefaultOptimisers = new List<VoxelOptimiserBase>();
+		public VoxelMeshOptimiserList DefaultOptimisers;
 
 		public void OnValidate()
 		{
 			voxulLogger.InvalidateLogLevel();
-			if (DefaultOptimisers == null || DefaultOptimisers.Count == 0)
+			if (DefaultOptimisers == null || DefaultOptimisers.Data.Count == 0)
 			{
-				DefaultOptimisers = new List<VoxelOptimiserBase>()
+				DefaultOptimisers = new VoxelMeshOptimiserList()
 				{
-					Resources.Load<VoxelOptimiserBase>($"{RESOURCES_FOLDER}/{nameof(InternalFaceOptimiser)}"),
+					Data = new List<VoxelOptimiserBase>
+					{
+						new InternalFaceOptimiser(),
+						new FaceMerger(),
+					}
 				};
 			}
 			if (!DefaultMaterial || DefaultMaterial == null)

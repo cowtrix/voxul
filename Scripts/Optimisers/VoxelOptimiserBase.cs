@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Voxul.Meshing
 {
-	public abstract class VoxelOptimiserBase : ScriptableObject
+	[Serializable]
+	public abstract class VoxelOptimiserBase
 	{
 		public virtual void OnPreRebakeMainThread(IntermediateVoxelMeshData data) { }
 

@@ -6,8 +6,12 @@ using System;
 
 namespace Voxul.Meshing
 {
+	[Serializable]
 	public class FaceMerger : VoxelOptimiserBase
 	{
+		[SerializeField]
+		public float Test;
+
 		static (VoxelFaceCoordinate, VoxelFace) MergeFaces((VoxelFaceCoordinate, VoxelFace) a, (VoxelFaceCoordinate, VoxelFace) b)
 		{
 			var coordA = a.Item1;
@@ -60,30 +64,51 @@ namespace Voxul.Meshing
 							(int)Mathf.Lerp(minVoxelCoord.Y, maxVoxelCoord.Y, mergeDirectionScaled.y),
 							(int)Mathf.Lerp(minVoxelCoord.Z, maxVoxelCoord.Z, mergeDirectionScaled.z));
 
-						var neighbourCoord = (closestPointOnFace + mergeDirectionVector)
+						var neighbourPlanePosition = (closestPointOnFace + mergeDirectionVector)
 							.SwizzleForDir(faceCoord.Direction, out _)
 							.RoundToVector2Int();
-						var neighbourFaceCoord = new VoxelFaceCoordinate
-						{
-							Depth = faceCoord.Depth,
-							Direction = faceCoord.Direction,
-							Layer = faceCoord.Layer,
-							Offset = faceCoord.Offset,
-							Max = neighbourCoord,
-							Min = neighbourCoord,
-						};
-						if(!data.Faces.TryGetValue(neighbourFaceCoord, out var neighbourFace)
-							|| !neighbourFace.Equals(faceSurf))
+						var neighbourVoxCoord = new VoxelCoordinate(neighbourPlanePosition.ReverseSwizzleForDir(faceCoord.Depth, faceCoord.Direction), faceCoord.Layer);
+						if (!data.Voxels.TryGetValue(neighbourVoxCoord, out var neighbourVoxel))
 						{
 							continue;
 						}
 
-						data.Faces.Remove(neighbourFaceCoord);
+						// Find the first face coord that contains the plane position
+						var contains = data.Faces.Where(f =>
+								f.Key.Direction == faceCoord.Direction &&
+								f.Key.Offset == faceCoord.Offset &&
+								f.Key.Layer == faceCoord.Layer &&
+								f.Key.Depth == faceCoord.Depth &&
+								f.Key.Contains(neighbourPlanePosition)
+							).FirstOrDefault();
+
+						if (contains.Value == null || System.Object.ReferenceEquals(faceSurf, contains.Value) || !contains.Value.Equals(faceSurf))
+						{
+							continue;
+						}
+
+						// We need to check if this coordinate is valid - will expanding into it only increase one size parameter?
+						{
+							var checkMin = new Vector2Int(Mathf.Min(faceCoord.Min.x, contains.Key.Min.x, faceCoord.Max.x, contains.Key.Max.x), Mathf.Min(faceCoord.Min.y, contains.Key.Min.y, faceCoord.Max.y, contains.Key.Max.y));
+							var checkMax = new Vector2Int(Mathf.Max(faceCoord.Min.x, contains.Key.Min.x, faceCoord.Max.x, contains.Key.Max.x), Mathf.Max(faceCoord.Min.y, contains.Key.Min.y, faceCoord.Max.y, contains.Key.Max.y));
+
+							var newWidth = checkMax.x - checkMin.x;
+							var newHeight = checkMax.y - checkMin.y;
+
+							Debug.LogWarning(checkMin);
+							if ((newWidth != faceCoord.Width && newHeight != faceCoord.Height) || (newWidth != contains.Key.Width && newHeight != contains.Key.Height))
+							{
+								continue;
+							}
+						}
+
+						data.Faces.Remove(contains.Key);
 						data.Faces.Remove(faceCoord);
 
-						var newFace = MergeFaces((faceCoord, faceSurf), (neighbourFaceCoord, neighbourFace));
+						var newFace = MergeFaces((faceCoord, faceSurf), (contains.Key, contains.Value));
 
 						data.Faces[newFace.Item1] = newFace.Item2;
+						open.Add(newFace.Item1);
 
 						mergeCount++;
 						foundOptimisation = true;

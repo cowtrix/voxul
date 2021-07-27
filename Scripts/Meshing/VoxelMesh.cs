@@ -29,6 +29,9 @@ namespace Voxul.Meshing
 		}
 	}
 
+	[Serializable]
+	public class VoxelMeshOptimiserList : PolyList<VoxelOptimiserBase> { }
+
 	/// <summary>
 	/// This is the asset object representing a voxel mesh. It contains the voxel information itself,
 	/// as well as the bake data if the Voxel Mesh has been invalidated yet.
@@ -58,7 +61,7 @@ namespace Voxul.Meshing
 		[HideInInspector]
 		public VoxelMapping Voxels = new VoxelMapping();
 
-		public List<VoxelOptimiserBase> Optimisers = new List<VoxelOptimiserBase>();
+		public VoxelMeshOptimiserList Optimisers = new VoxelMeshOptimiserList();
 
 		public void CleanMesh()
 		{

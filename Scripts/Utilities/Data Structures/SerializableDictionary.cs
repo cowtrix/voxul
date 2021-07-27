@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Voxul.Utilities
 {
-	abstract public class SerializableDictionary<K, V>
+	public abstract class SerializableDictionary<K, V>
 		: Dictionary<K, V>, ISerializationCallbackReceiver
 	{
 		[SerializeField]

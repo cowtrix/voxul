@@ -20,7 +20,11 @@ namespace Voxul
 			foreach (var prop in properties)
 			{
 				var firstVal = prop.GetValue(target);
-				bool manyVal = targets.Any(t => !firstVal.Equals(prop.GetValue(t)));
+				bool manyVal = targets.Length > 1;
+				if(firstVal != null)
+				{
+					manyVal = targets.Any(t => !firstVal.Equals(prop.GetValue(t)));
+				}
 
 				if (firstVal is UnityEngine.Object unityObj && unityObj)
 				{

@@ -155,7 +155,7 @@ namespace Voxul.Meshing
 						break;
 					}
 				}
-				foreach (var opt in VoxelMesh.Optimisers)
+				foreach (var opt in VoxelMesh.Optimisers.Data)
 				{
 					opt.OnPreFaceStep(data);
 				}
@@ -163,7 +163,7 @@ namespace Voxul.Meshing
 			}
 			foreach (var data in IntermediateData)
 			{
-				foreach (var opt in VoxelMesh.Optimisers)
+				foreach (var opt in VoxelMesh.Optimisers.Data)
 				{
 					opt.OnBeforeCompleteOffThread(data);
 				}

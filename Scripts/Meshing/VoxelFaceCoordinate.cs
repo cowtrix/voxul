@@ -39,6 +39,14 @@ namespace Voxul.Meshing
 		public EVoxelDirection Direction;
 		public float Offset;
 
+		public int Width => Max.x - Min.x;
+		public int Height => Max.y - Min.y;
+
+		public bool Contains(Vector2Int position)
+		{
+			return position.x >= Min.x && position.x <= Max.x && position.y >= Min.y && position.y <= Max.y;
+		}
+
 		public override bool Equals(object obj)
 		{
 			return obj is VoxelFaceCoordinate coordinate &&

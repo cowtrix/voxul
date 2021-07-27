@@ -15,7 +15,7 @@ namespace Voxul.Test
 		{
 			Assert.NotNull(VoxelManager.Instance.DefaultMaterial);
 			Assert.NotNull(VoxelManager.Instance.DefaultMaterialTransparent);
-			Assert.IsNotEmpty(VoxelManager.Instance.DefaultOptimisers);
+			Assert.IsNotEmpty(VoxelManager.Instance.DefaultOptimisers.Data);
 		}
 	}
 }
