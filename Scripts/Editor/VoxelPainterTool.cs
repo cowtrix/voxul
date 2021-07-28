@@ -67,7 +67,7 @@ namespace Voxul.Edit
 			out List<VoxelCoordinate> selection,
 			out EVoxelDirection hitDir)
 		{
-			VoxelCoordinate.VectorToDirection(hitNorm, out hitDir);
+			VoxelCoordinate.VectorToDirection(renderer.transform.worldToLocalMatrix.MultiplyVector(hitNorm).ClosestAxisNormal(), out hitDir);
 			var voxelN = renderer.GetVoxel(hitPoint, hitNorm);
 			if (voxelN.HasValue)
 			{
@@ -178,7 +178,7 @@ namespace Voxul.Edit
 			{
 				if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 				{
-					var vox = selection.First();
+					var vox = selection.FirstOrDefault();
 					CurrentBrush = voxelPainter.Renderer.Mesh.Voxels[vox].Material.Copy();
 					if (ToolID == EPaintingTool.Paint)
 					{

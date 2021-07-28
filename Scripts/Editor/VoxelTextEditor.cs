@@ -9,9 +9,7 @@ namespace Voxul.Edit
 		[MenuItem("GameObject/3D Object/voxul/Voxel Text")]
 		public static void CreateNewText()
 		{
-			var go = new GameObject("New Voxel Text");
-			var r = go.AddComponent<VoxelText>();
-			EditorGUIUtility.PingObject(go);
+			CreateNewInScene();
 		}
 
 		protected override void DrawSpecificGUI()

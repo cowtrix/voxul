@@ -158,6 +158,20 @@
                 },
                 "m_SlotId": 0
             }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "d5807b00cc6c43d987bd2f9e0ea74220"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "5734fe7713904bf8aef5a217ad2fe107"
+                },
+                "m_SlotId": 553573244
+            }
         }
     ],
     "m_VertexContext": {
@@ -626,6 +640,31 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
+    "m_ObjectId": "572f5492023f4ef98bf037f6470dfe92",
+    "m_Id": 553573244,
+    "m_DisplayName": "AlbedoTint",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Color_d96b44c3a9b2426294f47378f69eee5f",
+    "m_StageCapability": 2,
+    "m_Value": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0,
+        "w": 1.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.SubGraphNode",
     "m_ObjectId": "5734fe7713904bf8aef5a217ad2fe107",
     "m_Group": {
@@ -645,6 +684,9 @@
     "m_Slots": [
         {
             "m_Id": "bcecce96f3e04d6a97e9dbbe5b7145b9"
+        },
+        {
+            "m_Id": "572f5492023f4ef98bf037f6470dfe92"
         },
         {
             "m_Id": "9d3c47aad76341a9ab0da7edaab74e70"
@@ -670,12 +712,14 @@
     "m_PropertyGuids": [
         "f89831db-e956-4a53-86a1-d458168cf074",
         "a8625f1f-b34e-4e3c-8f94-d1eba29e34f9",
-        "1a1952c4-7bdf-443d-b142-954c42279266"
+        "1a1952c4-7bdf-443d-b142-954c42279266",
+        "5aa39686-145d-4dab-991b-6e5319538c51"
     ],
     "m_PropertyIds": [
         -976323588,
         -903081510,
-        -188344673
+        -188344673,
+        553573244
     ]
 }
 

@@ -9,9 +9,7 @@ namespace Voxul.Edit
 		[MenuItem("GameObject/3D Object/voxul/Voxel Sprite")]
 		public static void CreateNewSprite()
 		{
-			var go = new GameObject("New Voxel Sprite");
-			var r = go.AddComponent<VoxelSprite>();
-			EditorGUIUtility.PingObject(go);
+			CreateNewInScene();
 		}
 
 		protected override void DrawSpecificGUI()

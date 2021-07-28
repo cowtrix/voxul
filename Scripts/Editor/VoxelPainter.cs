@@ -30,9 +30,7 @@ namespace Voxul.Edit
 		[MenuItem("GameObject/3D Object/voxul/Voxel Object")]
 		public static void CreateNew()
 		{
-			var go = new GameObject("New Voxel Object");
-			var r = go.AddComponent<VoxelRenderer>();
-			EditorGUIUtility.PingObject(go);
+			CreateNewInScene();
 		}
 
 		Dictionary<EPaintingTool, VoxelPainterTool> m_tools = new Dictionary<EPaintingTool, VoxelPainterTool>

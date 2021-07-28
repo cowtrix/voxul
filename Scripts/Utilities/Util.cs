@@ -65,6 +65,13 @@ namespace Voxul.Utilities
 			}
 			else
 			{
+
+#if UNITY_EDITOR
+				if (UnityEditor.AssetDatabase.Contains(obj))
+				{
+					return;
+				}
+#endif
 				UnityEngine.Object.DestroyImmediate(obj);
 			}
 		}

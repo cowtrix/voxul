@@ -40,6 +40,19 @@ namespace Voxul.Edit
 			DrawSpecificGUI();
 		}
 
+		static protected T CreateNewInScene()
+		{
+			var go = new GameObject($"New {typeof(T).Name}");
+			var r = go.AddComponent<T>();
+			if (Selection.activeGameObject)
+			{
+				go.transform.SetParent(Selection.activeGameObject.transform);
+			}
+			Selection.activeGameObject = go;
+			EditorGUIUtility.PingObject(go);
+			return r;
+		}
+
 		protected abstract void DrawSpecificGUI();
 	}
 }
