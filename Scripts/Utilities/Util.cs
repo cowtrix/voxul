@@ -9,6 +9,8 @@ namespace Voxul.Utilities
 {
 	public static class Util
 	{
+		
+
 		public static void CopyTo<T>(this T source, T target)
 		{
 			foreach(var f in source.GetType().GetFields())

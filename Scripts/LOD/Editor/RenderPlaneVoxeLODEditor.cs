@@ -20,8 +20,9 @@ namespace Voxul.LevelOfDetail
 					var l = t as RenderPlaneVoxelLOD;
 					foreach (var p in l.RenderPlanes)
 					{
-						l.Rebake(p);
+						l.RebakePlane(p, false);
 					}
+					l.RefreshAtlas();
 				}
 			}
 			base.OnInspectorGUI();

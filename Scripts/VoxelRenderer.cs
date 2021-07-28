@@ -127,11 +127,6 @@ namespace Voxul
 			{
 				return;
 			}
-			if (Mesh && (Mesh.Optimisers == null || !Mesh.Optimisers.Data.Any()))
-			{
-				Mesh.Optimisers.Data.Clear();
-				Mesh.Optimisers.Data.AddRange(VoxelManager.Instance.DefaultOptimisers.Data.ToList());
-			}
 
 			SetupComponents(forceCollider || GenerateCollider);
 

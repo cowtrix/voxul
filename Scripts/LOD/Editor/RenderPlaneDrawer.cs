@@ -59,7 +59,7 @@ namespace Voxul.LevelOfDetail
 			if (GUI.Button(buttonRect, "Rebake"))
 			{
 				GetContext(property, out var lod, out var plane);
-				lod.Rebake(plane);
+				lod.RebakePlane(plane);
 			}
 			
 			EditorGUI.EndProperty();

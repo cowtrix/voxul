@@ -5,6 +5,9 @@
     "m_Properties": [
         {
             "m_Id": "c348aceaeadf4b639387d3f0d5ff1201"
+        },
+        {
+            "m_Id": "6ed77b9ca7fb4c6abec59ef51f4991e7"
         }
     ],
     "m_Keywords": [],
@@ -676,6 +679,29 @@
 }
 
 {
+    "m_SGVersion": 1,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Vector4ShaderProperty",
+    "m_ObjectId": "6ed77b9ca7fb4c6abec59ef51f4991e7",
+    "m_Guid": {
+        "m_GuidSerialized": "a3d60c32-5b00-4d7f-bab6-a150baf9afc1"
+    },
+    "m_Name": "UVRect",
+    "m_DefaultReferenceName": "Vector4_6ed77b9ca7fb4c6abec59ef51f4991e7",
+    "m_OverrideReferenceName": "UVRect",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5,
+        "w": 0.5
+    }
+}
+
+{
     "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicVectorMaterialSlot",
     "m_ObjectId": "7751b92a960a4600a16859adfeda5f0f",
@@ -711,9 +737,9 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -873.0,
-            "y": 96.00000762939453,
-            "width": 122.0,
+            "x": -988.9999389648438,
+            "y": 57.00000762939453,
+            "width": 121.99999237060547,
             "height": 34.0
         }
     },

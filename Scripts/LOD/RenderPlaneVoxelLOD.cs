@@ -12,6 +12,7 @@ namespace Voxul.LevelOfDetail
 	[ExecuteAlways]
 	public class RenderPlaneVoxelLOD : MonoBehaviour
 	{
+
 		[Serializable]
 		public class RenderPlane
 		{
@@ -39,6 +40,7 @@ namespace Voxul.LevelOfDetail
 			[Range(1, 100)]
 			public int CastDepth = 1;
 			public bool FlipX, FlipY;
+			public Rect TextureRect;
 			public Texture2D Albedo;
 
 			public Matrix4x4 GetMatrix()
@@ -60,6 +62,34 @@ namespace Voxul.LevelOfDetail
 					rot,
 					new Vector3(swizzleSize.x, swizzleSize.y, 1)
 					);
+			}
+
+			public void AddToMesh(List<Vector3> verts, List<int> tris, List<Vector2> uv1)
+			{
+				var bounds = new VoxelCoordinate(MinVec3, Layer).ToBounds();
+				bounds.Encapsulate(new VoxelCoordinate(MaxVec3, Layer).ToBounds());
+
+				var scale = VoxelCoordinate.LayerToScale(Layer);
+				var dirVec = VoxelCoordinate.DirectionToVector3(Direction) * scale * .5f;
+				var origin = bounds.center + dirVec;
+				var size = bounds.extents.SwizzleForDir(Direction, out _);
+				var rot = Quaternion.LookRotation(dirVec, Vector3.up);
+
+				verts.Add(origin + rot * new Vector3(size.x, size.y, 0));
+				verts.Add(origin + rot * new Vector3(-size.x, size.y, 0));
+				verts.Add(origin + rot * new Vector3(size.x, -size.y, 0));
+				verts.Add(origin + rot * new Vector3(-size.x, -size.y, 0));
+
+				tris.AddRange(new[] {
+					// lower left triangle
+					0, 2, 1,
+					// upper right triangle
+					2, 3, 1 });
+
+				uv1.Add(new Vector2(TextureRect.xMax, TextureRect.yMax));
+				uv1.Add(new Vector2(TextureRect.xMin, TextureRect.yMax));
+				uv1.Add(new Vector2(TextureRect.xMax, TextureRect.yMin));
+				uv1.Add(new Vector2(TextureRect.xMin, TextureRect.yMin));
 			}
 		}
 
@@ -92,7 +122,38 @@ namespace Voxul.LevelOfDetail
 				.RoundToVector2Int();
 		}
 
-		public void Rebake(RenderPlane plane)
+		[ContextMenu("Refresh Atlas")]
+		public void RefreshAtlas()
+		{
+			if (!Albedo)
+			{
+				Albedo = new Texture2D(0, 0);
+			}
+			Albedo.filterMode = FilterMode.Point;
+			var allAlbedos = RenderPlanes.Where(p => p.Albedo).ToList();
+			var albedoRects = Albedo.PackTextures(allAlbedos.Select(p => p.Albedo).ToArray(), 0);
+			for (int i = 0; i < albedoRects.Length; i++)
+			{
+				var r = albedoRects[i];
+				allAlbedos[i].TextureRect = albedoRects[i];
+			}
+
+			Mesh = new Mesh();
+			var verts = new List<Vector3>();
+			var tris = new List<int>();
+			var uv1 = new List<Vector2>();
+			foreach(var p in RenderPlanes)
+			{
+				p.AddToMesh(verts, tris, uv1);
+			}
+			Mesh.SetVertices(verts);
+			Mesh.SetTriangles(tris, 0);
+			Mesh.SetUVs(0, uv1);
+			MeshFilter.sharedMesh = Mesh;
+			MeshRenderer.sharedMaterial = Material;
+		}
+
+		public void RebakePlane(RenderPlane plane, bool refreshAtlas = true)
 		{
 			var minX = plane.Min.x;
 			var maxX = plane.Max.x;
@@ -163,6 +224,10 @@ namespace Voxul.LevelOfDetail
 				}
 			}
 			plane.Albedo.Apply();
+			if (refreshAtlas)
+			{
+				RefreshAtlas();
+			}
 		}
 
 		private static MaterialPropertyBlock m_propertyBlock;
@@ -172,14 +237,27 @@ namespace Voxul.LevelOfDetail
 
 		public VoxelRenderer Source;
 		public List<RenderPlane> RenderPlanes = new List<RenderPlane>();
-
+		public Texture2D Albedo;
 		public Material Material;
 		public Mesh Mesh;
 		public Vector3 MeshRotation;
 
 		private Matrix4x4[] m_trsArrayCache;
 
-		private void Update()
+		private MeshRenderer MeshRenderer => gameObject.GetOrAddComponent<MeshRenderer>();
+		private MeshFilter MeshFilter => gameObject.GetOrAddComponent<MeshFilter>();
+
+		private void OnWillRenderObject()
+		{
+			if (m_propertyBlock == null)
+			{
+				m_propertyBlock = new MaterialPropertyBlock();
+			}
+			m_propertyBlock.SetTexture("Albedo", Albedo);
+			MeshRenderer.SetPropertyBlock(m_propertyBlock);
+		}
+
+		/*private void Update()
 		{
 			if (m_trsArrayCache == null || m_trsArrayCache.Length != RenderPlanes.Count)
 			{
@@ -189,17 +267,28 @@ namespace Voxul.LevelOfDetail
 			{
 				m_propertyBlock = new MaterialPropertyBlock();
 			}
+			Albedo.filterMode = FilterMode.Point;
 			for (int i = 0; i < RenderPlanes.Count; i++)
 			{
 				var plane = RenderPlanes[i];
 				m_propertyBlock.Clear();
-				if (plane.Albedo)
+				if (Albedo)
 				{
-					m_propertyBlock.SetTexture("Albedo", plane.Albedo);
+					m_propertyBlock.SetTexture("Albedo", Albedo);
 				}
+				var rect = new Vector4(plane.TextureRect.x, plane.TextureRect.y, plane.TextureRect.width, plane.TextureRect.height);
+				if (plane.FlipX)
+				{
+					rect = new Vector4(rect.z - rect.x, rect.y, rect.w, rect.z);
+				}
+				if (plane.FlipY)
+				{
+					rect = new Vector4(rect.x, rect.w - rect.y, rect.w, rect.z);
+				}
+				m_propertyBlock.SetVector("UVRect", rect);
 				m_trsArrayCache[i] = transform.localToWorldMatrix * Matrix4x4.Rotate(Quaternion.Euler(MeshRotation)) * plane.GetMatrix();
 				Graphics.DrawMesh(Mesh, m_trsArrayCache[i], Material, 0, null, 0, m_propertyBlock);
 			}
-		}
+		}*/
 	}
 }
