@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -10,7 +9,7 @@ using Voxul.Utilities;
 namespace Voxul.Edit
 {
 	[Serializable]
-	internal class AddTool : VoxelPainterTool
+	internal class PrimitiveTool : VoxelPainterTool
 	{
 		public override GUIContent Icon => EditorGUIUtility.IconContent("CreateAddNew");
 
@@ -92,7 +91,7 @@ namespace Voxul.Edit
 			var scale = VoxelCoordinate.LayerToScale(CurrentLayer);
 			var singleCoord = VoxelCoordinate.FromVector3(hitPoint + hitNorm * (scale / 2f) * (collider ? 1 : 0), CurrentLayer);
 			selection = new HashSet<VoxelCoordinate>() { singleCoord };
-			
+
 			DoMeshCursorPreview(renderer, selection);
 
 			return true;

@@ -17,6 +17,7 @@ namespace Voxul.Edit
 		Paint,
 		Clipboard,
 		Warp,
+		Primitive,
 	}
 
 	internal enum eMirrorMode
@@ -42,6 +43,7 @@ namespace Voxul.Edit
 		{ EPaintingTool.Paint, new PaintTool() },
 		{ EPaintingTool.Clipboard, new ClipboardTool() },
 		{ EPaintingTool.Warp, new WarpTool() },
+		{ EPaintingTool.Primitive, new PrimitiveTool() },
 	};
 
 		public bool Enabled

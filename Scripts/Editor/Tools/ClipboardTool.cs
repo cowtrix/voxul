@@ -120,6 +120,7 @@ namespace Voxul.Edit
 						voxelPainter.Renderer.Mesh.Voxels.Remove(v);
 						newObj.Mesh.Voxels.AddSafe(vox);
 					}
+					newObj.Mesh.Optimisers.Data.AddRange(voxelPainter.Renderer.Mesh.Optimisers.Data);
 					voxelPainter.Renderer.Mesh.Invalidate();
 					voxelPainter.SetSelection(null);
 					newObj.Mesh.Invalidate();
@@ -234,7 +235,7 @@ namespace Voxul.Edit
 		}
 
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent,
-			List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
+			HashSet<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
 		{
 			var mat = renderer.transform.localToWorldMatrix;
 

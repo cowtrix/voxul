@@ -241,7 +241,7 @@ namespace Voxul.Meshing
 		public virtual void Clear()
 		{
 			CancelCurrentJob();
-			IntermediateData.Clear();
+			IntermediateData?.Clear();
 		}
 
 		public static void GenerateFaces_CenteredPlane(Voxel vox, IntermediateVoxelMeshData data, params EVoxelDirection[] dirs)

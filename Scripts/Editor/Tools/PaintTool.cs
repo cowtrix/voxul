@@ -31,7 +31,7 @@ namespace Voxul.Edit
 		}
 
 		protected override bool GetVoxelDataFromPoint(VoxelPainter voxelPainterTool, VoxelRenderer renderer, MeshCollider collider,
-			Vector3 hitPoint, Vector3 hitNorm, int triIndex, out List<VoxelCoordinate> selection, out EVoxelDirection hitDir)
+			Vector3 hitPoint, Vector3 hitNorm, int triIndex, out HashSet<VoxelCoordinate> selection, out EVoxelDirection hitDir)
 		{
 			var result = base.GetVoxelDataFromPoint(voxelPainterTool, renderer, collider, hitPoint, hitNorm, triIndex, out selection, out hitDir);
 			if (result)
@@ -63,7 +63,7 @@ namespace Voxul.Edit
 		protected override EPaintingTool ToolID => EPaintingTool.Paint;
 
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer,
-			Event currentEvent, List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
+			Event currentEvent, HashSet<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
 		{
 			if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 			{

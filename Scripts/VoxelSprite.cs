@@ -38,7 +38,7 @@ namespace Voxul
 			{
 				for (var v = 0; v < height; ++v)
 				{
-					var index = v + u * width;
+					var index = u + v * width;
 					var c = pix[index];
 					if (MaterialMode == EMaterialMode.Opaque && c.a < AlphaCuttoff)
 					{

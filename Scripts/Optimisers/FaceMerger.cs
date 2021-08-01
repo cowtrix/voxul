@@ -126,9 +126,9 @@ namespace Voxul.Meshing
 				return count;
 			}
 
-			var mergeCount = data.Faces.GroupBy(f => f.Key.Direction)
+			var mergeCount = data.Faces.GroupBy(f => Math.Pow((int)f.Key.Direction, f.Key.Layer))
 				.Select(s => OptimiseForDirection(s.ToList()))
-				//.AsParallel()
+				.AsParallel()
 				.Sum();
 
 			voxulLogger.Debug($"FaceMerger merged {mergeCount} faces");

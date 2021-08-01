@@ -47,6 +47,9 @@ namespace Voxul.Edit
 			if (Selection.activeGameObject)
 			{
 				go.transform.SetParent(Selection.activeGameObject.transform);
+				go.transform.localPosition = Vector3.zero;
+				go.transform.localRotation = Quaternion.identity;
+				go.transform.localScale = Vector3.one;
 			}
 			Selection.activeGameObject = go;
 			EditorGUIUtility.PingObject(go);

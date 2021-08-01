@@ -17,7 +17,7 @@ namespace Voxul.Edit
 		}
 
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer,
-			Event currentEvent, List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
+			Event currentEvent, HashSet<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
 		{
 			if (Event.current.type == EventType.MouseUp && Event.current.button == 0)
 			{

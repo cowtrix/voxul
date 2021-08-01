@@ -64,14 +64,14 @@ namespace Voxul.Edit
 			Vector3 hitPoint,
 			Vector3 hitNorm,
 			int triIndex,
-			out List<VoxelCoordinate> selection,
+			out HashSet<VoxelCoordinate> selection,
 			out EVoxelDirection hitDir)
 		{
 			VoxelCoordinate.VectorToDirection(renderer.transform.worldToLocalMatrix.MultiplyVector(hitNorm).ClosestAxisNormal(), out hitDir);
 			var voxelN = renderer.GetVoxel(hitPoint, hitNorm);
 			if (voxelN.HasValue)
 			{
-				selection = new List<VoxelCoordinate> { voxelN.Value.Coordinate };
+				selection = new HashSet<VoxelCoordinate> { voxelN.Value.Coordinate };
 				return true;
 			}
 
@@ -150,7 +150,7 @@ namespace Voxul.Edit
 			{
 				for (int i = 0; i < selection.Count; i++)
 				{
-					VoxelCoordinate coord = selection[i];
+					VoxelCoordinate coord = selection.ElementAt(i);
 
 					switch (MirrorMode)
 					{
@@ -308,7 +308,7 @@ namespace Voxul.Edit
 		}
 
 		protected abstract bool DrawSceneGUIInternal(VoxelPainter painter, VoxelRenderer Renderer, Event currentEvent,
-			List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos);
+			HashSet<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos);
 
 		public virtual void OnEnable()
 		{

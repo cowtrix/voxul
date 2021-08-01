@@ -121,6 +121,10 @@ namespace Voxul
 			}
 
 			// Add the character infos for off-thread access
+			if(m_charInfo == null)
+			{
+				m_charInfo = new List<CharacterInfo>();
+			}
 			m_charInfo.Clear();
 			m_charInfo.AddRange(Configuration.Font.characterInfo);
 			m_fontUpdate = 0;	// Release int-semaphore

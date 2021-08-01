@@ -44,7 +44,7 @@ namespace Voxul.Edit
 			return false;
 		}
 
-		protected override bool DrawSceneGUIInternal(VoxelPainter painter, VoxelRenderer Renderer, Event currentEvent, List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
+		protected override bool DrawSceneGUIInternal(VoxelPainter painter, VoxelRenderer Renderer, Event currentEvent, HashSet<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
 		{
 			var localHitPos = Renderer.transform.worldToLocalMatrix.MultiplyPoint3x4(hitPos);
 			var firstVox = selection?.FirstOrDefault();

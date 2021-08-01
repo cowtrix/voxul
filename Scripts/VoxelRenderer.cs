@@ -21,7 +21,7 @@ namespace Voxul
 
 		public bool GenerateCollider = true;
 		public bool SnapToGrid;
-		[Range(sbyte.MinValue, sbyte.MaxValue)]
+		[Range(VoxelCoordinate.MIN_LAYER, VoxelCoordinate.MAX_LAYER)]
 		public sbyte SnapLayer = 0;
 
 		[Header("Rendering")]

@@ -69,7 +69,7 @@ namespace Voxul.Edit
 			return result;
 		}
 		protected override bool DrawSceneGUIInternal(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent,
-			List<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
+			HashSet<VoxelCoordinate> selection, EVoxelDirection hitDir, Vector3 hitPos)
 		{
 			if (voxelPainter.CurrentSelection.Any() && currentEvent.isKey && currentEvent.keyCode == KeyCode.Delete)
 			{
