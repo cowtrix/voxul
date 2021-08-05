@@ -61,7 +61,10 @@ namespace Voxul.Meshing
 		[HideInInspector]
 		public VoxelMapping Voxels = new VoxelMapping();
 
-		public VoxelMeshOptimiserList Optimisers = new VoxelMeshOptimiserList();
+		public VoxelMeshOptimiserList Optimisers => OverrideOptimisers ? OptimiserOverrides : VoxelManager.Instance.DefaultOptimisers;
+
+		public bool OverrideOptimisers;
+		public VoxelMeshOptimiserList OptimiserOverrides = new VoxelMeshOptimiserList();
 
 		public void CleanMesh()
 		{

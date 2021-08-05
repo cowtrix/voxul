@@ -20,7 +20,7 @@ namespace Voxul.Test
             r.Invalidate(false, false);
             Assert.That(!string.IsNullOrEmpty(m.Hash));
 
-            var subMesh = r.Renderers.First();
+            var subMesh = r.Submeshes.First();
             Assert.NotNull(subMesh);
             Assert.NotNull(subMesh.MeshFilter);
             Assert.NotNull(subMesh.MeshRenderer);

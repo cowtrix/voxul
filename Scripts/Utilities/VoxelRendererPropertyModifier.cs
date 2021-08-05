@@ -38,7 +38,7 @@ namespace Voxul
 			m_propertyBlock.Clear();
 			foreach(var renderer in Renderers)
 			{
-				foreach (var submesh in renderer.Renderers)
+				foreach (var submesh in renderer.Submeshes)
 				{
 					if (submesh.MeshRenderer.HasPropertyBlock())
 					{

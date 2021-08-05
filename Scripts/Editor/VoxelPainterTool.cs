@@ -115,7 +115,7 @@ namespace Voxul.Edit
 			var hitNorm = Vector3.up;
 			var triIndex = -1;
 			MeshCollider collider = null;
-			foreach (var r in renderer.Renderers)
+			foreach (var r in renderer.Submeshes)
 			{
 				if (!r.MeshCollider)
 				{

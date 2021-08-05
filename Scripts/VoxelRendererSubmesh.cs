@@ -14,10 +14,17 @@ namespace Voxul
 	/// </summary>
 	public class VoxelRendererSubmesh : MonoBehaviour
 	{
+		public UnityEvent OnRender;
+
 		public VoxelRenderer Parent;
 		public MeshFilter MeshFilter;
 		public MeshRenderer MeshRenderer;
 		public MeshCollider MeshCollider;
+
+		private void OnWillRenderObject()
+		{
+			OnRender?.Invoke();
+		}
 
 		public void SetupComponents(VoxelRenderer r, bool collider)
 		{

@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace Voxul
 {
-	[ExecuteAlways]
 	public class VoxelColorTint : VoxelRendererPropertyModifier
 	{
 		[ColorUsage(true, true)]

@@ -31,8 +31,15 @@ namespace Voxul.Edit
 			foreach(var submesh in Mesh.UnityMeshInstances)
 			{
 				EditorGUILayout.BeginVertical("Box");
-				EditorGUILayout.ObjectField("Mesh", submesh.UnityMesh, typeof(Mesh), true);
-				EditorGUILayout.LabelField("Vertices", submesh.UnityMesh.vertexCount.ToString());
+				if (submesh.UnityMesh)
+				{
+					EditorGUILayout.ObjectField("Mesh", submesh.UnityMesh, typeof(Mesh), true);
+					EditorGUILayout.LabelField("Vertices", submesh.UnityMesh.vertexCount.ToString());
+				}
+				else
+				{
+					EditorGUILayout.LabelField("Null submesh! Try rebaking.");
+				}
 				EditorGUILayout.EndVertical();
 			}
 

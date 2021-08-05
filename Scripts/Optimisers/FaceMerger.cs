@@ -40,7 +40,7 @@ namespace Voxul.Meshing
 			{
 				var count = 0;
 				var open = new List<KeyValuePair<VoxelFaceCoordinate, VoxelFace>>(allVoxels);
-				while (true)
+				while (open.Any())
 				{
 					bool foundOptimisation = false;
 					for (int i = open.Count - 1; i >= 0; i--)
@@ -126,7 +126,7 @@ namespace Voxul.Meshing
 				return count;
 			}
 
-			var mergeCount = data.Faces.GroupBy(f => Math.Pow((int)f.Key.Direction, f.Key.Layer))
+			var mergeCount = data.Faces.GroupBy(f => f.Key.Direction)
 				.Select(s => OptimiseForDirection(s.ToList()))
 				.AsParallel()
 				.Sum();

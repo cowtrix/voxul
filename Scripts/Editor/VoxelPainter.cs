@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Edit;
+using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
@@ -25,6 +26,7 @@ namespace Voxul.Edit
 		None, X, Y, Z
 	}
 
+	[CanEditMultipleObjects]
 	[CustomEditor(typeof(VoxelRenderer), false)]
 	internal class VoxelPainter : VoxelObjectEditorBase<VoxelRenderer>
 	{
@@ -32,6 +34,27 @@ namespace Voxul.Edit
 		public static void CreateNew()
 		{
 			CreateNewInScene();
+		}
+
+		[MenuItem("Tools/Voxul/Rebake All Renderers in Scene")]
+		public static void RebakeAll()
+		{
+			foreach(var r in FindObjectsOfType<VoxelRenderer>())
+			{
+				r.Invalidate(true, false);
+			}
+		}
+
+		[MenuItem("Tools/Voxul/Disable All Renderers in Scene")]
+		public static void DisableAll()
+		{
+			foreach (var r in FindObjectsOfType<VoxelRenderer>())
+			{
+				r.enabled = false;
+#if UNITY_EDITOR
+				UnityEditor.EditorUtility.SetDirty(r);
+#endif
+			}
 		}
 
 		Dictionary<EPaintingTool, VoxelPainterTool> m_tools = new Dictionary<EPaintingTool, VoxelPainterTool>
@@ -151,10 +174,10 @@ namespace Voxul.Edit
 			switch (Event.current.type)
 			{
 				case EventType.MouseEnterWindow:
-					Renderer.Renderers.ForEach(x => x.hideFlags = x.hideFlags & ~HideFlags.HideInHierarchy);
+					Renderer.Submeshes.ForEach(x => x.hideFlags = x.hideFlags & ~HideFlags.HideInHierarchy);
 					break;
 				case EventType.MouseLeaveWindow:
-					Renderer.Renderers.ForEach(x => x.hideFlags = x.hideFlags | HideFlags.HideInHierarchy);
+					Renderer.Submeshes.ForEach(x => x.hideFlags = x.hideFlags | HideFlags.HideInHierarchy);
 					break;
 			}
 		}
@@ -162,7 +185,17 @@ namespace Voxul.Edit
 		void OnSceneGUI()
 		{
 			Deadzones.Clear();
-			if (!Enabled || !Renderer || !Renderer.Mesh)
+			if (!Renderer || !Renderer.Mesh)
+			{
+				return;
+			}
+
+			if (Renderer.SnapToGrid)
+			{
+				var scale = VoxelCoordinate.LayerToScale(Renderer.SnapLayer);
+				Renderer.transform.localPosition = Renderer.transform.localPosition.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
+			}
+			if (!Enabled)
 			{
 				return;
 			}

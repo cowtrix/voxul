@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Voxul.Meshing;
 using Voxul.Utilities;
 
 namespace Voxul
 {
 	[SelectionBase]
-	[ExecuteAlways]
+	[ExecuteInEditMode]
 	public class VoxelRenderer : MonoBehaviour
 	{
 		public VoxelMesh Mesh;
@@ -48,10 +49,11 @@ namespace Voxul
 		[HideInInspector]
 		private string m_lastMeshHash;
 
+		[FormerlySerializedAs("Renderers")]
 		[SerializeField]
-		public List<VoxelRendererSubmesh> Renderers = new List<VoxelRendererSubmesh>();
+		public List<VoxelRendererSubmesh> Submeshes = new List<VoxelRendererSubmesh>();
 		
-		public Bounds Bounds => Renderers.Select(b => b.Bounds).EncapsulateAll();
+		public Bounds Bounds => Submeshes.Select(b => b.Bounds).EncapsulateAll();
 
 		protected virtual void Update()
 		{		
@@ -59,14 +61,6 @@ namespace Voxul
 			{
 				var scale = VoxelCoordinate.LayerToScale(SnapLayer);
 				transform.localPosition = transform.localPosition.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
-			}
-			foreach(var r in Renderers)
-			{
-				if (!r)
-				{
-					continue;
-				}
-				r.SetupComponents(this, GenerateCollider);
 			}
 			if (m_isDirty || Mesh?.Hash != m_lastMeshHash)
 			{
@@ -99,9 +93,9 @@ namespace Voxul
 
 		public void SetupComponents(bool forceCollider)
 		{
-			Renderers = new List<VoxelRendererSubmesh>(GetComponentsInChildren<VoxelRendererSubmesh>()
+			Submeshes = new List<VoxelRendererSubmesh>(GetComponentsInChildren<VoxelRendererSubmesh>()
 				.Where(r => r.Parent == this));
-			foreach(var r in Renderers)
+			foreach(var r in Submeshes)
 			{
 				r.SetupComponents(this, GenerateCollider || forceCollider);
 			}
@@ -160,16 +154,16 @@ namespace Voxul
 				var data = voxelMesh.UnityMeshInstances[i];
 				var unityMesh = data.UnityMesh;
 				VoxelRendererSubmesh submesh;
-				if (Renderers.Count < voxelMesh.UnityMeshInstances.Count)
+				if (Submeshes.Count < voxelMesh.UnityMeshInstances.Count)
 				{
 					submesh = new GameObject($"{name}_submesh_hidden")
 						.AddComponent<VoxelRendererSubmesh>();
 					submesh.transform.SetParent(transform);
-					Renderers.Add(submesh);
+					Submeshes.Add(submesh);
 				}
 				else
 				{
-					submesh = Renderers[i];
+					submesh = Submeshes[i];
 				}
 				submesh.SetupComponents(this, GenerateCollider);
 				submesh.MeshFilter.sharedMesh = unityMesh;
@@ -195,22 +189,22 @@ namespace Voxul
 			for (int i = 0; i < Mesh.UnityMeshInstances.Count; i++)
 			{
 				var m = Mesh.UnityMeshInstances[i];
-				Renderers[i].SetupComponents(this, false);
-				Renderers[i].MeshFilter.sharedMesh = m.UnityMesh;
+				Submeshes[i].SetupComponents(this, false);
+				Submeshes[i].MeshFilter.sharedMesh = m.UnityMesh;
 			}
-			for (var i = Renderers.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)
+			for (var i = Submeshes.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)
 			{
-				var r = Renderers[i];
+				var r = Submeshes[i];
 				if(r || r.gameObject)
 				{
 					voxulLogger.Debug($"Destroying submesh renderer {r}", this);
 					r.gameObject.SafeDestroy();
 				}
-				Renderers.RemoveAt(i);
+				Submeshes.RemoveAt(i);
 			}
 			m_lastMeshHash = Mesh.Hash;
 #if UNITY_EDITOR
-			foreach (var r in Renderers)
+			foreach (var r in Submeshes)
 			{
 				r.SetDirty();
 			}
