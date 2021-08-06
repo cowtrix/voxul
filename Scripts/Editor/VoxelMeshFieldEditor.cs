@@ -62,7 +62,7 @@ namespace Voxul.Edit
 				if (GUI.Button(GetRow(ref row), "Create In-Scene Mesh"))
 				{
 					newMesh = ScriptableObject.CreateInstance<VoxelMesh>();
-					newMesh.OptimiserOverrides.Data.AddRange(VoxelManager.Instance.DefaultOptimisers.Data);
+					newMesh.Optimisers.Data.AddRange(VoxelManager.Instance.DefaultOptimisers.Data);
 					newMesh.name = Guid.NewGuid().ToString();
 					property.objectReferenceValue = newMesh;
 				}

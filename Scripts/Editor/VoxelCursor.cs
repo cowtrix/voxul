@@ -75,6 +75,7 @@ namespace Voxul.Edit
 				m_cursorRenderer.TransparentMaterial = DebugMaterial;
 			}
 			m_cursorRenderer.GenerateCollider = false;
+			m_cursorRenderer.Mesh.OverrideOptimisers = true;
 			m_keepAlive?.KeepAlive();
 			if (m_dirty)
 			{

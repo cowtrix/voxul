@@ -57,6 +57,10 @@ namespace Voxul
 					MeshCollider.convex = false;
 				}
 			}
+			else if(MeshCollider)
+			{
+				MeshCollider.enabled = false;
+			}
 		}
 
 		public Bounds Bounds => MeshRenderer.bounds;

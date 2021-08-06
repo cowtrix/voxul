@@ -189,7 +189,7 @@ namespace Voxul
 			for (int i = 0; i < Mesh.UnityMeshInstances.Count; i++)
 			{
 				var m = Mesh.UnityMeshInstances[i];
-				Submeshes[i].SetupComponents(this, false);
+				Submeshes[i].SetupComponents(this, GenerateCollider);
 				Submeshes[i].MeshFilter.sharedMesh = m.UnityMesh;
 			}
 			for (var i = Submeshes.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)

@@ -26,7 +26,6 @@ namespace Voxul.Edit
 		None, X, Y, Z
 	}
 
-	[CanEditMultipleObjects]
 	[CustomEditor(typeof(VoxelRenderer), false)]
 	internal class VoxelPainter : VoxelObjectEditorBase<VoxelRenderer>
 	{

@@ -155,7 +155,7 @@ namespace Voxul.Meshing
 						break;
 					}
 				}
-				foreach (var opt in VoxelMesh.OptimiserOverrides?.Data?
+				foreach (var opt in VoxelMesh.Optimisers?.Data?
 					.Where(o => o != null && o.Enabled))
 				{
 					opt.OnPreFaceStep(data);
@@ -164,7 +164,7 @@ namespace Voxul.Meshing
 			}
 			foreach (var data in IntermediateData)
 			{
-				foreach (var opt in VoxelMesh.OptimiserOverrides.Data
+				foreach (var opt in VoxelMesh.Optimisers.Data
 					.Where(o => o != null && o.Enabled))
 				{
 					opt.OnBeforeCompleteOffThread(data);

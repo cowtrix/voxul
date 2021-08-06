@@ -40,12 +40,28 @@ namespace Voxul.Meshing
 			{
 				var count = 0;
 				var open = new List<KeyValuePair<VoxelFaceCoordinate, VoxelFace>>(allVoxels);
+				var offsetLists = new Dictionary<(sbyte, int), List<(VoxelFaceCoordinate, VoxelFace)>>();
+				foreach(var kvp in open)
+				{
+					var keyTuple = (kvp.Key.Layer, kvp.Key.Depth);
+					if (!offsetLists.TryGetValue(keyTuple, out var list))
+					{
+						list = new List<(VoxelFaceCoordinate, VoxelFace)>();
+						offsetLists.Add(keyTuple, list);
+					}
+					list.Add((kvp.Key, kvp.Value));
+				}
+
 				while (open.Any())
 				{
 					bool foundOptimisation = false;
 					for (int i = open.Count - 1; i >= 0; i--)
 					{
 						var faceCoord = open[i].Key;
+
+						var offsetListKey = (faceCoord.Layer, faceCoord.Depth);
+						var offsetList = offsetLists[offsetListKey];
+
 						open.RemoveAt(i);    // Remove this face from open list
 
 						if(!data.Faces.TryGetValue(faceCoord, out var faceSurf))
@@ -78,40 +94,46 @@ namespace Voxul.Meshing
 							}
 
 							// Find the first face coord that contains the plane position
-							var contains = allVoxels.Where(f =>
-									f.Key.Direction == faceCoord.Direction &&
-									f.Key.Offset == faceCoord.Offset &&
-									f.Key.Layer == faceCoord.Layer &&
-									f.Key.Depth == faceCoord.Depth &&
-									f.Key.Contains(neighbourPlanePosition)).FirstOrDefault();
+							var contains = offsetList.Where(f =>
+									f.Item1.Direction == faceCoord.Direction &&
+									f.Item1.Offset == faceCoord.Offset &&
+									f.Item1.Layer == faceCoord.Layer &&
+									f.Item1.Depth == faceCoord.Depth &&
+									f.Item1.Contains(neighbourPlanePosition)).FirstOrDefault();
 
-							if (contains.Value == null || System.Object.ReferenceEquals(faceSurf, contains.Value) || !contains.Value.Equals(faceSurf))
+							if (contains.Item2 == null || System.Object.ReferenceEquals(faceSurf, contains.Item2) || !contains.Item2.Equals(faceSurf))
 							{
 								continue;
 							}
+							var neighbourCoord = contains.Item1;
+							var neigbourSurf = contains.Item2;
 
 							// We need to check if this coordinate is valid - will expanding into it only increase one size parameter?
 							{
-								var checkMin = new Vector2Int(Mathf.Min(faceCoord.Min.x, contains.Key.Min.x, faceCoord.Max.x, contains.Key.Max.x), Mathf.Min(faceCoord.Min.y, contains.Key.Min.y, faceCoord.Max.y, contains.Key.Max.y));
-								var checkMax = new Vector2Int(Mathf.Max(faceCoord.Min.x, contains.Key.Min.x, faceCoord.Max.x, contains.Key.Max.x), Mathf.Max(faceCoord.Min.y, contains.Key.Min.y, faceCoord.Max.y, contains.Key.Max.y));
+								var checkMin = new Vector2Int(Mathf.Min(faceCoord.Min.x, neighbourCoord.Min.x, faceCoord.Max.x, neighbourCoord.Max.x), Mathf.Min(faceCoord.Min.y, neighbourCoord.Min.y, faceCoord.Max.y, neighbourCoord.Max.y));
+								var checkMax = new Vector2Int(Mathf.Max(faceCoord.Min.x, neighbourCoord.Min.x, faceCoord.Max.x, neighbourCoord.Max.x), Mathf.Max(faceCoord.Min.y, neighbourCoord.Min.y, faceCoord.Max.y, neighbourCoord.Max.y));
 
 								var newWidth = checkMax.x - checkMin.x;
 								var newHeight = checkMax.y - checkMin.y;
 
 								//Debug.LogWarning(checkMin);
-								if ((newWidth != faceCoord.Width && newHeight != faceCoord.Height) || (newWidth != contains.Key.Width && newHeight != contains.Key.Height))
+								if ((newWidth != faceCoord.Width && newHeight != faceCoord.Height) || (newWidth != neighbourCoord.Width && newHeight != neighbourCoord.Height))
 								{
 									continue;
 								}
 							}
 
-							data.Faces.Remove(contains.Key);
+							data.Faces.Remove(neighbourCoord);
 							data.Faces.Remove(faceCoord);
 
-							var newFace = MergeFaces((faceCoord, faceSurf), (contains.Key, contains.Value));
+							offsetList.Remove(contains);
+							offsetList.Remove((faceCoord, faceSurf));
+
+							var newFace = MergeFaces((faceCoord, faceSurf), contains);
 
 							data.Faces[newFace.Item1] = newFace.Item2;
 							open.Add(new KeyValuePair<VoxelFaceCoordinate, VoxelFace>(newFace.Item1, newFace.Item2));
+							offsetList.Add(newFace);
 
 							count++;
 							foundOptimisation = true;
@@ -128,7 +150,7 @@ namespace Voxul.Meshing
 
 			var mergeCount = data.Faces.GroupBy(f => f.Key.Direction)
 				.Select(s => OptimiseForDirection(s.ToList()))
-				.AsParallel()
+				//.AsParallel()
 				.Sum();
 
 			voxulLogger.Debug($"FaceMerger merged {mergeCount} faces");

@@ -59,7 +59,7 @@ namespace Voxul.Edit
 				m_cursor.enabled = false;
 				m_cursor.SetupComponents(false);
 				m_cursor.gameObject.AddComponent<AutoDestroyer>();
-				m_cursor.Mesh.OptimiserOverrides.Data.Clear();
+				m_cursor.Mesh.Optimisers.Data.Clear();
 			}
 			base.OnEnable();
 		}
