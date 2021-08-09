@@ -21,8 +21,9 @@ namespace Voxul.Meshing
 		public List<Vector3> Vertices;
 		public Dictionary<int, List<int>> Triangles;
 		public List<Color> Color1;
-		public List<Vector2> UV1;
-		public List<Vector4> UV2;
+		public List<Vector2> UV1;	// Texture
+		public List<Vector2> UV2;	// Lightmap
+		public List<Vector4> UV3;	// Auxilary data
 
 		/// <summary>
 		/// Copy data from voxels and initialize data structures if null.
@@ -42,8 +43,10 @@ namespace Voxul.Meshing
 			Color1.Clear();
 			UV1 = UV1 ?? new List<Vector2>(Vertices.Count);
 			UV1.Clear();
-			UV2 = UV2 ?? new List<Vector4>(Vertices.Count);
+			UV2 = UV2 ?? new List<Vector2>(Vertices.Count);
 			UV2.Clear();
+			UV3 = UV3 ?? new List<Vector4>(Vertices.Count);
+			UV3.Clear();
 		}
 
 		/// <summary>
@@ -73,7 +76,9 @@ namespace Voxul.Meshing
 				}
 				mesh.SetUVs(0, UV1);
 				mesh.SetUVs(1, UV2);
+				mesh.SetUVs(2, UV3);
 				mesh.RecalculateNormals();
+				mesh.RecalculateBounds();
 			}
 			return mesh;
 		}
@@ -88,7 +93,7 @@ namespace Voxul.Meshing
 			Faces = null;
 			Vertices = null;
 			UV1 = null;
-			UV2 = null;
+			UV3 = null;
 			Color1 = null;
 			Triangles = null;
 		}

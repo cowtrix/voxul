@@ -155,6 +155,7 @@ namespace Voxul.Edit
 			{
 				EditorUtility.SetDirty(Renderer.Mesh);
 				Renderer.Invalidate(true, true);
+				Debug.Log("Tool invalidated");
 			}
 			EditorGUILayout.EndVertical();
 			GUI.enabled = true;
@@ -210,7 +211,11 @@ namespace Voxul.Edit
 			DrawSceneGUIToolsIcons();
 
 			var t = m_tools[CurrentTool];
-			t.DrawSceneGUI(this, Renderer, Event.current);
+			if(t.DrawSceneGUI(this, Renderer, Event.current))
+			{
+				EditorUtility.SetDirty(Renderer.Mesh);
+				Renderer.Invalidate(true, true);
+			}
 
 			if (m_selectionDirty)
 			{

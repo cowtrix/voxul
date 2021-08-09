@@ -160,6 +160,7 @@ namespace Voxul.Edit
 					m_cursor.gameObject.SafeDestroy();
 				}
 				UseEvent(currentEvent);
+				return true;
 			}
 			return false;
 		}

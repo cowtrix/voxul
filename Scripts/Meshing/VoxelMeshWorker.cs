@@ -309,6 +309,9 @@ namespace Voxul.Meshing
 				return Vector3.zero;
 			}
 
+			int counter = 0;
+			int lightmapRes = 512;
+			var lightmapStep = 1 / (float)lightmapRes;
 			foreach (var voxelFace in data.Faces)
 			{
 				var submeshIndex = (int)voxelFace.Value.MaterialMode;
@@ -354,18 +357,31 @@ namespace Voxul.Meshing
 					submeshList = new System.Collections.Generic.List<int>();
 					data.Triangles[submeshIndex] = submeshList;
 				}
-				submeshList.AddRange(new[]  {
-					3 + vOffset, 1 + vOffset, 0 + vOffset,
-					3 + vOffset, 2 + vOffset, 1 + vOffset,
-				});
+				submeshList.Add(3 + vOffset);
+				submeshList.Add(1 + vOffset);
+				submeshList.Add(0 + vOffset);
+				submeshList.Add(3 + vOffset);
+				submeshList.Add(2 + vOffset);
+				submeshList.Add(1 + vOffset);
 
-				// Do the colors
+				// Color data
 				data.Color1.AddRange(Enumerable.Repeat(surface.Albedo, 4));
 
-				// UV2 extra data
-				var uv2 = new Vector4(surface.Smoothness, surface.Texture.Index, surface.Metallic, 1 - surface.TextureFade)
+				// uv2 lightmap UVs
+				{
+					var lightmapIndex = counter * lightmapStep;
+					var u = Mathf.Floor(lightmapIndex / lightmapRes);
+					var v = lightmapIndex % lightmapRes;
+					data.UV2.Add(new Vector2(u, v));
+					data.UV2.Add(new Vector2(u + lightmapStep, v));
+					data.UV2.Add(new Vector2(u + lightmapStep, v + lightmapStep));
+					data.UV2.Add(new Vector2(u, v + lightmapStep));
+				}
+
+				// UV3 extra data
+				var auxData = new Vector4(surface.Smoothness, surface.Texture.Index, surface.Metallic, 1 - surface.TextureFade)
 					.RemoveNans();
-				data.UV2.AddRange(Enumerable.Repeat(uv2, 4));
+				data.UV3.AddRange(Enumerable.Repeat(auxData, 4));
 
 				Vector2 _00_CORDINATES = new Vector2(1f, 1f);
 				Vector2 _10_CORDINATES = new Vector2(0f, 1f);
@@ -422,6 +438,7 @@ namespace Voxul.Meshing
 						break;
 				}
 
+				counter++;
 			}
 		}
 

@@ -8,6 +8,9 @@
         },
         {
             "m_Id": "7b588f4f222742c1998510d7ad1dce23"
+        },
+        {
+            "m_Id": "534f697a22664fc4ae348255fa1d6869"
         }
     ],
     "m_Keywords": [],
@@ -53,6 +56,9 @@
         },
         {
             "m_Id": "0dd49dcaf0f14a6fb178c6503096d5dd"
+        },
+        {
+            "m_Id": "51d918f281ca44cd90bcf03f05eadd2c"
         }
     ],
     "m_GroupDatas": [],
@@ -84,6 +90,20 @@
                     "m_Id": "5734fe7713904bf8aef5a217ad2fe107"
                 },
                 "m_SlotId": -976323588
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "51d918f281ca44cd90bcf03f05eadd2c"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "df5de521f8fa49f087f88db8944dd335"
+                },
+                "m_SlotId": 0
             }
         },
         {
@@ -412,6 +432,21 @@
 {
     "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "17b3320a93704dbea85e9f60c410bf54",
+    "m_Id": 0,
+    "m_DisplayName": "Occlusion",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Out",
+    "m_StageCapability": 3,
+    "m_Value": 0.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "197a336c720a40aead7f1cd8bc1afbcd",
     "m_Id": 0,
     "m_DisplayName": "Ambient Occlusion",
@@ -615,6 +650,64 @@
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
+    "m_ObjectId": "51d918f281ca44cd90bcf03f05eadd2c",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "Property",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": 601.6273803710938,
+            "y": 603.5999145507813,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "17b3320a93704dbea85e9f60c410bf54"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_Property": {
+        "m_Id": "534f697a22664fc4ae348255fa1d6869"
+    }
+}
+
+{
+    "m_SGVersion": 1,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Vector1ShaderProperty",
+    "m_ObjectId": "534f697a22664fc4ae348255fa1d6869",
+    "m_Guid": {
+        "m_GuidSerialized": "9a25046a-bb6b-42d6-9bba-2a9e9b9d5825"
+    },
+    "m_Name": "Occlusion",
+    "m_DefaultReferenceName": "Vector1_534f697a22664fc4ae348255fa1d6869",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": 0.5,
+    "m_FloatType": 0,
+    "m_RangeValues": {
+        "x": 0.0,
+        "y": 1.0
+    }
 }
 
 {

@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Voxul
 {
-	[ExecuteAlways]
 	public abstract class VoxelRendererPropertyModifier : MonoBehaviour
 	{
 		public IEnumerable<VoxelRenderer> Renderers

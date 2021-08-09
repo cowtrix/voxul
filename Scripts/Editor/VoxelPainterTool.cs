@@ -79,7 +79,7 @@ namespace Voxul.Edit
 			return false;
 		}
 
-		public void DrawSceneGUI(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent)
+		public bool DrawSceneGUI(VoxelPainter voxelPainter, VoxelRenderer renderer, Event currentEvent)
 		{
 			// Block all clicks from propagating to the scene view.
 			HandleUtility.AddDefaultControl(-1);
@@ -102,12 +102,12 @@ namespace Voxul.Edit
 			if (!renderer.Mesh)
 			{
 				renderer.SetupComponents(true);
-				return;
+				return false;
 			}
 
 			if (voxelPainter.Deadzones.Any(d => d.Contains(Event.current.mousePosition)))
 			{
-				return;
+				return false;
 			}
 
 			Ray worldRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
@@ -143,7 +143,7 @@ namespace Voxul.Edit
 			if (!GetVoxelDataFromPoint(voxelPainter, renderer, collider, hitPoint, hitNorm, triIndex,
 					out var selection, out var hitDir) && !DrawSceneGUIWithNoSelection)
 			{
-				return;
+				return false;
 			}
 
 			if (selection != null)
@@ -192,14 +192,16 @@ namespace Voxul.Edit
 					UnityMainThreadDispatcher.EnsureSubscribed();
 					UnityMainThreadDispatcher.Enqueue(() => Selection.activeObject = voxelPainter.Renderer.gameObject);
 				}
-				return;
+				return false;
 			}
 
 			if (DrawSceneGUIInternal(voxelPainter, renderer, currentEvent, selection, hitDir, hitPoint))
 			{
 				renderer.Mesh.Hash = System.Guid.NewGuid().ToString();
 				EditorUtility.SetDirty(renderer.Mesh);
+				return true;
 			}
+			return false;
 		}
 
 		protected void UseEvent(Event ev)

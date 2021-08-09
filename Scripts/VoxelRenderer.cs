@@ -153,6 +153,7 @@ namespace Voxul
 			{
 				var data = voxelMesh.UnityMeshInstances[i];
 				var unityMesh = data.UnityMesh;
+				
 				VoxelRendererSubmesh submesh;
 				if (Submeshes.Count < voxelMesh.UnityMeshInstances.Count)
 				{
