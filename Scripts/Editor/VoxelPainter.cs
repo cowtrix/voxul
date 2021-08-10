@@ -57,16 +57,16 @@ namespace Voxul.Edit
 		}
 
 		Dictionary<EPaintingTool, VoxelPainterTool> m_tools = new Dictionary<EPaintingTool, VoxelPainterTool>
-	{
-		{ EPaintingTool.Select, new SelectTool() },
-		{ EPaintingTool.Add, new AddTool() },
-		{ EPaintingTool.Remove, new RemoveTool() },
-		{ EPaintingTool.Subdivide, new SubdivideTool() },
-		{ EPaintingTool.Paint, new PaintTool() },
-		{ EPaintingTool.Clipboard, new ClipboardTool() },
-		{ EPaintingTool.Warp, new WarpTool() },
-		{ EPaintingTool.Primitive, new PrimitiveTool() },
-	};
+		{
+			{ EPaintingTool.Select, new SelectTool() },
+			{ EPaintingTool.Add, new AddTool() },
+			{ EPaintingTool.Remove, new RemoveTool() },
+			{ EPaintingTool.Subdivide, new SubdivideTool() },
+			{ EPaintingTool.Paint, new PaintTool() },
+			{ EPaintingTool.Clipboard, new ClipboardTool() },
+			//{ EPaintingTool.Warp, new WarpTool() },
+			//{ EPaintingTool.Primitive, new PrimitiveTool() },
+		};
 
 		public bool Enabled
 		{
@@ -141,7 +141,7 @@ namespace Voxul.Edit
 
 			var oldTool = CurrentTool;
 			//CurrentLayer = (sbyte)EditorGUILayout.IntSlider("Current Layer", CurrentLayer, -5, 5);
-			var newTool = (EPaintingTool)GUILayout.Toolbar((int)CurrentTool, Enum.GetNames(typeof(EPaintingTool)));
+			var newTool = (EPaintingTool)GUILayout.Toolbar((int)CurrentTool, m_tools.Select(s => s.Key.ToString()).ToArray());
 			bool dirty = newTool != CurrentTool;
 			CurrentTool = newTool;
 			var t = m_tools[CurrentTool];
@@ -155,7 +155,6 @@ namespace Voxul.Edit
 			{
 				EditorUtility.SetDirty(Renderer.Mesh);
 				Renderer.Invalidate(true, true);
-				Debug.Log("Tool invalidated");
 			}
 			EditorGUILayout.EndVertical();
 			GUI.enabled = true;
@@ -210,6 +209,10 @@ namespace Voxul.Edit
 
 			DrawSceneGUIToolsIcons();
 
+			if (!m_tools.ContainsKey(CurrentTool))
+			{
+				CurrentTool = default;
+			}
 			var t = m_tools[CurrentTool];
 			if(t.DrawSceneGUI(this, Renderer, Event.current))
 			{
@@ -233,7 +236,9 @@ namespace Voxul.Edit
 		{
 			Handles.BeginGUI();
 			float buttonSize = 32;
-			var toolEnums = Enum.GetValues(typeof(EPaintingTool)).Cast<EPaintingTool>().ToList();
+			var toolEnums = Enum.GetValues(typeof(EPaintingTool)).Cast<EPaintingTool>()
+				.Where(l => m_tools.ContainsKey(l))
+				.ToList();
 			var names = Enum.GetNames(typeof(EPaintingTool));
 			var windowPosition = new Rect(5, 5, 2 * buttonSize + 15, Mathf.Ceil(toolEnums.Count / 2f) * buttonSize + 48);
 			Deadzones.Add(windowPosition);
@@ -243,7 +248,10 @@ namespace Voxul.Edit
 			var position = windowPosition.position;
 			foreach (var toolEnum in toolEnums)
 			{
-				var tool = m_tools[toolEnum];
+				if(!m_tools.TryGetValue(toolEnum, out var tool))
+				{
+					continue;
+				}
 				var content = tool.Icon.WithTooltip(names[(int)toolEnum]);
 				var rect = new Rect(position.x, position.y, 32, 32);
 				if (toolEnum == CurrentTool)

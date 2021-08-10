@@ -29,6 +29,7 @@ namespace Voxul
 			public int FontSize = 12;
 			public int LineSize = 12;
 			public FontStyle FontStyle;
+			public TextAlignment Alignment;
 			/// <summary>
 			/// The text value to display.
 			/// </summary>

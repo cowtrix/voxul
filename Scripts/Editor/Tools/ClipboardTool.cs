@@ -120,7 +120,6 @@ namespace Voxul.Edit
 						voxelPainter.Renderer.Mesh.Voxels.Remove(v);
 						newObj.Mesh.Voxels.AddSafe(vox);
 					}
-					newObj.Mesh.Optimisers.Data.AddRange(voxelPainter.Renderer.Mesh.Optimisers.Data);
 					voxelPainter.Renderer.Mesh.Invalidate();
 					voxelPainter.SetSelection(null);
 					newObj.Mesh.Invalidate();

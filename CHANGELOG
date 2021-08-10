@@ -1,0 +1,24 @@
+0.0.3
+
+- Significantly improved FaceMerger optimiser performance.
+- Altered optimiser workflow significantly away from ScriptableObject.
+- Added initial unit test suite.
+- New experimental feature: MagicaVoxel .vox file import
+	- Restrictions: Can only import single-object files with simple nodes.
+- Fixed bug where collider meshes were being recreated on every invalidation.
+- Moved voxul into its own assembly for faster compilation times when included within a project.
+- Improved SceneView picking so you don't have to lock the inspector anymore when painting
+- New experimental feature: Render plane LOD generation
+- New experimental feature: Reduce LOD generation
+
+0.0.2
+
+- Altered VoxelRenderer.MinLayer & VoxelRenderer.MaxLayer to be a single "min-max" struct `CullLayers`.
+- Created "optimiser" workflow which should hopefully serve as a flexible framework for injecting arbitrary little bits of computation into the off-thread baking process.
+- Moved internal face optimisation to new "optimiser" workflow.
+- New voxel type: Voxel Sprites! Select any sprite texture and automatically generate a voxel object representation.
+- Restructured threading architecture into `ThreadHandler` abstraction.
+
+0.0.1
+
+- Initial release.
