@@ -223,7 +223,7 @@ namespace Voxul.Meshing
 					}
 					meshData.UnityMesh.name = $"{VoxelMesh.name}_mesh_{VoxelMesh.Hash}_0";
 					IntermediateVoxelMeshData result = IntermediateData[i];
-					meshData.UnityMesh = voxData.SetMesh(meshData.UnityMesh);
+					meshData.UnityMesh = voxData.SetMesh(meshData.UnityMesh, VoxelMesh.OptimiseMesh);
 				}
 
 				for (var i = VoxelMesh.UnityMeshInstances.Count - 1; i >= IntermediateData.Count; --i)
@@ -267,6 +267,7 @@ namespace Voxul.Meshing
 					Surface = vox.Material.GetSurface(dir),
 					MaterialMode = vox.Material.MaterialMode,
 					RenderMode = vox.Material.RenderMode,
+					NormalMode = vox.Material.NormalMode,
 				};
 				data.Faces.Add(faceCoord, face);
 			}
@@ -293,6 +294,7 @@ namespace Voxul.Meshing
 					Surface = vox.Material.GetSurface(dir),
 					MaterialMode = vox.Material.MaterialMode,
 					RenderMode = vox.Material.RenderMode,
+					NormalMode = vox.Material.NormalMode,
 				};
 				data.Faces.Add(faceCoord, face);
 			}
@@ -351,6 +353,17 @@ namespace Voxul.Meshing
 				var vOffset = data.Vertices.Count;
 				data.Vertices.AddRange(new[] { v1, v2, v3, v4 });
 
+				switch (voxelFace.Value.NormalMode)
+				{
+					case ENormalMode.Hard:
+						var normal = VoxelCoordinate.DirectionToVector3(voxelFace.Key.Direction);
+						data.Normals.AddRange(normal, normal, normal, normal);
+						break;
+					case ENormalMode.Spherical:
+						data.Normals.AddRange(v1.normalized, v2.normalized, v3.normalized, v4.normalized);
+						break;
+				}
+
 				// Triangles
 				if (!data.Triangles.TryGetValue(submeshIndex, out var submeshList))
 				{
@@ -391,31 +404,25 @@ namespace Voxul.Meshing
 				switch (uvMode)
 				{
 					case EUVMode.Local:
-						data.UV1.AddRange(new[]
-						{
-					_11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES,
-				});
+						data.UV1.AddRange(_11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES);
 						break;
 					case EUVMode.LocalScaled:
-						data.UV1.AddRange(new[]
-						{
-					_11_CORDINATES * planeSize.x, _01_CORDINATES * planeSize.x, _00_CORDINATES * planeSize.x, _10_CORDINATES * planeSize.x,
-				});
+						data.UV1.AddRange(_11_CORDINATES * planeSize.x, _01_CORDINATES * planeSize.x, _00_CORDINATES * planeSize.x, _10_CORDINATES * planeSize.x);
 						break;
 					case EUVMode.Global:
 						switch (voxelFace.Key.Direction)
 						{
 							case EVoxelDirection.ZNeg:
 							case EVoxelDirection.ZPos:
-								data.UV1.AddRange(new[] { v1.xy(), v2.xy(), v3.xy(), v4.xy(), });
+								data.UV1.AddRange(v1.xy(), v2.xy(), v3.xy(), v4.xy());
 								break;
 							case EVoxelDirection.YNeg:
 							case EVoxelDirection.YPos:
-								data.UV1.AddRange(new[] { v1.xz(), v2.xz(), v3.xz(), v4.xz(), });
+								data.UV1.AddRange(v1.xz(), v2.xz(), v3.xz(), v4.xz());
 								break;
 							case EVoxelDirection.XNeg:
 							case EVoxelDirection.XPos:
-								data.UV1.AddRange(new[] { v1.yz(), v2.yz(), v3.yz(), v4.yz(), });
+								data.UV1.AddRange(v1.yz(), v2.yz(), v3.yz(), v4.yz());
 								break;
 						}
 						break;
@@ -424,15 +431,15 @@ namespace Voxul.Meshing
 						{
 							case EVoxelDirection.ZNeg:
 							case EVoxelDirection.ZPos:
-								data.UV1.AddRange(new[] { v1.xy() / planeSize.x, v2.xy() / planeSize.x, v3.xy() / planeSize.x, v4.xy() / planeSize.x, });
+								data.UV1.AddRange(v1.xy() / planeSize.x, v2.xy() / planeSize.x, v3.xy() / planeSize.x, v4.xy() / planeSize.x);
 								break;
 							case EVoxelDirection.YNeg:
 							case EVoxelDirection.YPos:
-								data.UV1.AddRange(new[] { v1.xz() / planeSize.x, v2.xz() / planeSize.x, v3.xz() / planeSize.x, v4.xz() / planeSize.x, });
+								data.UV1.AddRange(v1.xz() / planeSize.x, v2.xz() / planeSize.x, v3.xz() / planeSize.x, v4.xz() / planeSize.x);
 								break;
 							case EVoxelDirection.XNeg:
 							case EVoxelDirection.XPos:
-								data.UV1.AddRange(new[] { v1.yz() / planeSize.x, v2.yz() / planeSize.x, v3.yz() / planeSize.x, v4.yz() / planeSize.x, });
+								data.UV1.AddRange(v1.yz() / planeSize.x, v2.yz() / planeSize.x, v3.yz() / planeSize.x, v4.yz() / planeSize.x);
 								break;
 						}
 						break;

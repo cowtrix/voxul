@@ -117,7 +117,7 @@ namespace Voxul.Edit
 			MeshCollider collider = null;
 			foreach (var r in renderer.Submeshes)
 			{
-				if (!r.MeshCollider)
+				if (!r || !r.MeshCollider)
 				{
 					continue;
 				}
@@ -291,7 +291,8 @@ namespace Voxul.Edit
 		{
 			if (!m_asset)
 			{
-				return false;
+				m_asset = ScriptableObject.CreateInstance<VoxelMaterialAsset>();
+				m_asset.Material = CurrentBrush;
 			}
 			GUILayout.BeginVertical("Box");
 			GUILayout.Label("Presets");

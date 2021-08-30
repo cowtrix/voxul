@@ -170,13 +170,21 @@ namespace Voxul.Edit
 
 		private void DuringSceneGUI(SceneView sceneView)
 		{
+			void HideSubmesh(VoxelRendererSubmesh submesh)
+			{
+				if (!submesh)
+				{
+					return;
+				}
+				submesh.hideFlags |= HideFlags.HideInHierarchy;
+			}
 			switch (Event.current.type)
 			{
 				case EventType.MouseEnterWindow:
-					Renderer.Submeshes.ForEach(x => x.hideFlags = x.hideFlags & ~HideFlags.HideInHierarchy);
+					Renderer.Submeshes.ForEach(HideSubmesh);
 					break;
 				case EventType.MouseLeaveWindow:
-					Renderer.Submeshes.ForEach(x => x.hideFlags = x.hideFlags | HideFlags.HideInHierarchy);
+					Renderer.Submeshes.ForEach(HideSubmesh);
 					break;
 			}
 		}

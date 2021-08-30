@@ -46,6 +46,7 @@ namespace Voxul.Edit
 		private void SetupList(SerializedProperty property)
 		{
 			property = property.FindPropertyRelative("Data");
+
 			list = new ReorderableList(property.serializedObject, property);
 			list.drawElementCallback += (rect, index, isActive, isFocused) =>
 			{

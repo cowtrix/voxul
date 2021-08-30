@@ -13,6 +13,7 @@ namespace Voxul
 	public enum ENormalMode : byte
 	{
 		Hard,
+		Spherical,
 	}
 
 	public enum EMaterialMode

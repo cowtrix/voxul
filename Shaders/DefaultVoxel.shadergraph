@@ -13,7 +13,11 @@
             "m_Id": "534f697a22664fc4ae348255fa1d6869"
         }
     ],
-    "m_Keywords": [],
+    "m_Keywords": [
+        {
+            "m_Id": "d94e77d89f6b40809f22b0368892bd3f"
+        }
+    ],
     "m_Nodes": [
         {
             "m_Id": "2358ac6ee079c080b8c60b1c5f19b067"
@@ -696,7 +700,7 @@
     },
     "m_Name": "Occlusion",
     "m_DefaultReferenceName": "Vector1_534f697a22664fc4ae348255fa1d6869",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "Occlusion",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
@@ -1253,6 +1257,25 @@
         "m_SerializableColors": []
     },
     "m_SerializedDescriptor": "SurfaceDescription.Smoothness"
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.ShaderKeyword",
+    "m_ObjectId": "d94e77d89f6b40809f22b0368892bd3f",
+    "m_Guid": {
+        "m_GuidSerialized": "5138fa64-efa8-49ba-803a-94d5436a40f1"
+    },
+    "m_Name": "SPRITESHEET",
+    "m_DefaultReferenceName": "BOOLEAN_D94E77D89F6B40809F22B0368892BD3F_ON",
+    "m_OverrideReferenceName": "SPRITESHEET_ON",
+    "m_GeneratePropertyBlock": true,
+    "m_KeywordType": 0,
+    "m_KeywordDefinition": 0,
+    "m_KeywordScope": 1,
+    "m_Entries": [],
+    "m_Value": 1,
+    "m_IsEditable": true
 }
 
 {

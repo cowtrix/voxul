@@ -12,8 +12,16 @@ namespace Voxul.Pathfinding
 
 		public void OnValidate()
 		{
+			if(Renderers == null)
+			{
+				return;
+			}
 			foreach(var r in Renderers)
 			{
+				if (!r)
+				{
+					continue;
+				}
 				if (!r.SnapToGrid)
 				{
 					Debug.LogWarning($"Navmesh mesh {r} is not set to Snap To Grid so it will be ignored.", r);
@@ -21,14 +29,14 @@ namespace Voxul.Pathfinding
 			}
 		}
 
-		public static bool GroundedCheck(ISet<VoxelCoordinate> navmesh, VoxelCoordinate from, VoxelCoordinate to)
+		public static float GroundedCheck(ISet<VoxelCoordinate> navmesh, VoxelCoordinate from, VoxelCoordinate to)
 		{
 			if (!from.IsNeighbour(to))
 			{
-				return false;
+				return 1;
 			}
 			var groundDir = VoxelCoordinate.DirectionToCoordinate(EVoxelDirection.YNeg, to.Layer);
-			return navmesh.CollideCheck(to + groundDir, out _);
+			return navmesh.CollideCheck(to + groundDir, out _) ? 1 : 0;
 		}
 
 		public ISet<VoxelCoordinate> GetCoordinates() => Renderers?

@@ -23,8 +23,8 @@ namespace Voxul
 			/// <summary>
 			/// The voxel resolution layer.
 			/// </summary>
-			[Range(0, 2)]
-			public sbyte Resolution = 1;
+			[Range(VoxelCoordinate.MIN_LAYER, VoxelCoordinate.MAX_LAYER)]
+			public sbyte Resolution = 0;
 			public Font Font;
 			public int FontSize = 12;
 			public int LineSize = 12;
@@ -183,27 +183,13 @@ namespace Voxul
 			{
 				return;
 			}
-			var str = Configuration.Text ?? "";
-			Vector3 pos = Vector3.zero;
-			for (int i = 0; i < str.Length; i++)
+			foreach (var info in VoxelTextWorker.GetCharacters(Configuration, m_textWorker.CharacterCache))
 			{
-				if (str[i] == '\n')
-				{
-					pos = new Vector2(0, pos.y - Configuration.LineSize);
-					continue;
-				}
-				// Get character rendering information from the font				
-				if (!VoxelTextWorker.GetCharacterInfo(Configuration.Font.characterInfo, str[i], out var ch))
-				{
-					continue;
-				}
-				var bound = new Bounds(pos + new Vector3(ch.minX, ch.maxY, 0), Vector3.zero);
-				bound.Encapsulate(pos + new Vector3(ch.maxX, ch.maxY, 0));
-				bound.Encapsulate(pos + new Vector3(ch.maxX, ch.minY, 0));
-				bound.Encapsulate(pos + new Vector3(ch.minX, ch.minY, 0));
+				var bound = info.Item1;
+				var ch = info.Item2;
+				var character = ch.GetCharacter();
+
 				Gizmos.DrawWireCube(bound.center, bound.size);
-				// Advance character position
-				pos += new Vector3(ch.advance, 0, 0);
 			}
 		}
 	}

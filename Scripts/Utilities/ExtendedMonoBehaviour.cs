@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Voxul
 {
-    public abstract class ExtendedMonoBehaviour : MonoBehaviour
-    {   
-    }
+	public abstract class ExtendedMonoBehaviour : MonoBehaviour
+	{
+	}
 }

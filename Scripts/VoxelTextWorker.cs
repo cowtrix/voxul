@@ -46,9 +46,8 @@ namespace Voxul
 		/// text that hasn't moved. Makes redrawing large paragraphs lots
 		/// faster.
 		/// </summary>
-		[SerializeField]
 		[HideInInspector]
-		private List<CharacterInfo> m_charInfo = new List<CharacterInfo>();
+		public List<CharacterInfo> CharacterCache = new List<CharacterInfo>();
 
 		public VoxelText.TextConfiguration Configuration { get; set; }
 
@@ -98,9 +97,9 @@ namespace Voxul
 			}
 			else if (m_workingTexture.width != fontTexture.width || m_workingTexture.height != fontTexture.height)
 			{
-				m_workingTexture.Resize(fontTexture.width, fontTexture.height);
+				m_workingTexture.Reinitialize(fontTexture.width, fontTexture.height);
 			}
-			if(m_workingTextureAlpha == null || m_workingTextureAlpha.GetLength(0) != m_workingTexture.width || m_workingTextureAlpha.GetLength(1) != m_workingTexture.height)
+			if (m_workingTextureAlpha == null || m_workingTextureAlpha.GetLength(0) != m_workingTexture.width || m_workingTextureAlpha.GetLength(1) != m_workingTexture.height)
 			{
 				m_workingTextureAlpha = new float[m_workingTexture.width, m_workingTexture.height];
 			}
@@ -112,7 +111,7 @@ namespace Voxul
 			m_workingTexture.Apply();
 
 			// Copy texture alpha channel to float array for off-thread access
-			for(var x = 0; x < m_workingTexture.width; ++x)
+			for (var x = 0; x < m_workingTexture.width; ++x)
 			{
 				for (var y = 0; y < m_workingTexture.height; ++y)
 				{
@@ -121,31 +120,54 @@ namespace Voxul
 			}
 
 			// Add the character infos for off-thread access
-			if(m_charInfo == null)
+			if (CharacterCache == null)
 			{
-				m_charInfo = new List<CharacterInfo>();
+				CharacterCache = new List<CharacterInfo>();
 			}
-			m_charInfo.Clear();
-			m_charInfo.AddRange(Configuration.Font.characterInfo);
-			m_fontUpdate = 0;	// Release int-semaphore
+			CharacterCache.Clear();
+			CharacterCache.AddRange(Configuration.Font.characterInfo);
+			m_fontUpdate = 0;   // Release int-semaphore
 			voxulLogger.Debug("Finished UpdateFontWorkingTexture");
 		}
 
-		public IEnumerable<(Bounds, CharacterInfo)> GetCharacters(string str, float lineSize)
+		public static IEnumerable<(Bounds, CharacterInfo)> GetCharacters(VoxelText.TextConfiguration config, List<CharacterInfo> cache)
 		{
-			Vector3 pos = Vector3.zero;
-			for (int i = 0; i < str.Length; i++)
+			var line = new List<(Bounds, CharacterInfo)>();
+			IEnumerable<(Bounds, CharacterInfo)> SubmitLine()
 			{
-				if (str[i] == '\n')
+				if (!line.Any())
 				{
-					pos = new Vector2(0, pos.y - lineSize);
+					yield break;
+				}
+				var totalWidth = line.Last().Item1.max.x - line.First().Item1.min.x;
+				for (int j = 0; j < line.Count; j++)
+				{
+					(Bounds, CharacterInfo) c = line[j];
+					if (config.Alignment == TextAlignment.Center)
+					{
+						var offset = new Vector3(totalWidth / 2f, 0, 0).RoundToIncrement(VoxelCoordinate.LayerToScale(config.Resolution));
+						c.Item1 = new Bounds(c.Item1.center - offset, c.Item1.size);
+					}
+					yield return c;
+				}
+				line.Clear();
+			}
+
+			Vector3 pos = Vector3.zero;
+			for (int i = 0; i < config.Text.Length; i++)
+			{
+				var c = config.Text[i];
+				if (c == '\n')
+				{
+					foreach(var l in SubmitLine()) { yield return l; }
+					pos = new Vector2(0, pos.y - config.LineSize);
 					continue;
 				}
 
 				// Get character rendering information from the font
-				if (!GetCharacterInfo(m_charInfo, str[i], out var ch))
+				if (!GetCharacterInfo(cache, c, out var ch))
 				{
-					voxulLogger.Warning($"Couldn't find character info for char {str[i]} @ {i}");
+					voxulLogger.Warning($"Couldn't find character info for char {c} @ {i}");
 					continue;
 				}
 
@@ -154,15 +176,22 @@ namespace Voxul
 				spatialBound.Encapsulate(pos + new Vector3(ch.maxX, ch.minY, 0));
 				spatialBound.Encapsulate(pos + new Vector3(ch.minX, ch.minY, 0));
 
-				yield return (spatialBound, ch);
+				line.Add((spatialBound, ch));
 
 				// Advance character position
 				pos += new Vector3(ch.advance, 0, 0);
 			}
+
+			foreach (var l in SubmitLine()) { yield return l; }
 		}
 
 		public static bool GetCharacterInfo(IEnumerable<CharacterInfo> infos, char character, out CharacterInfo info)
 		{
+			if(infos == null)
+			{
+				info = default;
+				return false;
+			}
 			foreach (var i in infos)
 			{
 				if (Convert.ToChar(i.index) == character)
@@ -184,7 +213,7 @@ namespace Voxul
 			{
 				Interlocked.Increment(ref m_fontUpdate);
 				UnityMainThreadDispatcher.Enqueue(() => UpdateFontWorkingTexture());
-				while(m_fontUpdate > 0)
+				while (m_fontUpdate > 0)
 				{
 					yield return null;
 				}
@@ -196,7 +225,7 @@ namespace Voxul
 			var newCache = new Dictionary<Bounds, CharVoxelData>();
 			var characterCoordList = new List<VoxelCoordinate>();
 			var layerStep = VoxelCoordinate.LayerToScale(Configuration.Resolution);
-			foreach (var info in GetCharacters(Configuration.Text, Configuration.LineSize))
+			foreach (var info in GetCharacters(Configuration, CharacterCache))
 			{
 				var spatialBound = info.Item1;
 				var ch = info.Item2;

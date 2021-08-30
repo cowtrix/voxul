@@ -2,9 +2,51 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Voxul.Utilities;
 
 namespace Voxul
 {
+	[Serializable]
+	public class VoxelBrush
+	{
+		[Serializable]
+		public class SurfaceBrush
+		{
+			public EUVMode UVMode;
+			public Gradient Albedo;
+			public Vector2 Metallic;
+			public Vector2 Smoothness;
+			public SurfaceData Generate(float value)
+			{
+				value = Mathf.Clamp01(value);
+				return new SurfaceData
+				{
+					Albedo = Albedo.Evaluate(value),
+					Metallic = Mathf.Lerp(Metallic.x, Metallic.y, value),
+					Smoothness = Mathf.Lerp(Smoothness.x, Smoothness.y, value),
+					UVMode = UVMode,
+				};
+			}
+		}
+
+		public EMaterialMode MaterialMode;
+		public ERenderMode RenderMode;
+		public ENormalMode NormalMode;
+
+		public SurfaceBrush Surface;
+
+		public VoxelMaterial Generate(float value)
+		{
+			return new VoxelMaterial
+			{
+				MaterialMode = MaterialMode,
+				RenderMode = RenderMode,
+				NormalMode = NormalMode,
+				Default = Surface.Generate(value),
+			};
+		}
+	}
+
 	[Serializable]
 	public struct VoxelMaterial
 	{

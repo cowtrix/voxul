@@ -11,21 +11,24 @@ namespace Voxul.Meshing
 		public SurfaceData Surface;
 		public EMaterialMode MaterialMode;
 		public ERenderMode RenderMode;
+		public ENormalMode NormalMode;
 
 		public override bool Equals(object obj)
 		{
 			return obj is VoxelFace face &&
 				   EqualityComparer<SurfaceData>.Default.Equals(Surface, face.Surface) &&
 				   MaterialMode == face.MaterialMode &&
-				   RenderMode == face.RenderMode;
+				   RenderMode == face.RenderMode &&
+				   NormalMode == face.NormalMode;
 		}
 
 		public override int GetHashCode()
 		{
-			int hashCode = -1878593919;
+			int hashCode = 575944098;
 			hashCode = hashCode * -1521134295 + Surface.GetHashCode();
 			hashCode = hashCode * -1521134295 + MaterialMode.GetHashCode();
 			hashCode = hashCode * -1521134295 + RenderMode.GetHashCode();
+			hashCode = hashCode * -1521134295 + NormalMode.GetHashCode();
 			return hashCode;
 		}
 	}

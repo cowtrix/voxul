@@ -19,6 +19,7 @@ namespace Voxul.Meshing
 
 		// Output
 		public List<Vector3> Vertices;
+		public List<Vector3> Normals;
 		public Dictionary<int, List<int>> Triangles;
 		public List<Color> Color1;
 		public List<Vector2> UV1;	// Texture
@@ -37,6 +38,8 @@ namespace Voxul.Meshing
 			Faces.Clear();
 			Vertices = Vertices ?? new List<Vector3>(Voxels.Count * 8);
 			Vertices.Clear();
+			Normals = Normals ?? new List<Vector3>(Vertices.Count);
+			Normals.Clear();
 			Triangles = Triangles ?? new Dictionary<int, List<int>>(Voxels.Count * 16 * 3);
 			Triangles.Clear();
 			Color1 = Color1 ?? new List<Color>(Vertices.Count);
@@ -54,7 +57,7 @@ namespace Voxul.Meshing
 		/// </summary>
 		/// <param name="mesh">The mesh to modify. If null, a new mesh will be initialised.</param>
 		/// <returns>The mesh that has been modified.</returns>
-		public Mesh SetMesh(Mesh mesh)
+		public Mesh SetMesh(Mesh mesh, bool optimise)
 		{
 			if (!mesh)
 			{
@@ -77,8 +80,12 @@ namespace Voxul.Meshing
 				mesh.SetUVs(0, UV1);
 				mesh.SetUVs(1, UV2);
 				mesh.SetUVs(2, UV3);
-				mesh.RecalculateNormals();
+				mesh.SetNormals(Normals);
 				mesh.RecalculateBounds();
+				if (optimise)
+				{
+					mesh.Optimize();
+				}
 			}
 			return mesh;
 		}
@@ -92,6 +99,7 @@ namespace Voxul.Meshing
 			Voxels = null;
 			Faces = null;
 			Vertices = null;
+			Normals = null;
 			UV1 = null;
 			UV3 = null;
 			Color1 = null;

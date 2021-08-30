@@ -4,12 +4,45 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using System.Reflection;
 using System;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Voxul.Utilities
 {
 	public static class Util
 	{
-		
+		public static bool PromptEditor(string title, string message, string ok = "Okay", string cancel = "Cancel")
+		{
+#if UNITY_EDITOR
+			return UnityEditor.EditorUtility.DisplayDialog(title, message, ok, cancel);
+#else
+			return true;
+#endif
+		}
+
+		public static IList<T> AddRange<T>(this IList<T> list, params T[] values)
+		{
+			foreach(var i in values)
+			{
+				list.Add(i);
+			}
+			return list;
+		}
+
+
+		public static T Random<T>(this IList<T> array)
+		{
+			if (array.Count == 0)
+			{
+				throw new Exception("Check for empty arrays before calling this!");
+			}
+			if (array.Count == 1)
+			{
+				return array[0];
+			}
+			return array[UnityEngine.Random.Range(0, array.Count())];
+		}
 
 		public static void CopyTo<T>(this T source, T target)
 		{

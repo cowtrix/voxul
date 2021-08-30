@@ -5,17 +5,17 @@ using UnityEngine;
 
 namespace Voxul.Utilities
 {
-	public class VoxelTree<T> where T: struct
+	public abstract class VoxelTree<T> where T : struct
 	{
 		public void DrawGizmos()
 		{
 			void giz(Node n)
 			{
-				foreach(var c in n.Children)
+				foreach (var c in n.Children)
 				{
 					giz(c.Value);
 				}
-				if(n is LeafNode)
+				if (n is LeafNode)
 				{
 					Gizmos.color = Color.white.WithAlpha(.5f);
 				}
@@ -24,11 +24,11 @@ namespace Voxul.Utilities
 					Gizmos.color = Color.green.WithAlpha(.5f);
 				}
 				Gizmos.DrawWireCube(n.Coordinate.ToVector3(), Vector3.one * n.Coordinate.GetScale());
-			}	
+			}
 			giz(m_root);
 		}
 
-		public abstract class Node 
+		public abstract class Node
 		{
 			public VoxelCoordinate Coordinate { get; }
 
@@ -41,21 +41,23 @@ namespace Voxul.Utilities
 
 			internal IEnumerable<(VoxelCoordinate, T)> GetAllDescendants()
 			{
-				foreach(var childNode in Children)
+				foreach (var childNode in Children)
 				{
-					if(childNode.Value is LeafNode leaf)
+					if (childNode.Value is LeafNode leaf)
 					{
 						yield return (leaf.Coordinate, leaf.Value);
 					}
 					else if (childNode.Value is Partition partition)
 					{
-						foreach(var descendant in partition.GetAllDescendants())
+						foreach (var descendant in partition.GetAllDescendants())
 						{
 							yield return descendant;
 						}
 					}
 				}
 			}
+
+			public abstract T GetAverageMaterial(Func<IEnumerable<T>, T> avgFunc);
 		}
 
 		public class LeafNode : Node
@@ -66,12 +68,19 @@ namespace Voxul.Utilities
 			{
 				Value = value;
 			}
+
+			public override T GetAverageMaterial(Func<IEnumerable<T>, T> avgFunc) => Value;
 		}
 
 		public class Partition : Node
 		{
 			public Partition(VoxelCoordinate coordinate) : base(coordinate)
 			{
+			}
+
+			public override T GetAverageMaterial(Func<IEnumerable<T>, T> avgFunc)
+			{
+				return avgFunc.Invoke(GetAllDescendants().Select(kvp => kvp.Item2));
 			}
 		}
 		public sbyte MinLayer { get; }
@@ -85,15 +94,17 @@ namespace Voxul.Utilities
 
 		public VoxelTree(sbyte maxLayer, IDictionary<VoxelCoordinate, T> data) : this(maxLayer)
 		{
-			foreach(var d in data)
+			foreach (var d in data)
 			{
 				Insert(d.Key, d.Value);
 			}
 		}
 
+		protected abstract T GetAverage(IEnumerable<T> vals);
+
 		public bool TryGetValue(VoxelCoordinate coord, out T value)
 		{
-			if(TryGetValue(coord, out Node node) && node is LeafNode n)
+			if (TryGetValue(coord, out Node node) && node is LeafNode n)
 			{
 				value = n.Value;
 				return true;
@@ -104,7 +115,7 @@ namespace Voxul.Utilities
 
 		public bool TryGetValue(VoxelCoordinate coord, out Node value)
 		{
-			if(coord.Layer < MinLayer)
+			if (coord.Layer < MinLayer)
 			{
 				value = null;
 				return false;
@@ -142,7 +153,7 @@ namespace Voxul.Utilities
 		{
 			if (coord.Layer < MinLayer)
 			{
-				foreach(var sub in coord.Subdivide())
+				foreach (var sub in coord.Subdivide())
 				{
 					Insert(sub, value);
 				}
@@ -184,6 +195,31 @@ namespace Voxul.Utilities
 				}
 				lastNode = closerNode;
 			}
+		}
+
+		public IEnumerable<(VoxelCoordinate, T)> IterateLayer(sbyte layer)
+		{
+			Queue<Node> nodes = new Queue<Node>();
+			nodes.Enqueue(m_root);
+
+			while (nodes.Any())
+			{
+				var n = nodes.Dequeue();
+				foreach (var child in n.Children)
+				{
+					if (child.Key.Layer >= layer)
+					{
+						T val = child.Value.GetAverageMaterial(GetAverage);
+						var coord = child.Key;
+						yield return (coord, val);
+					}
+					else if (child.Key.Layer < layer)
+					{
+
+					}
+				}
+			}
+
 		}
 	}
 }

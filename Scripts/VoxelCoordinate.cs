@@ -161,6 +161,11 @@ namespace Voxul
 			return new VoxelCoordinate(Mathf.RoundToInt(point.x), Mathf.RoundToInt(point.y), Mathf.RoundToInt(point.z), layer);
 		}
 
+		public static VoxelCoordinate FromVector3(float x, float y, float z, sbyte layer)
+		{
+			return FromVector3(new Vector3(x, y, z), layer);
+		}
+
 		public float GetScale() => LayerToScale(Layer);
 
 		public Bounds ToBounds() => new Bounds(ToVector3(), GetScale() * Vector3.one);

@@ -14,6 +14,18 @@ namespace Voxul
 	{
 		public override void OnInspectorGUI()
 		{
+			var methods = target.GetType().GetMethods()
+				.Select(m => (m.GetCustomAttribute<ContextMenu>(), m))
+				.Where(m => m.Item1 != null);
+			foreach(var m in methods)
+			{
+				if (GUILayout.Button(m.Item1.menuItem))
+				{
+					foreach (var t in targets)
+						m.Item2.Invoke(t, null);
+				}
+			}
+
 			var properties = target.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
 				.Where(p => !p.DeclaringType.Assembly.FullName.Contains("UnityEngine.CoreModule"));
 			EditorGUILayout.BeginVertical("Box");
@@ -26,7 +38,11 @@ namespace Voxul
 					manyVal = targets.Any(t => !firstVal.Equals(prop.GetValue(t)));
 				}
 
-				if (firstVal is UnityEngine.Object unityObj && unityObj)
+				if(firstVal is IList list)
+				{
+					EditorGUILayout.LabelField(prop.Name, $"Count: {list.Count}");
+				}
+				else if (firstVal is UnityEngine.Object unityObj && unityObj)
 				{
 					EditorGUILayout.ObjectField(prop.Name, unityObj, prop.PropertyType, true);
 				}

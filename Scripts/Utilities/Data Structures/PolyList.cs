@@ -21,8 +21,9 @@ namespace Voxul.Utilities
 
 		[SerializeReference]
 		public List<T> Data = new List<T>();
+		private List<SerializedPackage> m_data = new List<SerializedPackage>();
 
-		/*public void OnAfterDeserialize()
+		public void OnAfterDeserialize()
 		{
 			Data?.Clear();
 			if(m_data == null)
@@ -54,6 +55,6 @@ namespace Voxul.Utilities
 					JSONData = JsonUtility.ToJson(item),
 				});
 			}
-		}*/
+		}
 	}
 }

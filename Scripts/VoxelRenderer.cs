@@ -52,11 +52,11 @@ namespace Voxul
 		[FormerlySerializedAs("Renderers")]
 		[SerializeField]
 		public List<VoxelRendererSubmesh> Submeshes = new List<VoxelRendererSubmesh>();
-		
+
 		public Bounds Bounds => Submeshes.Select(b => b.Bounds).EncapsulateAll();
 
 		protected virtual void Update()
-		{		
+		{
 			if (SnapToGrid)
 			{
 				var scale = VoxelCoordinate.LayerToScale(SnapLayer);
@@ -71,7 +71,7 @@ namespace Voxul
 		private void Reset()
 		{
 			ThreadingMode = VoxelManager.Instance.DefaultThreadingMode;
-			MaxCoroutineUpdateTime = VoxelManager.Instance.DefaultMaxCoroutineUpdateTime;			
+			MaxCoroutineUpdateTime = VoxelManager.Instance.DefaultMaxCoroutineUpdateTime;
 		}
 
 		protected virtual void Awake()
@@ -80,13 +80,38 @@ namespace Voxul
 		}
 
 		public void SetDirty() => m_isDirty = true;
-		
+
 		[ContextMenu("Clear")]
 		public void ClearMesh()
 		{
+			if(!Util.PromptEditor($"Clear Mesh {this.Mesh}?", "Are you sure you want to clear this mesh and delete all of its data permanently?", "Yes, I'm sure"))
+			{
+				return;
+			}
 			Mesh.Voxels.Clear();
 			Mesh.Invalidate();
 			OnClear();
+		}
+
+		[ContextMenu("Clean Submeshes")]
+		public void CleanSubmeshes()
+		{
+			foreach(var submesh in Submeshes)
+			{
+				if (!submesh)
+				{
+					continue;
+				}
+				if(submesh.gameObject != gameObject)
+				{
+					submesh.gameObject.SafeDestroy();
+				}
+				else
+				{
+					submesh.SafeDestroy();
+				}
+			}
+			Submeshes.Clear();
 		}
 
 		protected virtual void OnClear() { }
@@ -95,7 +120,7 @@ namespace Voxul
 		{
 			Submeshes = new List<VoxelRendererSubmesh>(GetComponentsInChildren<VoxelRendererSubmesh>()
 				.Where(r => r.Parent == this));
-			foreach(var r in Submeshes)
+			foreach (var r in Submeshes)
 			{
 				r.SetupComponents(this, GenerateCollider || forceCollider);
 			}
@@ -104,7 +129,6 @@ namespace Voxul
 		[ContextMenu("Force Redraw")]
 		public void ForceRedraw()
 		{
-			SetupComponents(false);
 			if (!Mesh)
 			{
 				voxulLogger.Warning($"Tried to force redraw {this}, but it doesn't have a voxel mesh.", this);
@@ -144,7 +168,7 @@ namespace Voxul
 				return;
 			}
 			voxulLogger.Debug($"VoxelRenderer.OnMeshRebuilt: {voxelMesh}, {this}", this);
-			if(Mesh.Hash != voxelMesh.Hash)
+			if (Mesh.Hash != voxelMesh.Hash)
 			{
 				voxulLogger.Error("Unexpected hash!");
 				return;
@@ -153,13 +177,20 @@ namespace Voxul
 			{
 				var data = voxelMesh.UnityMeshInstances[i];
 				var unityMesh = data.UnityMesh;
-				
+
 				VoxelRendererSubmesh submesh;
 				if (Submeshes.Count < voxelMesh.UnityMeshInstances.Count)
 				{
-					submesh = new GameObject($"{name}_submesh_hidden")
-						.AddComponent<VoxelRendererSubmesh>();
-					submesh.transform.SetParent(transform);
+					if (i == 0)
+					{
+						submesh = gameObject.GetOrAddComponent<VoxelRendererSubmesh>();
+					}
+					else
+					{
+						submesh = new GameObject($"{name}_submesh_hidden_{i}")
+							.AddComponent<VoxelRendererSubmesh>();
+						submesh.transform.SetParent(transform);
+					}
 					Submeshes.Add(submesh);
 				}
 				else
@@ -176,7 +207,7 @@ namespace Voxul
 				if (!CustomMaterials)
 				{
 					var vm = VoxelManager.Instance;
-					if(!vm.DefaultMaterial || !vm.DefaultMaterialTransparent)
+					if (!vm.DefaultMaterial || !vm.DefaultMaterialTransparent)
 					{
 						vm.OnValidate();
 					}
@@ -187,19 +218,20 @@ namespace Voxul
 					SetMaterials(submesh, OpaqueMaterial, TransparentMaterial);
 				}
 			}
-			for (int i = 0; i < Mesh.UnityMeshInstances.Count; i++)
-			{
-				var m = Mesh.UnityMeshInstances[i];
-				Submeshes[i].SetupComponents(this, GenerateCollider);
-				Submeshes[i].MeshFilter.sharedMesh = m.UnityMesh;
-			}
 			for (var i = Submeshes.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)
 			{
 				var r = Submeshes[i];
-				if(r || r.gameObject)
+				if (r || r.gameObject)
 				{
 					voxulLogger.Debug($"Destroying submesh renderer {r}", this);
-					r.gameObject.SafeDestroy();
+					if(i == 0)
+					{
+						r.SafeDestroy();
+					}
+					else
+					{
+						r.gameObject.SafeDestroy();
+					}
 				}
 				Submeshes.RemoveAt(i);
 			}
@@ -235,7 +267,7 @@ namespace Voxul
 			var localNormal = transform.worldToLocalMatrix.MultiplyVector(worldNormal)
 				.ClosestAxisNormal();
 			localCoord -= localNormal * .001f;
-			foreach(var v in Mesh.Voxels)
+			foreach (var v in Mesh.Voxels)
 			{
 				if (v.Key.ToBounds().Contains(localCoord))
 				{

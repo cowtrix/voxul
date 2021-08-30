@@ -62,7 +62,7 @@ namespace Voxul.Meshing
 		public VoxelMapping Voxels = new VoxelMapping();
 
 		public VoxelMeshOptimiserList Optimisers => OverrideOptimisers ? OptimiserOverrides : VoxelManager.Instance.DefaultOptimisers;
-
+		public bool OptimiseMesh;
 		public bool OverrideOptimisers;
 		public VoxelMeshOptimiserList OptimiserOverrides = new VoxelMeshOptimiserList();
 

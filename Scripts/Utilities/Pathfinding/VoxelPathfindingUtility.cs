@@ -12,12 +12,12 @@ namespace Voxul.Pathfinding
 	/// </summary>
 	public static class VoxelPathfindingUtility
 	{
-		public delegate bool PathfindingLimitationDelegate(ISet<VoxelCoordinate> navmesh, VoxelCoordinate from, VoxelCoordinate to);
+		public delegate float PathfindingCostDelegate(ISet<VoxelCoordinate> navmesh, VoxelCoordinate from, VoxelCoordinate to);
 
 		public static IEnumerable<VoxelCoordinate> GetPath(this VoxelNavmesh navmesh, VoxelCoordinate from, VoxelCoordinate to,
-			PathfindingLimitationDelegate pathBehaviour = null)
+			PathfindingCostDelegate pathBehaviour = null)
 		{
-			return GetPath(navmesh.GetCoordinates(), from, to, pathBehaviour);
+			return GetPath(navmesh?.GetCoordinates(), from, to, pathBehaviour);
 		}
 
 		private static List<VoxelCoordinate> ReconstructPathRecursive(VoxelCoordinate coord,
@@ -27,6 +27,7 @@ namespace Voxul.Pathfinding
 			if (path == null)
 			{
 				path = new List<VoxelCoordinate>();
+				path.Add(coord);
 			}
 			if (!history.TryGetValue(coord, out var p))
 			{
@@ -47,9 +48,9 @@ namespace Voxul.Pathfinding
 
 		public static IEnumerable<VoxelCoordinate> GetPath(this ISet<VoxelCoordinate> navmesh,
 			VoxelCoordinate from, VoxelCoordinate to,
-			PathfindingLimitationDelegate pathBehaviour = null)
+			PathfindingCostDelegate pathBehaviour = null)
 		{
-			bool collideCheck(VoxelCoordinate c) => navmesh.CollideCheck(c, out _);
+			bool collideCheck(VoxelCoordinate c) => navmesh != null && navmesh.CollideCheck(c, out _);
 			if (collideCheck(to) || collideCheck(from))
 			{
 				return null;
@@ -60,7 +61,8 @@ namespace Voxul.Pathfinding
 			var bestDistances = new Dictionary<VoxelCoordinate, float>();
 			var history = new Dictionary<VoxelCoordinate, (VoxelCoordinate, float)>();
 			open.Add(Distance(from, to), from);
-			while (open.Any())
+			(float, VoxelCoordinate) best = (float.MaxValue, from);
+			while (open.Any() && closed.Count < 1000)
 			{
 				var nextNode = open.First();    // Get the highest scoring open node
 				open.RemoveAt(0);
@@ -69,20 +71,25 @@ namespace Voxul.Pathfinding
 				closed.Add(nextCoord);  // Close the coordinate
 				foreach (var neighbour in nextCoord.GetNeighbours())
 				{
+					if (closed.Contains(neighbour))
+					{
+						// Don't re-explore
+						continue;
+					}
+
 					if (collideCheck(neighbour))
 					{
 						// Something is blocking the way
 						continue;
 					}
 
-					if (pathBehaviour != null && !pathBehaviour(navmesh, nextCoord, neighbour))
+					var cost = 0f;
+					if (pathBehaviour != null)
 					{
-						continue;
+						cost = pathBehaviour(navmesh, nextCoord, neighbour);
 					}
-
-					if (closed.Contains(neighbour))
+					if(cost > 1)
 					{
-						// Don't re-explore
 						continue;
 					}
 
@@ -110,9 +117,14 @@ namespace Voxul.Pathfinding
 					if (!open.ContainsValue(neighbour))
 					{
 						var h = distanceToTarget + distanceFromHome;
+						h += cost;
 						while (open.ContainsKey(h))
 						{
 							h += neighbour.GetScale() * 0.01f;
+						}
+						if(h < best.Item1)
+						{
+							best = (h, neighbour);
 						}
 						open.Add(h, neighbour);
 					}
@@ -126,7 +138,8 @@ namespace Voxul.Pathfinding
 					history[neighbour] = (nextCoord, distanceToTarget);
 				}
 			}
-			return null;
+			return ReconstructPathRecursive(best.Item2, history, new List<VoxelCoordinate>() { best.Item2 })
+							.Reverse<VoxelCoordinate>(); ;
 		}
 	}
 }

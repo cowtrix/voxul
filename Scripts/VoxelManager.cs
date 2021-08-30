@@ -58,7 +58,7 @@ namespace Voxul
 		[SerializeField]
 		private List<Texture2D> m_spriteCache = new List<Texture2D>();
 
-		public VoxelMeshOptimiserList DefaultOptimisers => new VoxelMeshOptimiserList
+		public VoxelMeshOptimiserList DefaultOptimisers = new VoxelMeshOptimiserList
 		{
 			Data = new List<VoxelOptimiserBase>
 			{

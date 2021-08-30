@@ -34,10 +34,13 @@ namespace Voxul
 				return;
 			}
 			Parent = r;
-			gameObject.hideFlags = HideFlags.HideInHierarchy;
-			gameObject.transform.localPosition = Vector3.zero;
-			gameObject.transform.localRotation = Quaternion.identity;
-			gameObject.transform.localScale = Vector3.one;
+			gameObject.hideFlags = gameObject == Parent.gameObject ? Parent.hideFlags : HideFlags.HideInHierarchy;
+			if (gameObject != Parent.gameObject)
+			{
+				gameObject.transform.localPosition = Vector3.zero;
+				gameObject.transform.localRotation = Quaternion.identity;
+				gameObject.transform.localScale = Vector3.one;
+			}
 			if (!MeshFilter)
 			{
 				MeshFilter = gameObject.GetOrAddComponent<MeshFilter>();
@@ -64,6 +67,13 @@ namespace Voxul
 		}
 
 		public Bounds Bounds => MeshRenderer.bounds;
+
+		private void OnDestroy()
+		{
+			MeshFilter.SafeDestroy();
+			MeshRenderer.SafeDestroy();
+			MeshCollider.SafeDestroy();
+		}
 
 #if UNITY_EDITOR
 		internal void SetDirty()

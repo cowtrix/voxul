@@ -376,6 +376,19 @@ namespace Voxul
 			return false;
 		}
 
+		public static bool CollideCheck(this IEnumerable<VoxelCoordinate> voxels, Bounds b1)
+		{
+			foreach (var vox in voxels)
+			{
+				var b2 = vox.ToBounds();
+				if (b1.Intersects(b2))
+				{
+					return true;
+				}
+			};
+			return false;
+		}
+
 		public static IEnumerable<IEnumerable<Voxel>> Chunk(this IEnumerable<Voxel> inVoxels, int chunkSize)
 		{
 			List<List<Voxel>> result = new List<List<Voxel>>();
