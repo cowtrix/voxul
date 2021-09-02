@@ -96,7 +96,8 @@ namespace Voxul.Edit
 				else if (GUILayout.Button("Cut Selection To Clipboard") ||
 				(Event.current.isKey && Event.current.control && Event.current.keyCode == KeyCode.X))
 				{
-					CurrentClipboard = new Snippet(voxelPainter.CurrentSelection.Select(c => voxelPainter.Renderer.Mesh.Voxels[c]));
+					CurrentClipboard = new Snippet(voxelPainter.CurrentSelection.Select(c => 
+						new Voxel(c, voxelPainter.Renderer.Mesh.Voxels[c].Material.Copy())));
 					Cursor.SetData(voxelPainter.Renderer.transform.localToWorldMatrix, CurrentClipboard.Data.Values);
 					foreach(var v in CurrentClipboard.Data.Values)
 					{
