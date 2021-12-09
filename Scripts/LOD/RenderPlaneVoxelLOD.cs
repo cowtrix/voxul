@@ -169,7 +169,7 @@ namespace Voxul.LevelOfDetail
 			}
 			else if (plane.Albedo.width != width || plane.Albedo.height != height)
 			{
-				plane.Albedo.Reinitialize(width, height);
+				plane.Albedo.Resize(width, height);
 			}
 
 			plane.Albedo.filterMode = FilterMode.Point;

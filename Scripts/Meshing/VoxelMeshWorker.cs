@@ -229,8 +229,11 @@ namespace Voxul.Meshing
 				for (var i = VoxelMesh.UnityMeshInstances.Count - 1; i >= IntermediateData.Count; --i)
 				{
 					var m = VoxelMesh.UnityMeshInstances[i];
-					voxulLogger.Debug($"Destroying mesh {m}");
-					m.UnityMesh.SafeDestroy();
+					if(m != null)
+					{
+						voxulLogger.Debug($"Destroying mesh {m}");
+						m.UnityMesh.SafeDestroy();
+					}
 					VoxelMesh.UnityMeshInstances.RemoveAt(i);
 				}
 

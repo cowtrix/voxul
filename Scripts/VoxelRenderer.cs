@@ -221,7 +221,7 @@ namespace Voxul
 			for (var i = Submeshes.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)
 			{
 				var r = Submeshes[i];
-				if (r || r.gameObject)
+				if (r || (r != null && r.gameObject))
 				{
 					voxulLogger.Debug($"Destroying submesh renderer {r}", this);
 					if(i == 0)
