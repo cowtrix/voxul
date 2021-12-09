@@ -3,13 +3,17 @@
 - Significantly improved FaceMerger optimiser performance.
 - Altered optimiser workflow significantly away from ScriptableObject.
 - Added initial unit test suite.
-- New experimental feature: MagicaVoxel .vox file import
-	- Restrictions: Can only import single-object files with simple nodes.
+- New experimental feature: MagicaVoxel .vox file import. Restrictions: Can only import single-object files with simple nodes.
 - Fixed bug where collider meshes were being recreated on every invalidation.
 - Moved voxul into its own assembly for faster compilation times when included within a project.
 - Improved SceneView picking so you don't have to lock the inspector anymore when painting
 - New experimental feature: Render plane LOD generation
 - New experimental feature: Reduce LOD generation
+- New experimental feature: Warp tool, can apply a per-vertex warping as a post-process on voxels.
+	- TODO: move to it's own little "processer/effector" system
+- Added rough lightmap generation suppor. Breaking change: vertex aux data is now on UV3.
+- Made it so the renderer gameobject's first subrenderer is itself instead of a new child. This improves object picking (you can now click on renderers in the scene again) and prefabs (there aren't weirdly named temp-looking objects in prefabs anymore). Multiple objects will still be used for very detailed voxel meshes.
+- Changed all Texture2D Reinitilize calls to Resize so it compiles on 2020.3.22f1
 
 0.0.2
 
