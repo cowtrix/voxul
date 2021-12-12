@@ -89,6 +89,7 @@ namespace Voxul.Edit
 			hitNorm = renderer.transform.worldToLocalMatrix.MultiplyVector(hitNorm);
 			VoxelCoordinate.VectorToDirection(hitNorm, out hitDir);
 			var scale = VoxelCoordinate.LayerToScale(CurrentLayer);
+			hitNorm.Scale(renderer.transform.lossyScale);
 			var singleCoord = VoxelCoordinate.FromVector3(hitPoint + hitNorm * (scale / 2f) * (collider ? 1 : 0), CurrentLayer);
 			selection = new HashSet<VoxelCoordinate>() { singleCoord };
 			

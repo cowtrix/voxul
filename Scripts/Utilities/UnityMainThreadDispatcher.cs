@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -12,8 +13,8 @@ namespace Voxul.Utilities
 	/// </summary>
 	public class UnityMainThreadDispatcher : MonoBehaviour
 	{
-		private static readonly Queue<Action> m_actionQueue = new Queue<Action>();
-		private static SemaphoreSlim m_executionQueueLock = new SemaphoreSlim(1, 1);
+		private static readonly ConcurrentQueue<Action> m_actionQueue = new ConcurrentQueue<Action>();
+		//private static SemaphoreSlim m_executionQueueLock = new SemaphoreSlim(1, 1);
 		private static UnityMainThreadDispatcher m_runtimeExecutor;
 
 		public Coroutine Coroutine;
@@ -47,15 +48,7 @@ namespace Voxul.Utilities
 		/// <param name="action">The anonymous function to be executed.</param>
 		public static void Enqueue(Action action)
 		{
-			m_executionQueueLock.Wait();
-			try
-			{
-				m_actionQueue.Enqueue(action);
-			}
-			finally
-			{
-				m_executionQueueLock.Release();
-			}
+			m_actionQueue.Enqueue(action);
 		}
 
 		/// <summary>
@@ -75,15 +68,7 @@ namespace Voxul.Utilities
 				});
 				return;
 			}
-			m_executionQueueLock.Wait();
-			try
-			{
-				m_actionQueue.Enqueue(() => m_runtimeExecutor.StartCoroutine(coroutine));
-			}
-			finally
-			{
-				m_executionQueueLock.Release();
-			}
+			m_actionQueue.Enqueue(() => m_runtimeExecutor.StartCoroutine(coroutine));
 		}
 
 		private static IEnumerator CallbackExecute()
@@ -97,21 +82,16 @@ namespace Voxul.Utilities
 
 		private static void Execute()
 		{
-			m_executionQueueLock.Wait();
 			try
 			{
-				while (m_actionQueue.Count > 0)
+				while (m_actionQueue.Count > 0 && m_actionQueue.TryDequeue(out var action))
 				{
-					m_actionQueue.Dequeue().Invoke();
+					action.Invoke();
 				}
 			}
 			catch(Exception e)
 			{
 				voxulLogger.Exception(e);
-			}
-			finally
-			{
-				m_executionQueueLock.Release();
 			}
 		}
 	}
