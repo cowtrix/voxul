@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
 using System.Reflection;
+using System;
 
 namespace Voxul
 {
@@ -17,7 +18,7 @@ namespace Voxul
 			var methods = target.GetType().GetMethods()
 				.Select(m => (m.GetCustomAttribute<ContextMenu>(), m))
 				.Where(m => m.Item1 != null);
-			foreach(var m in methods)
+			foreach (var m in methods)
 			{
 				if (GUILayout.Button(m.Item1.menuItem))
 				{
@@ -31,14 +32,26 @@ namespace Voxul
 			EditorGUILayout.BeginVertical("Box");
 			foreach (var prop in properties)
 			{
-				var firstVal = prop.GetValue(target);
-				bool manyVal = targets.Length > 1;
-				if(firstVal != null)
+				object firstVal;
+				bool manyVal = false;
+				try
 				{
-					manyVal = targets.Any(t => !firstVal.Equals(prop.GetValue(t)));
+					firstVal = prop.GetValue(target);
+
+					manyVal = targets.Length > 1;
+					if (firstVal != null)
+					{
+						manyVal = targets.Any(t => !firstVal.Equals(prop.GetValue(t)));
+					}
+				}
+				catch (Exception e)
+				{
+					while (e.InnerException != null)
+						e = e.InnerException;
+					firstVal = $"{e.GetType()}: {e.Message}";
 				}
 
-				if(firstVal is IList list)
+				if (firstVal is IList list)
 				{
 					EditorGUILayout.LabelField(prop.Name, $"Count: {list.Count}");
 				}
