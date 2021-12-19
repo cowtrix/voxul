@@ -84,7 +84,7 @@ namespace Voxul
 		[ContextMenu("Clear")]
 		public void ClearMesh()
 		{
-			if(!Util.PromptEditor($"Clear Mesh {this.Mesh}?", "Are you sure you want to clear this mesh and delete all of its data permanently?", "Yes, I'm sure"))
+			if (!Util.PromptEditor($"Clear Mesh {this.Mesh}?", "Are you sure you want to clear this mesh and delete all of its data permanently?", "Yes, I'm sure"))
 			{
 				return;
 			}
@@ -96,13 +96,13 @@ namespace Voxul
 		[ContextMenu("Clean Submeshes")]
 		public void CleanSubmeshes()
 		{
-			foreach(var submesh in Submeshes)
+			foreach (var submesh in Submeshes)
 			{
 				if (!submesh)
 				{
 					continue;
 				}
-				if(submesh.gameObject != gameObject)
+				if (submesh.gameObject != gameObject)
 				{
 					submesh.gameObject.SafeDestroy();
 				}
@@ -129,12 +129,7 @@ namespace Voxul
 		[ContextMenu("Force Redraw")]
 		public void ForceRedraw()
 		{
-			if (!Mesh)
-			{
-				voxulLogger.Warning($"Tried to force redraw {this}, but it doesn't have a voxel mesh.", this);
-				return;
-			}
-			Mesh.Invalidate();
+			Mesh?.Invalidate();
 			Invalidate(true, false);
 		}
 
@@ -143,6 +138,15 @@ namespace Voxul
 			m_isDirty = false;
 			if (!Mesh)
 			{
+				foreach (var submesh in Submeshes)
+				{
+					submesh.MeshFilter.sharedMesh = null;
+					submesh.MeshRenderer.sharedMaterial = null;
+					if (submesh.MeshCollider)
+					{
+						submesh.MeshCollider.sharedMesh = null;
+					}
+				}
 				return;
 			}
 
@@ -155,9 +159,7 @@ namespace Voxul
 			Mesh.CurrentWorker.GenerateMesh(ThreadingMode, force);
 
 			m_lastMeshHash = Mesh.Hash;
-#if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(this);
-#endif
+			this.TrySetDirty();
 		}
 
 		protected virtual void OnMeshRebuilt(VoxelMeshWorker worker, VoxelMesh voxelMesh)
@@ -224,7 +226,7 @@ namespace Voxul
 				if (r || (r != null && r.gameObject))
 				{
 					voxulLogger.Debug($"Destroying submesh renderer {r}", this);
-					if(i == 0)
+					if (i == 0)
 					{
 						r.SafeDestroy();
 					}

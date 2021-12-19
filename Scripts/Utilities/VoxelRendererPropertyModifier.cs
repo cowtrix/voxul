@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Voxul.Utilities;
 
 namespace Voxul
 {
+	[ExecuteAlways]
 	public abstract class VoxelRendererPropertyModifier : MonoBehaviour
 	{
 		public IEnumerable<VoxelRenderer> Renderers
@@ -28,6 +30,11 @@ namespace Voxul
 			Invalidate();
 		}
 
+		private void OnEnable()
+		{
+			Invalidate();
+		}
+
 		public void Invalidate()
 		{
 			if (m_propertyBlock == null)
@@ -48,7 +55,8 @@ namespace Voxul
 
 					submesh.MeshRenderer.SetPropertyBlock(m_propertyBlock);
 				}
-			}			
+			}
+			this.TrySetDirty();
 		}
 
 		protected abstract void SetPropertyBlock(MaterialPropertyBlock block, VoxelRendererSubmesh submesh);

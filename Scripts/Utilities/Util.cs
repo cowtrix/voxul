@@ -21,6 +21,13 @@ namespace Voxul.Utilities
 #endif
 		}
 
+		public static void TrySetDirty(this UnityEngine.Object obj)
+		{
+#if UNITY_EDITOR
+			UnityEditor.EditorUtility.SetDirty(obj);
+#endif
+		}
+
 		public static IList<T> AddRange<T>(this IList<T> list, params T[] values)
 		{
 			foreach(var i in values)
