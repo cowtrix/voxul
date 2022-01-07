@@ -70,26 +70,11 @@ namespace Voxul.Meshing
 			m_handler.Start(force, mode);
 		}
 
-		protected virtual IEnumerator GenerateMesh(EThreadingMode mode, CancellationToken token, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
+		public IEnumerator DecomposeToFaces(List<KeyValuePair<VoxelCoordinate, Voxel>> allVoxels, CancellationToken token, EThreadingMode mode,
+			Guid thisJobGuid, VoxelPointMapping pointMapping, int voxelCount)
 		{
-			var timeLim = m_maxCoroutineUpdateTime;
-			var sw = Stopwatch.StartNew();
-			var thisJobGuid = Guid.NewGuid();
-			voxulLogger.Debug($"Started rebake job {thisJobGuid}");
-			m_lastGenID = thisJobGuid;
-			int voxelCount = 0;
-			List<KeyValuePair<VoxelCoordinate, Voxel>> allVoxels;
-			VoxelPointMapping pointMapping;
-			m_threadObjectLock = m_threadObjectLock ?? new object();
-			lock (m_threadObjectLock)
-			{
-				allVoxels = VoxelMesh.Voxels
-					.Where(v => v.Key.Layer >= minLayer && v.Key.Layer <= maxLayer)
-					.OrderBy(v => v.Value.Material.MaterialMode)
-					.ToList();
-				pointMapping = new VoxelPointMapping(VoxelMesh.PointMapping);
-			}
 			// Iterate through all voxels and transform into face data
+			var sw = Stopwatch.StartNew();
 			int vertexCounter = 0;
 			while (voxelCount < allVoxels.Count)
 			{
@@ -140,7 +125,7 @@ namespace Voxul.Meshing
 																		 EVoxelDirection.ZPos, EVoxelDirection.ZNeg);
 							break;
 					}
-					if (mode == EThreadingMode.Coroutine && sw.Elapsed.TotalSeconds > timeLim)
+					if (mode == EThreadingMode.Coroutine && sw.Elapsed.TotalSeconds > m_maxCoroutineUpdateTime)
 					{
 						// If we've spent the maximum amount of time in this frame, yield
 						sw.Restart();
@@ -161,6 +146,30 @@ namespace Voxul.Meshing
 					opt.OnPreFaceStep(data);
 				}
 				ConvertFacesToMesh(data);
+			}
+		}
+
+		protected virtual IEnumerator GenerateMesh(EThreadingMode mode, CancellationToken token, sbyte minLayer = sbyte.MinValue, sbyte maxLayer = sbyte.MaxValue)
+		{
+			var thisJobGuid = Guid.NewGuid();
+			voxulLogger.Debug($"Started rebake job {thisJobGuid}");
+			m_lastGenID = thisJobGuid;
+			int voxelCount = 0;
+			List<KeyValuePair<VoxelCoordinate, Voxel>> allVoxels;
+			VoxelPointMapping pointMapping;
+			m_threadObjectLock = m_threadObjectLock ?? new object();
+			lock (m_threadObjectLock)
+			{
+				allVoxels = VoxelMesh.Voxels
+					.Where(v => v.Key.Layer >= minLayer && v.Key.Layer <= maxLayer)
+					.OrderBy(v => v.Value.Material.MaterialMode)
+					.ToList();
+				pointMapping = new VoxelPointMapping(VoxelMesh.PointMapping);
+			}
+			var iter = DecomposeToFaces(allVoxels, token, mode, thisJobGuid, pointMapping, voxelCount);
+			while (iter.MoveNext())
+			{
+				yield return iter.Current;
 			}
 			foreach (var data in IntermediateData)
 			{
@@ -229,7 +238,7 @@ namespace Voxul.Meshing
 				for (var i = VoxelMesh.UnityMeshInstances.Count - 1; i >= IntermediateData.Count; --i)
 				{
 					var m = VoxelMesh.UnityMeshInstances[i];
-					if(m != null)
+					if (m != null)
 					{
 						voxulLogger.Debug($"Destroying mesh {m}");
 						m.UnityMesh.SafeDestroy();
