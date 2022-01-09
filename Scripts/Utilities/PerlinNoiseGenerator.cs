@@ -21,16 +21,17 @@ namespace Voxul
 			var layerScale = VoxelCoordinate.LayerToScale(Layer);
 			for(var x = Bounds.min.x; x < Bounds.min.x + Bounds.size.x; x += layerScale)
 			{
-				for (var y = Bounds.min.x; y < Bounds.min.y + Bounds.size.y; y += layerScale)
+				for (var y = Bounds.min.y; y < Bounds.min.y + Bounds.size.y; y += layerScale)
 				{
-					for (var z = Bounds.min.x; z < Bounds.min.z + Bounds.size.z; z += layerScale)
+					for (var z = Bounds.min.z; z < Bounds.min.z + Bounds.size.z; z += layerScale)
 					{
-						var value = Perlin.Fbm(x * Frequency + randomOffset.x, y * Frequency + randomOffset.y, z * Frequency + randomOffset.z, Octaves)
+						var value = Mathf.Abs(Perlin.Fbm(x * Frequency + randomOffset.x, y * Frequency + randomOffset.y, z * Frequency + randomOffset.z, Octaves))
 							* Magnitude;
-						var vec3 = new Vector3(x, y, z);
-						var cuttoffFactor = Falloff.Evaluate((vec3 - Bounds.center).magnitude / Bounds.extents.magnitude);
-						var scaledCuttoff = 1 -  Mathf.Clamp01(Cuttoff * cuttoffFactor);
-						if (value < scaledCuttoff)
+
+						var falloffPositions = new Vector3(Mathf.Abs(x - Bounds.center.x) / Bounds.extents.x, Mathf.Abs(y - Bounds.center.y) / Bounds.extents.y, Mathf.Abs(z - Bounds.center.z) / Bounds.extents.z);
+						var cuttoffFactor = Falloff.Evaluate(falloffPositions.x) * Falloff.Evaluate(falloffPositions.y) * Falloff.Evaluate(falloffPositions.z);
+						value *= cuttoffFactor;
+						if (value < Cuttoff)
 						{
 							continue;
 						}
@@ -41,6 +42,12 @@ namespace Voxul
 					}
 				}
 			}
+		}
+
+		private void OnDrawGizmosSelected()
+		{
+			Gizmos.matrix = transform.localToWorldMatrix;
+			Gizmos.DrawWireCube(Bounds.center, Bounds.size);
 		}
 	}
 }

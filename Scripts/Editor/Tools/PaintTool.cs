@@ -122,12 +122,12 @@ namespace Voxul.Edit
 				}
 				if (currentEvent.shift)
 				{
-					vox.Material = CurrentBrush.Copy();
+					vox.Material = CurrentBrush.Generate(UnityEngine.Random.value);
 				}
 				else
 				{
 					voxulLogger.Debug($"Set voxel at {brushCoord} ({dir})");
-					var surface = CurrentBrush.GetSurface(dir);
+					var surface = CurrentBrush.GetSurface(dir).Generate(UnityEngine.Random.value);
 
 					if (LerpEnabled)
 					{

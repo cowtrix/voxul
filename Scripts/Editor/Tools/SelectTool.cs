@@ -31,7 +31,7 @@ namespace Voxul.Edit
 				voxulLogger.Debug($"Applying material");
 				foreach (var v in voxelPainter.CurrentSelection)
 				{
-					voxelPainter.Renderer.Mesh.Voxels[v] = new Voxel(v, CurrentBrush.Copy());
+					voxelPainter.Renderer.Mesh.Voxels[v] = new Voxel(v, CurrentBrush.Generate(UnityEngine.Random.value));
 				}
 				return true;
 			}
@@ -44,7 +44,7 @@ namespace Voxul.Edit
 				{
 					var coord = vox.Coordinate;
 					DebugHelper.DrawPoint(voxelPainter.Renderer.transform.localToWorldMatrix.MultiplyPoint3x4(coord.ToVector3()), .1f, Color.white, 5);
-					voxelPainter.Renderer.Mesh.Voxels[coord] = new Voxel(coord, CurrentBrush.Copy());
+					voxelPainter.Renderer.Mesh.Voxels[coord] = new Voxel(coord, CurrentBrush.Generate(UnityEngine.Random.value));
 				}
 				return true;
 			}

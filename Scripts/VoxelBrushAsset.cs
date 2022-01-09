@@ -50,9 +50,8 @@ namespace Voxul
 	}
 
 	[CreateAssetMenu]
-	public class VoxelMaterialAsset : ScriptableObject
+	public class VoxelBrushAsset : ScriptableObject
 	{
-		[FormerlySerializedAs("Data")]
-		public VoxelMaterial Material;
+		public VoxelBrush Material;
 	}
 }

@@ -35,8 +35,23 @@ namespace Voxul
 			Invalidate();
 		}
 
+		private void OnDisable()
+		{
+			foreach (var renderer in Renderers)
+			{
+				foreach (var submesh in renderer.Submeshes)
+				{
+					submesh.MeshRenderer.SetPropertyBlock(null);
+				}
+			}
+		}
+
 		public void Invalidate()
 		{
+			if (!enabled)
+			{
+				return;
+			}
 			if (m_propertyBlock == null)
 			{
 				m_propertyBlock = new MaterialPropertyBlock();

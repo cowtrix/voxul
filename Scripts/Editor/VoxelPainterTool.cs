@@ -27,31 +27,51 @@ namespace Voxul.Edit
 		}
 
 		private List<string> m_brushes = new List<string>();
-		protected static VoxelMaterial DefaultMaterial => new VoxelMaterial { Default = new SurfaceData { Albedo = Color.white } };
+		protected static VoxelBrush DefaultBrush => new VoxelBrush
+		{
+			MaterialMode = EMaterialMode.Opaque,
+			NormalMode = ENormalMode.Hard,
+			RenderMode = ERenderMode.Block,
+			Default = new VoxelBrush.SurfaceBrush
+			{
+				Albedo = new Gradient
+				{
+					colorKeys = new GradientColorKey[]
+					{
+						new GradientColorKey
+						{
+							time = 0,
+							color = Color.white,
+						}
+					}
+				}
+			}
+		};
 
 		protected virtual bool DrawSceneGUIWithNoSelection => false;
 
-		protected static VoxelMaterialAsset m_asset;
-
-		protected static VoxelMaterial CurrentBrush
+		protected static VoxelBrushAsset m_asset;
+		protected static VoxelBrush CurrentBrush
 		{
 			get
 			{
 				if (!m_asset)
 				{
-					m_asset = ScriptableObject.CreateInstance<VoxelMaterialAsset>();
-					m_asset.Material = EditorPrefUtility.GetPref("VoxelPainter_Brush", DefaultMaterial);
+					m_asset = ScriptableObject.CreateInstance<VoxelBrushAsset>();
+					m_asset.Material = EditorPrefUtility.GetPref("VoxelPainter_Brush", DefaultBrush);
 				}
 				return m_asset.Material;
+				return EditorPrefUtility.GetPref<VoxelBrush>($"VoxelPainter_Brush", DefaultBrush);
 			}
 			set
 			{
 				if (!m_asset)
 				{
-					m_asset = ScriptableObject.CreateInstance<VoxelMaterialAsset>();
+					m_asset = ScriptableObject.CreateInstance<VoxelBrushAsset>();
 				}
 				m_asset.Material = value;
 				EditorUtility.SetDirty(m_asset);
+				EditorPrefUtility.SetPref<VoxelBrush>($"VoxelPainter_Brush", value);
 			}
 		}
 
@@ -179,13 +199,13 @@ namespace Voxul.Edit
 				if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 				{
 					var vox = selection.FirstOrDefault();
-					CurrentBrush = voxelPainter.Renderer.Mesh.Voxels[vox].Material.Copy();
+					CurrentBrush = new VoxelBrush (voxelPainter.Renderer.Mesh.Voxels[vox].Material);
 					if (ToolID == EPaintingTool.Paint)
 					{
 						var cb = CurrentBrush;
-						cb.Overrides = new DirectionOverride[0];
+						cb.Overrides = new VoxelBrush.BrushDirectionOverride[0];
 						var surface = CurrentBrush.GetSurface(hitDir);
-						cb.Default = surface;
+						cb.Default = surface.Copy();
 						CurrentBrush = cb;
 					}
 					UseEvent(currentEvent);
@@ -291,7 +311,7 @@ namespace Voxul.Edit
 		{
 			if (!m_asset)
 			{
-				m_asset = ScriptableObject.CreateInstance<VoxelMaterialAsset>();
+				m_asset = ScriptableObject.CreateInstance<VoxelBrushAsset>();
 				m_asset.Material = CurrentBrush;
 			}
 			GUILayout.BeginVertical("Box");
@@ -300,11 +320,11 @@ namespace Voxul.Edit
 				m_brushes.Select(b => new GUIContent(Path.GetFileNameWithoutExtension(b))).ToArray(), 3);
 			if (selIndex >= 0)
 			{
-				CurrentBrush = AssetDatabase.LoadAssetAtPath<VoxelMaterialAsset>(m_brushes.ElementAt(selIndex)).Material;
+				CurrentBrush = AssetDatabase.LoadAssetAtPath<VoxelBrushAsset>(m_brushes.ElementAt(selIndex)).Material;
 				voxulLogger.Debug($"Loaded brush from {m_brushes.ElementAt(selIndex)}");
 			}
 			GUILayout.EndVertical();
-			var wrapper = NativeEditorUtility.GetWrapper<VoxelMaterialAsset>();
+			var wrapper = NativeEditorUtility.GetWrapper<VoxelBrushAsset>();
 			wrapper.DrawGUI(m_asset);
 			EditorPrefUtility.SetPref("VoxelPainter_Brush", CurrentBrush);
 			return false;
@@ -315,7 +335,7 @@ namespace Voxul.Edit
 
 		public virtual void OnEnable()
 		{
-			m_brushes = AssetDatabase.FindAssets($"t: {nameof(VoxelMaterialAsset)}")
+			m_brushes = AssetDatabase.FindAssets($"t: {nameof(VoxelBrushAsset)}")
 				.Select(b => AssetDatabase.GUIDToAssetPath(b))
 				.ToList();
 		}

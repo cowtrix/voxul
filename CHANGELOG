@@ -1,3 +1,9 @@
+1.0.0
+
+- Implemented Voxel Brushes, which are like Voxel Materials but can generate a range of outputs (e.g. you can define a gradient and paint with random colours picked from the gradient)
+- Breaking change: Updated `VoxelMaterialAsset` to `VoxelBrushAsset` containg a `VoxelBrush` instead of a `VoxelMaterial`.
+- Breaking change: Changed most places you specify a material in the editor to VoxelBrushes for better painting.
+
 0.0.3
 
 - Significantly improved FaceMerger optimiser performance.

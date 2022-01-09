@@ -33,8 +33,6 @@ namespace Voxul.Edit
 		private double m_lastAdd;
 		[SerializeField]
 		private VoxelRenderer m_cursor;
-		private SerializableGradient LerpColor { get => EditorPrefUtility.GetPref("voxul_lerpcolor", new SerializableGradient(DefaultGradient)); set => EditorPrefUtility.SetPref("voxul_lerpcolor", value); }
-		private bool LerpEnabled { get => EditorPrefUtility.GetPref("voxul_lerpenabled", false); set => EditorPrefUtility.SetPref("voxul_lerpenabled", value); }
 
 		public sbyte CurrentLayer
 		{
@@ -110,22 +108,8 @@ namespace Voxul.Edit
 				m_cursor.Mesh.Voxels.Clear();
 				foreach (var s in selection)
 				{
-					var v = CurrentBrush.Copy();
-					if (LerpEnabled)
-					{
-						var gradient = LerpColor.ToGradient();
-						UnityEngine.Random.InitState(s.GetHashCode());
-						var surf = v.Default;
-						surf.Albedo = Color.Lerp(surf.Albedo, gradient.Evaluate(UnityEngine.Random.value), UnityEngine.Random.value);
-						v.Default = surf;
-						var ov = v.Overrides.Select(o =>
-						{
-							o.Surface.Albedo = Color.Lerp(o.Surface.Albedo, gradient.Evaluate(UnityEngine.Random.value), UnityEngine.Random.value);
-							return o;
-						}).ToArray();
-						v.Overrides = ov;
-					}
-					m_cursor.Mesh.Voxels.AddSafe(new Voxel { Coordinate = s, Material = v });
+					//var v = CurrentBrush.Copy();
+					//m_cursor.Mesh.Voxels.AddSafe(new Voxel { Coordinate = s, Material = v });
 				}
 				m_cursor.Mesh.Invalidate();
 				m_cursor.Invalidate(true, false);
@@ -185,41 +169,13 @@ namespace Voxul.Edit
 			}
 
 			EditorGUILayout.EndHorizontal();
-			EditorGUILayout.BeginHorizontal();
-			GUI.color = LerpEnabled ? Color.green : Color.white;
-			if (GUILayout.Button(EditorGUIUtility.IconContent("d_PreTextureRGB")
-				.WithTooltip("Enable Gradient Painting")))
-			{
-				LerpEnabled = !LerpEnabled;
-			}
-			GUI.color = Color.white;
-			LerpColor = new SerializableGradient(EditorGUILayout.GradientField(LerpColor.ToGradient()));
-			EditorGUILayout.EndHorizontal();
 		}
 
 		private IEnumerable<VoxelCoordinate> CreateVoxel(IEnumerable<VoxelCoordinate> coords, VoxelRenderer renderer)
 		{
 			foreach (var brushCoord in coords)
 			{
-				var v = CurrentBrush.Copy();
-				if (LerpEnabled)
-				{
-					var gradient = LerpColor.ToGradient();
-					UnityEngine.Random.InitState(brushCoord.GetHashCode());
-					var s = v.Default;
-					s.Albedo = gradient.Evaluate(UnityEngine.Random.value);
-					v.Default = s;
-					var ov = v.Overrides.Select(o =>
-					{
-						o.Surface.Albedo = Color.Lerp(o.Surface.Albedo, gradient.Evaluate(UnityEngine.Random.value), UnityEngine.Random.value);
-						return o;
-					}).ToArray();
-					v.Overrides = ov;
-				}
-				if (renderer.Mesh.Voxels.AddSafe(new Voxel(brushCoord, v)))
-				{
-					yield return brushCoord;
-				}
+				yield break;
 			}
 			renderer.Mesh.Invalidate();
 			renderer.Invalidate(true, true);
