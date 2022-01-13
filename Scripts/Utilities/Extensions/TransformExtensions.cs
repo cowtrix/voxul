@@ -20,6 +20,10 @@ namespace Voxul.Utilities
 			MarchUpHierarchy(t.parent, ref count);
 		}
 
+		public static Vector3 LocalForward(this Transform t) => t.parent.worldToLocalMatrix.MultiplyVector(t.forward);
+		public static Vector3 LocalUp(this Transform t) => t.parent.worldToLocalMatrix.MultiplyVector(t.up);
+		public static Vector3 LocalRight(this Transform t) => t.parent.worldToLocalMatrix.MultiplyVector(t.right);
+
 		//Breadth-first search
 		public static Transform FindDeepChild(this Transform aParent, string aName)
 		{
@@ -91,6 +95,14 @@ namespace Voxul.Utilities
 			{
 				child.SetLayerRecursive(layer);
 			}
+		}
+
+		public static void Reset(this Transform t, bool noScale = false)
+		{
+			t.localPosition = Vector3.zero;
+			t.localRotation = Quaternion.identity;
+			if(!noScale)
+				t.localScale = Vector3.one;
 		}
 	}
 }

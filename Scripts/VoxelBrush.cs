@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
+using Voxul.Utilities;
 
 namespace Voxul
 {
@@ -18,7 +19,7 @@ namespace Voxul
 		public class SurfaceBrush
 		{
 			public EUVMode UVMode;
-			public Gradient Albedo;
+			public SerializableGradient Albedo;
 			public Vector2 Metallic;
 			public Vector2 Smoothness;
 
@@ -31,22 +32,22 @@ namespace Voxul
 				UVMode = surface.UVMode;
 				Metallic = new Vector2(surface.Metallic, surface.Metallic);
 				Smoothness = new Vector2(surface.Smoothness, surface.Smoothness);
-				Albedo = new Gradient
+				Albedo = new SerializableGradient
 				{
-					alphaKeys = new GradientAlphaKey[]
+					alphaKeys = new SerializableGradient.AlphaKey []
 					{
-						new GradientAlphaKey
+						new SerializableGradient.AlphaKey
 						{
-							alpha = surface.Albedo.a,
-							time = 0,
+							Alpha = surface.Albedo.a,
+							Time = 0,
 						}
 					},
-					colorKeys = new GradientColorKey[]
+					colorKeys = new SerializableGradient.ColorKey[]
 					{
-						new GradientColorKey
+						new SerializableGradient.ColorKey
 						{
-							color = surface.Albedo,
-							time = 0,
+							Color = surface.Albedo,
+							Time = 0,
 						}
 					}
 				};
@@ -57,7 +58,7 @@ namespace Voxul
 				value = Mathf.Clamp01(value);
 				return new SurfaceData
 				{
-					Albedo = Albedo.Evaluate(value),
+					Albedo = Albedo.ToGradient().Evaluate(value),
 					Metallic = Mathf.Lerp(Metallic.x, Metallic.y, value),
 					Smoothness = Mathf.Lerp(Smoothness.x, Smoothness.y, value),
 					UVMode = UVMode,

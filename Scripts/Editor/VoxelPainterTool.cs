@@ -34,14 +34,14 @@ namespace Voxul.Edit
 			RenderMode = ERenderMode.Block,
 			Default = new VoxelBrush.SurfaceBrush
 			{
-				Albedo = new Gradient
+				Albedo = new SerializableGradient
 				{
-					colorKeys = new GradientColorKey[]
+					colorKeys = new SerializableGradient.ColorKey[]
 					{
-						new GradientColorKey
+						new SerializableGradient.ColorKey
 						{
-							time = 0,
-							color = Color.white,
+							Time = 0,
+							Color = Color.white,
 						}
 					}
 				}
