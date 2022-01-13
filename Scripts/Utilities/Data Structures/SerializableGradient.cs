@@ -40,11 +40,11 @@ namespace Voxul.Utilities
 		public AlphaKey[] alphaKeys;
 		public GradientMode mode;
 
-		public SerializableGradient(Gradient defaultGradient)
+		public SerializableGradient(Gradient gradient)
 		{
-			colorKeys = defaultGradient.colorKeys.Select(s => new ColorKey(s)).ToArray();
-			alphaKeys = defaultGradient.alphaKeys.Select(s => new AlphaKey(s)).ToArray();
-			mode = defaultGradient.mode;
+			colorKeys = gradient.colorKeys.Select(s => new ColorKey(s)).ToArray();
+			alphaKeys = gradient.alphaKeys.Select(s => new AlphaKey(s)).ToArray();
+			mode = gradient.mode;
 		}
 
 		public Gradient ToGradient() => new Gradient
