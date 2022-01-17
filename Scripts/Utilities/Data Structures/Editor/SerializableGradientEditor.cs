@@ -11,11 +11,15 @@ namespace Voxul.Edit
     {
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
+			if (property == null)
+			{
+				return;
+			}
 			EditorGUI.BeginProperty(position, label, property);
 
 			var obj = (SerializableGradient)property.GetTargetObjectOfProperty();
 			var grad = obj.ToGradient();
-			grad = EditorGUI.GradientField(position, label, grad);
+			grad = EditorGUI.GradientField(position, label, grad, true);
 			obj = new SerializableGradient(grad);
 			property.SetTargetObjectOfProperty(obj);
 

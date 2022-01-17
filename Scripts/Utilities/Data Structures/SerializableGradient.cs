@@ -11,6 +11,7 @@ namespace Voxul.Utilities
 		[Serializable]
 		public struct ColorKey
 		{
+			[ColorUsage(false, true)]
 			public Color Color;
 			public float Time;
 
@@ -25,6 +26,7 @@ namespace Voxul.Utilities
 		[Serializable]
 		public struct AlphaKey
 		{
+			[Range(0, 1)]
 			public float Alpha;
 			public float Time;
 
@@ -42,15 +44,15 @@ namespace Voxul.Utilities
 
 		public SerializableGradient(Gradient gradient)
 		{
-			colorKeys = gradient.colorKeys.Select(s => new ColorKey(s)).ToArray();
-			alphaKeys = gradient.alphaKeys.Select(s => new AlphaKey(s)).ToArray();
+			colorKeys = gradient.colorKeys.Select(s => new ColorKey(s)).Distinct(c => c.Color).ToArray();
+			alphaKeys = gradient.alphaKeys.Select(s => new AlphaKey(s)).Distinct(c => c.Alpha).ToArray();
 			mode = gradient.mode;
 		}
 
 		public Gradient ToGradient() => new Gradient
 		{
-			colorKeys = colorKeys == null ? new GradientColorKey[0] : colorKeys.Select(s => s.ToColorKey()).ToArray(),
-			alphaKeys = alphaKeys == null ? new GradientAlphaKey[0] : alphaKeys.Select(s => s.ToAlphaKey()).ToArray(),
+			colorKeys = colorKeys == null ? new GradientColorKey[0] : colorKeys.Select(s => s.ToColorKey()).Distinct(c => c.color).ToArray(),
+			alphaKeys = alphaKeys == null ? new GradientAlphaKey[0] : alphaKeys.Select(s => s.ToAlphaKey()).Distinct(c => c.alpha).ToArray(),
 			mode = mode,
 		};
 

@@ -51,6 +51,21 @@ namespace Voxul.Utilities
 			return array[UnityEngine.Random.Range(0, array.Count())];
 		}
 
+		public static IEnumerable<T> Distinct<T>(this IEnumerable<T> collection, Func<T, object> selector)
+		{
+			var history = new HashSet<object>();
+			foreach(var element in collection)
+			{
+				var selection = selector(element);
+				if (history.Contains(selection))
+				{
+					continue;
+				}
+				history.Add(selection);
+				yield return element;
+			}
+		}
+
 		public static void CopyTo<T>(this T source, T target)
 		{
 			foreach(var f in source.GetType().GetFields())

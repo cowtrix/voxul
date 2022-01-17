@@ -15,7 +15,6 @@ namespace Voxul.Edit
 		private double m_lastAdd;
 		private VoxelMesh m_previewMesh;
 		private SerializableGradient LerpColor { get => EditorPrefUtility.GetPref("voxul_lerpcolor", new SerializableGradient(AddTool.DefaultGradient)); set => EditorPrefUtility.SetPref("voxul_lerpcolor", value); }
-		private bool LerpEnabled { get => EditorPrefUtility.GetPref("voxul_lerpenabled", false); set => EditorPrefUtility.SetPref("voxul_lerpenabled", value); }
 
 		public override void OnEnable()
 		{
@@ -101,11 +100,6 @@ namespace Voxul.Edit
 		{
 			base.DrawToolLayoutGUI(rect, currentEvent, voxelPainter);
 			EditorGUILayout.BeginHorizontal();
-			GUI.color = LerpEnabled ? Color.green : Color.white;
-			if (GUILayout.Button(EditorGUIUtility.IconContent("d_PreTextureRGB")))
-			{
-				LerpEnabled = !LerpEnabled;
-			}
 			GUI.color = Color.white;
 			LerpColor = new SerializableGradient(EditorGUILayout.GradientField(LerpColor.ToGradient()));
 			EditorGUILayout.EndHorizontal();
@@ -128,12 +122,6 @@ namespace Voxul.Edit
 				{
 					voxulLogger.Debug($"Set voxel at {brushCoord} ({dir})");
 					var surface = CurrentBrush.GetSurface(dir).Generate(UnityEngine.Random.value);
-
-					if (LerpEnabled)
-					{
-						surface.Albedo = LerpColor.ToGradient().Evaluate(UnityEngine.Random.value);
-					}
-
 					if (vox.Material.Overrides == null)
 					{
 						vox.Material.Overrides = new DirectionOverride[0];

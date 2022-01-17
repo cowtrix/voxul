@@ -199,14 +199,17 @@ namespace Voxul.Edit
 				if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 				{
 					var vox = selection.FirstOrDefault();
-					CurrentBrush = new VoxelBrush (voxelPainter.Renderer.Mesh.Voxels[vox].Material);
+					var voxMat = voxelPainter.Renderer.Mesh.Voxels[vox].Material;
 					if (ToolID == EPaintingTool.Paint)
 					{
 						var cb = CurrentBrush;
 						cb.Overrides = new VoxelBrush.BrushDirectionOverride[0];
-						var surface = CurrentBrush.GetSurface(hitDir);
-						cb.Default = surface.Copy();
-						CurrentBrush = cb;
+						var surface = voxMat.GetSurface(hitDir);
+						cb.Default = new VoxelBrush.SurfaceBrush(surface);
+					}
+					else
+					{
+						CurrentBrush = new VoxelBrush(voxMat);
 					}
 					UseEvent(currentEvent);
 					UnityMainThreadDispatcher.EnsureSubscribed();

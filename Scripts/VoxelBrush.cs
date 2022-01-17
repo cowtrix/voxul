@@ -23,8 +23,29 @@ namespace Voxul
 			public Vector2 Metallic;
 			public Vector2 Smoothness;
 
+			public static SerializableGradient DefaultGradient => new SerializableGradient
+			{
+				alphaKeys = new SerializableGradient.AlphaKey[]
+					{
+						new SerializableGradient.AlphaKey
+						{
+							Alpha = 1,
+							Time = 0,
+						}
+					},
+				colorKeys = new SerializableGradient.ColorKey[]
+					{
+						new SerializableGradient.ColorKey
+						{
+							Color = Color.white,
+							Time = 0,
+						}
+					}
+			};
+
 			public SurfaceBrush()
 			{
+				Albedo = DefaultGradient;
 			}
 
 			public SurfaceBrush(SurfaceData surface)
@@ -34,7 +55,7 @@ namespace Voxul
 				Smoothness = new Vector2(surface.Smoothness, surface.Smoothness);
 				Albedo = new SerializableGradient
 				{
-					alphaKeys = new SerializableGradient.AlphaKey []
+					alphaKeys = new SerializableGradient.AlphaKey[]
 					{
 						new SerializableGradient.AlphaKey
 						{
