@@ -49,6 +49,13 @@ namespace Voxul.Utilities
 			mode = gradient.mode;
 		}
 
+		public SerializableGradient(Color c)
+		{
+			colorKeys = new ColorKey[] { new ColorKey { Color = c } };
+			alphaKeys = new AlphaKey[] { new AlphaKey { Alpha = c.a } };
+			mode = GradientMode.Blend;
+		}
+
 		public Gradient ToGradient() => new Gradient
 		{
 			colorKeys = colorKeys == null ? new GradientColorKey[0] : colorKeys.Select(s => s.ToColorKey()).Distinct(c => c.color).ToArray(),

@@ -148,13 +148,15 @@ namespace Voxul.Utilities
 			return result;
 		}
 
-		public static Texture2D RenderTex(Vector3 origin, Quaternion rot, Vector3 objSize, Vector2 imgSize)
+		public static Texture2D RenderTex(Vector3 origin, Quaternion rot, Vector3 objSize, Vector2 imgSize, LayerMask cullingLayers)
 		{
 			var w = Mathf.RoundToInt(imgSize.x);
 			var h = Mathf.RoundToInt(imgSize.x);
 			var rt = RenderTexture.GetTemporary(w, h, 16, RenderTextureFormat.ARGB32);
 
 			var tmpCam = new GameObject("tmpCam").AddComponent<Camera>();
+
+			tmpCam.cullingMask = cullingLayers;
 			tmpCam.nearClipPlane = .01f;
 			tmpCam.farClipPlane = objSize.z * 2f;
 			tmpCam.aspect = objSize.x / objSize.y;
