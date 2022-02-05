@@ -11,8 +11,13 @@ namespace Voxul
 {
 	[SelectionBase]
 	[ExecuteInEditMode]
-	public class VoxelRenderer : MonoBehaviour
+	public class VoxelRenderer : MonoBehaviour, ISerializationCallbackReceiver
 	{
+		public enum eSnapMode
+		{
+			None, Local, Global
+		}
+
 		public VoxelMesh Mesh;
 
 		[Header("Settings")]
@@ -21,7 +26,10 @@ namespace Voxul
 		public Material TransparentMaterial;
 
 		public bool GenerateCollider = true;
+		[HideInInspector]
+		[Obsolete("Replaced by SnapMode")]
 		public bool SnapToGrid;
+		public eSnapMode SnapMode;
 		[Range(VoxelCoordinate.MIN_LAYER, VoxelCoordinate.MAX_LAYER)]
 		public sbyte SnapLayer = 0;
 
@@ -57,10 +65,17 @@ namespace Voxul
 
 		protected virtual void Update()
 		{
-			if (SnapToGrid)
+			if (SnapMode != eSnapMode.None)
 			{
 				var scale = VoxelCoordinate.LayerToScale(SnapLayer);
-				transform.localPosition = transform.localPosition.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
+				if (SnapMode == eSnapMode.Local)
+				{
+					transform.localPosition = transform.localPosition.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
+				}
+				else if (SnapMode == eSnapMode.Global)
+				{
+					transform.position = transform.position.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
+				}
 			}
 			if (m_isDirty || Mesh?.Hash != m_lastMeshHash)
 			{
@@ -277,6 +292,19 @@ namespace Voxul
 				}
 			}
 			return null;
+		}
+
+		public void OnBeforeSerialize()
+		{
+		}
+
+		public void OnAfterDeserialize()
+		{
+			if (SnapToGrid)
+			{
+				SnapToGrid = false;
+				SnapMode = eSnapMode.Local;
+			}
 		}
 	}
 }

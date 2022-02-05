@@ -22,10 +22,6 @@ namespace Voxul.Pathfinding
 				{
 					continue;
 				}
-				if (!r.SnapToGrid)
-				{
-					Debug.LogWarning($"Navmesh mesh {r} is not set to Snap To Grid so it will be ignored.", r);
-				}
 			}
 		}
 
@@ -40,7 +36,7 @@ namespace Voxul.Pathfinding
 		}
 
 		public ISet<VoxelCoordinate> GetCoordinates() => Renderers?
-			.Where(r => r.SnapToGrid)
+			.Where(r => r.SnapMode == VoxelRenderer.eSnapMode.Global)
 			.SelectMany(r => 
 				r.Mesh.Voxels.Keys.Select(k => 
 					VoxelCoordinate.FromVector3(transform.localToWorldMatrix.MultiplyPoint3x4(k.ToVector3()), k.Layer))

@@ -17,6 +17,17 @@ namespace Voxul.Edit
 				EditorPrefs.SetInt("VoxelPainter_Tab", value);
 			}
 		}
+		public bool Enabled
+		{
+			get
+			{
+				return EditorPrefUtility.GetPref("VoxelPainter_Enabled", true);
+			}
+			set
+			{
+				EditorPrefUtility.SetPref("VoxelPainter_Enabled", value);
+			}
+		}
 
 		protected GUIContent[] Tabs => new[] { new GUIContent(GetType().Name.CamelcaseToSpaces().Replace("Editor", "").Trim()), new GUIContent("Settings") };
 
@@ -31,9 +42,12 @@ namespace Voxul.Edit
 				return;
 			}
 
+			Enabled = EditorGUILayout.Toggle("Painting Enabled", Enabled);
+
 			if (!Renderer.Mesh)
 			{
 				EditorGUILayout.HelpBox("Mesh (Voxel Mesh) asset cannot be null. Set it in the Settings tab.", MessageType.Warning);
+				Enabled = false;
 				return;
 			}
 

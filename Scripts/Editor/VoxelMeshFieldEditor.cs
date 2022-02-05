@@ -74,7 +74,8 @@ namespace Voxul.Edit
 				GUI.Button(GetRow(ref row), "Save In-Scene Mesh"))
 			{
 				var path = EditorUtility.SaveFilePanelInProject("Save Voxel Mesh",
-					EditorExtensions.GetActualObjectForSerializedProperty<UnityEngine.Object>(fieldInfo, property)?.name, "asset", "");
+					EditorExtensions.GetActualObjectForSerializedProperty<UnityEngine.Object>(fieldInfo, property)?.name, "asset", EditorPrefs.GetString($"{nameof(VoxelMeshFieldEditor)}_Path", ""));
+				EditorPrefs.SetString($"{nameof(VoxelMeshFieldEditor)}_Path", path);
 				if (!string.IsNullOrEmpty(path))
 				{
 					AssetDatabase.CreateAsset(newMesh, path);

@@ -68,17 +68,6 @@ namespace Voxul.Edit
 			//{ EPaintingTool.Primitive, new PrimitiveTool() },
 		};
 
-		public bool Enabled
-		{
-			get
-			{
-				return EditorPrefUtility.GetPref("VoxelPainter_Enabled", true);
-			}
-			set
-			{
-				EditorPrefUtility.SetPref("VoxelPainter_Enabled", value);
-			}
-		}
 		public EPaintingTool CurrentTool
 		{
 			get
@@ -90,6 +79,7 @@ namespace Voxul.Edit
 				EditorPrefUtility.SetPref("VoxelPainter_CurrentTool", value);
 			}
 		}
+
 		public float ToolsPanelHeight { get; private set; }
 		public HashSet<Rect> Deadzones = new HashSet<Rect>();
 		public IEnumerable<VoxelCoordinate> CurrentSelection => m_selection;
@@ -129,12 +119,10 @@ namespace Voxul.Edit
 		}
 		private VoxelCursor __selectionCursor;
 
-
 		public override bool RequiresConstantRepaint() => true;
 
 		protected override void DrawSpecificGUI()
 		{
-			Enabled = EditorGUILayout.Toggle("Painting Enabled", Enabled);			
 			EditorGUILayout.LabelField("Painter", EditorStyles.whiteLargeLabel);
 			EditorGUILayout.BeginVertical("Box");
 			GUI.enabled = Enabled;
@@ -197,10 +185,17 @@ namespace Voxul.Edit
 				return;
 			}
 
-			if (Renderer.SnapToGrid)
+			if (Renderer.SnapMode != VoxelRenderer.eSnapMode.None)
 			{
 				var scale = VoxelCoordinate.LayerToScale(Renderer.SnapLayer);
-				Renderer.transform.localPosition = Renderer.transform.localPosition.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
+				if (Renderer.SnapMode == VoxelRenderer.eSnapMode.Local)
+				{
+					Renderer.transform.localPosition = Renderer.transform.localPosition.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
+				}
+				else if (Renderer.SnapMode == VoxelRenderer.eSnapMode.Global)
+				{
+					Renderer.transform.position = Renderer.transform.position.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
+				}
 			}
 			if (!Enabled)
 			{
@@ -294,7 +289,5 @@ namespace Voxul.Edit
 			m_tools[CurrentTool]?.OnDisable();
 			SceneView.duringSceneGui -= DuringSceneGUI;
 		}
-
-
 	}
 }

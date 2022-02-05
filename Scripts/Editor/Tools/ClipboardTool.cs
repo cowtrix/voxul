@@ -30,7 +30,8 @@ namespace Voxul.Edit
 				Data = new VoxelMapping();
 				foreach (var v in data)
 				{
-					Data.Add(v.Coordinate, v);
+					var copy = new Voxel(v.Coordinate, v.Material.Copy());
+					Data.Add(copy.Coordinate, copy);
 				}
 				if (Data.Any())
 				{
@@ -55,7 +56,7 @@ namespace Voxul.Edit
 		}
 		public ERotationAxis RotationAxis = ERotationAxis.Y;
 		public ePasteMode PasteMode;
-		public Snippet CurrentClipboard;
+		public static Snippet CurrentClipboard;
 		public Bounds SelectionBounds;
 		public Vector3 Offset;
 		public VoxelCursor Cursor
@@ -99,12 +100,12 @@ namespace Voxul.Edit
 					CurrentClipboard = new Snippet(voxelPainter.CurrentSelection.Select(c => 
 						new Voxel(c, voxelPainter.Renderer.Mesh.Voxels[c].Material.Copy())));
 					Cursor.SetData(voxelPainter.Renderer.transform.localToWorldMatrix, CurrentClipboard.Data.Values);
-					foreach(var v in CurrentClipboard.Data.Values)
+					voxelPainter.SetSelection(null);
+					foreach (var v in CurrentClipboard.Data.Values)
 					{
 						voxelPainter.Renderer.Mesh.Voxels.Remove(v.Coordinate);
 					}
 					voxelPainter.Renderer.Mesh.Invalidate();
-					voxelPainter.SetSelection(null);
 					Offset = Vector3.zero;
 					return true;
 				}
