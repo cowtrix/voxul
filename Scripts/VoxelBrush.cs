@@ -20,7 +20,9 @@ namespace Voxul
 		{
 			public EUVMode UVMode;
 			public SerializableGradient Albedo;
+			[MinMax(0, 1)]
 			public Vector2 Metallic;
+			[MinMax(0, 1)]
 			public Vector2 Smoothness;
 
 			public static SerializableGradient DefaultGradient => new SerializableGradient

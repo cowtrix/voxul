@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Meshing;
@@ -75,7 +76,7 @@ namespace Voxul.Edit
 			{
 				var path = EditorUtility.SaveFilePanelInProject("Save Voxel Mesh",
 					EditorExtensions.GetActualObjectForSerializedProperty<UnityEngine.Object>(fieldInfo, property)?.name, "asset", EditorPrefs.GetString($"{nameof(VoxelMeshFieldEditor)}_Path", ""));
-				EditorPrefs.SetString($"{nameof(VoxelMeshFieldEditor)}_Path", path);
+				EditorPrefs.SetString($"{nameof(VoxelMeshFieldEditor)}_Path", Path.GetDirectoryName(path));
 				if (!string.IsNullOrEmpty(path))
 				{
 					AssetDatabase.CreateAsset(newMesh, path);

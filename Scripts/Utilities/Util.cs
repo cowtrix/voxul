@@ -114,6 +114,7 @@ namespace Voxul.Utilities
 			{
 				return;
 			}
+
 			if (Application.isPlaying)
 			{
 				UnityEngine.Object.Destroy(obj);
