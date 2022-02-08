@@ -27,6 +27,7 @@ namespace Voxul.Edit
 	}
 
 	[CustomEditor(typeof(VoxelRenderer), false)]
+	[CanEditMultipleObjects]
 	internal class VoxelPainter : VoxelObjectEditorBase<VoxelRenderer>
 	{
 		[MenuItem("GameObject/3D Object/voxul/Voxel Object")]
@@ -126,7 +127,6 @@ namespace Voxul.Edit
 			EditorGUILayout.LabelField("Painter", EditorStyles.whiteLargeLabel);
 			EditorGUILayout.BeginVertical("Box");
 			GUI.enabled = Enabled;
-
 			var oldTool = CurrentTool;
 			//CurrentLayer = (sbyte)EditorGUILayout.IntSlider("Current Layer", CurrentLayer, -5, 5);
 			var newTool = (EPaintingTool)GUILayout.Toolbar((int)CurrentTool, m_tools.Select(s => s.Key.ToString()).ToArray());

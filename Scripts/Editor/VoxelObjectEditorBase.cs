@@ -36,7 +36,7 @@ namespace Voxul.Edit
 		public override void OnInspectorGUI()
 		{
 			Tab = GUILayout.Toolbar(Tab, Tabs);
-			if (Tab == 1)
+			if (Tab == 1 || targets.Length > 1)
 			{
 				base.OnInspectorGUI();
 				return;

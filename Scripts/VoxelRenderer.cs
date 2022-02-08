@@ -10,7 +10,6 @@ using Voxul.Utilities;
 namespace Voxul
 {
 	[SelectionBase]
-	//[ExecuteInEditMode]
 	public class VoxelRenderer : MonoBehaviour, ISerializationCallbackReceiver
 	{
 		public enum eSnapMode
