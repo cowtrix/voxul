@@ -133,12 +133,12 @@ namespace Voxul.Meshing
 					}
 					voxelCount++;
 					vertexCounter += vox.Value.Material.RenderMode.EstimateVertexCount();
-					if (vertexCounter >= 65535)
+					/*if (vertexCounter >= 65535)
 					{
 						// We've reached the max vertex count more or less, so make a new renderer
 						vertexCounter = 0;
 						break;
-					}
+					}*/
 				}
 				foreach (var opt in VoxelMesh.Optimisers?.Data?
 					.Where(o => o != null && o.Enabled))
@@ -219,6 +219,7 @@ namespace Voxul.Meshing
 					{
 						voxulLogger.Debug($"Created new mesh for {VoxelMesh}", VoxelMesh);
 						meshData.UnityMesh = new Mesh();
+						meshData.UnityMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 						meshData.UnityMesh.MarkDynamic();
 #if UNITY_EDITOR
 						if (UnityEditor.AssetDatabase.Contains(VoxelMesh))

@@ -1,5 +1,5 @@
 {
-    "m_SGVersion": 2,
+    "m_SGVersion": 3,
     "m_Type": "UnityEditor.ShaderGraph.GraphData",
     "m_ObjectId": "eb257c8eb362401d8169173c503d80bb",
     "m_Properties": [
@@ -13,6 +13,12 @@
     "m_Keywords": [
         {
             "m_Id": "232357a2535f49a498edc52f0774e141"
+        }
+    ],
+    "m_Dropdowns": [],
+    "m_CategoryData": [
+        {
+            "m_Id": "da8c0b2af9a343849df6c3d870400c3c"
         }
     ],
     "m_Nodes": [
@@ -480,10 +486,11 @@
         "serializedMesh": {
             "m_SerializedMesh": "{\"mesh\":{\"instanceID\":0}}",
             "m_Guid": ""
-        }
+        },
+        "preventRotation": false
     },
     "m_Path": "Sub Graphs",
-    "m_ConcretePrecision": 0,
+    "m_GraphPrecision": 0,
     "m_PreviewMode": 2,
     "m_OutputNode": {
         "m_Id": "4b2c352dbde44470b8d954d17bcd9136"
@@ -847,12 +854,17 @@
         "m_GuidSerialized": "6bdcc056-9d2a-4a39-869a-9f0d127f9b43"
     },
     "m_Name": "SPRITESHEET",
+    "m_DefaultRefNameVersion": 0,
+    "m_RefNameGeneratedByDisplayName": "",
     "m_DefaultReferenceName": "BOOLEAN_232357A2535F49A498EDC52F0774E141_ON",
     "m_OverrideReferenceName": "SPRITESHEET_ON",
     "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
     "m_KeywordType": 0,
     "m_KeywordDefinition": 0,
     "m_KeywordScope": 0,
+    "m_KeywordStages": 63,
     "m_Entries": [],
     "m_Value": 0,
     "m_IsEditable": true
@@ -2058,24 +2070,6 @@
 
 {
     "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.CategoryData",
-    "m_ObjectId": "a65f016b53224b3faad7388b002b20eb",
-    "m_Name": "",
-    "m_ChildObjectList": [
-        {
-            "m_Id": "c5171e0c40ca40a7877adab5b1af2105"
-        },
-        {
-            "m_Id": "d96b44c3a9b2426294f47378f69eee5f"
-        },
-        {
-            "m_Id": "232357a2535f49a498edc52f0774e141"
-        }
-    ]
-}
-
-{
-    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
     "m_ObjectId": "aae21305c006457087ef275d861090b8",
     "m_Id": 0,
@@ -2132,7 +2126,7 @@
     "m_SlotType": 0,
     "m_Hidden": false,
     "m_ShaderOutputName": "Metallic",
-    "m_StageCapability": 2,
+    "m_StageCapability": 3,
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
@@ -2397,9 +2391,13 @@
         "m_GuidSerialized": "f89831db-e956-4a53-86a1-d458168cf074"
     },
     "m_Name": "AlbedoSpritesheet",
+    "m_DefaultRefNameVersion": 0,
+    "m_RefNameGeneratedByDisplayName": "",
     "m_DefaultReferenceName": "Texture2DArray_c5171e0c40ca40a7877adab5b1af2105",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
@@ -2488,7 +2486,8 @@
     "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
-    }
+    },
+    "m_EnableGlobalMipBias": false
 }
 
 {
@@ -2540,7 +2539,7 @@
     "m_SlotType": 0,
     "m_Hidden": false,
     "m_ShaderOutputName": "Emission",
-    "m_StageCapability": 2,
+    "m_StageCapability": 3,
     "m_Value": {
         "x": 0.0,
         "y": 0.0,
@@ -2580,7 +2579,7 @@
     "m_SlotType": 0,
     "m_Hidden": false,
     "m_ShaderOutputName": "Smoothness",
-    "m_StageCapability": 2,
+    "m_StageCapability": 3,
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
@@ -2594,9 +2593,13 @@
         "m_GuidSerialized": "5aa39686-145d-4dab-991b-6e5319538c51"
     },
     "m_Name": "AlbedoTint",
+    "m_DefaultRefNameVersion": 0,
+    "m_RefNameGeneratedByDisplayName": "",
     "m_DefaultReferenceName": "Color_d96b44c3a9b2426294f47378f69eee5f",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
@@ -2607,7 +2610,26 @@
         "b": 1.0,
         "a": 1.0
     },
+    "isMainColor": false,
     "m_ColorMode": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.CategoryData",
+    "m_ObjectId": "da8c0b2af9a343849df6c3d870400c3c",
+    "m_Name": "",
+    "m_ChildObjectList": [
+        {
+            "m_Id": "c5171e0c40ca40a7877adab5b1af2105"
+        },
+        {
+            "m_Id": "d96b44c3a9b2426294f47378f69eee5f"
+        },
+        {
+            "m_Id": "232357a2535f49a498edc52f0774e141"
+        }
+    ]
 }
 
 {

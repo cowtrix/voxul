@@ -24,6 +24,8 @@ namespace Voxul
 			public Vector2 Metallic;
 			[MinMax(0, 1)]
 			public Vector2 Smoothness;
+			[MinMax(0, 1)]
+			public Vector2 TextureFade;
 
 			public static SerializableGradient DefaultGradient => new SerializableGradient
 			{
@@ -74,6 +76,7 @@ namespace Voxul
 						}
 					}
 				};
+				TextureFade = new Vector2(surface.TextureFade, surface.TextureFade);
 			}
 
 			public SurfaceData Generate(float value)
@@ -85,6 +88,7 @@ namespace Voxul
 					Metallic = Mathf.Lerp(Metallic.x, Metallic.y, value),
 					Smoothness = Mathf.Lerp(Smoothness.x, Smoothness.y, value),
 					UVMode = UVMode,
+					TextureFade = Mathf.Lerp(TextureFade.x, TextureFade.y, value),
 				};
 			}
 

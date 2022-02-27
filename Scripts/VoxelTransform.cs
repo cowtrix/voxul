@@ -4,7 +4,7 @@ using static Voxul.VoxelRenderer;
 
 namespace Voxul
 {
-	[ExecuteAlways]
+	[ExecuteInEditMode]
 	public class VoxelTransform : ExtendedMonoBehaviour
 	{
 		public eSnapMode SnapMode;
@@ -12,10 +12,17 @@ namespace Voxul
 		public sbyte SnapLayer = 0;
 		public bool OverrideChildren;
 
+		private Vector3 m_lastPosition;
+
 		protected VoxelRenderer[] Children => GetComponentsInChildren<VoxelRenderer>(true);
 
 		private void Update()
 		{
+			if(transform.position == m_lastPosition)
+			{
+				return;
+			}
+			m_lastPosition = transform.position;
 			if (OverrideChildren)
 			{
 				foreach(var c in Children)

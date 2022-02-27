@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Serialization;
 using Voxul.Meshing;
 using Voxul.Utilities;
@@ -62,7 +63,7 @@ namespace Voxul
 
 		public Bounds Bounds => Submeshes.Select(b => b.Bounds).EncapsulateAll();
 
-		protected virtual void Update()
+		/*protected virtual void Update()
 		{
 			if (SnapMode != eSnapMode.None)
 			{
@@ -80,7 +81,7 @@ namespace Voxul
 			{
 				Invalidate(false, false);
 			}
-		}
+		}*/
 
 		private void Reset()
 		{
@@ -164,6 +165,7 @@ namespace Voxul
 				return;
 			}
 
+			Profiler.BeginSample("Invalidate");
 			SetupComponents(forceCollider || GenerateCollider);
 
 			Mesh.CurrentWorker = GetVoxelMeshWorker();
@@ -174,6 +176,7 @@ namespace Voxul
 
 			m_lastMeshHash = Mesh.Hash;
 			this.TrySetDirty();
+			Profiler.EndSample();
 		}
 
 		protected virtual void OnMeshRebuilt(VoxelMeshWorker worker, VoxelMesh voxelMesh)
@@ -218,6 +221,8 @@ namespace Voxul
 				if (GenerateCollider)
 				{
 					voxulLogger.Debug($"Set MeshCollider mesh");
+					unityMesh.MarkDynamic();
+					unityMesh.MarkModified();
 					submesh.MeshCollider.sharedMesh = unityMesh;
 				}
 				if (!CustomMaterials)

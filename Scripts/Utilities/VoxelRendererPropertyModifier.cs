@@ -7,21 +7,47 @@ namespace Voxul
 	[ExecuteAlways]
 	public abstract class VoxelRendererPropertyModifier : MonoBehaviour
 	{
+		public bool IncludeChildren = true;
 		public IEnumerable<VoxelRenderer> Renderers
 		{
 			get
 			{
-				var thisComp = GetComponent<VoxelRenderer>();
-				if (thisComp)
+				if(m_renderers != null)
 				{
-					yield return thisComp;
+					return m_renderers;
 				}
-				foreach(var subR in GetComponentsInChildren<VoxelRenderer>())
+				m_renderers = new List<VoxelRenderer>();
+				var lod = GetComponent<LODGroup>();
+				if (lod)
 				{
-					yield return subR;
+					foreach(var l in lod.GetLODs())
+					{
+						foreach(var r in l.renderers)
+						{
+							var vr = r?.GetComponent<VoxelRenderer>();
+							if (vr)
+							{
+								m_renderers.Add(vr);
+							}
+						}
+					}
 				}
+				else
+				{
+					var thisComp = GetComponent<VoxelRenderer>();
+					if (thisComp)
+					{
+						m_renderers.Add(thisComp);
+					}
+				}
+				if (IncludeChildren)
+				{
+					m_renderers.AddRange(GetComponentsInChildren<VoxelRenderer>());
+				}
+				return m_renderers;
 			}
 		}
+		private List<VoxelRenderer> m_renderers;
 
 		private static MaterialPropertyBlock m_propertyBlock;
 
@@ -39,9 +65,13 @@ namespace Voxul
 		{
 			foreach (var renderer in Renderers)
 			{
+				if (!renderer)
+				{
+					continue;
+				}
 				foreach (var submesh in renderer.Submeshes)
 				{
-					submesh.MeshRenderer.SetPropertyBlock(null);
+					submesh.MeshRenderer?.SetPropertyBlock(null);
 				}
 			}
 		}
@@ -59,6 +89,10 @@ namespace Voxul
 			m_propertyBlock.Clear();
 			foreach(var renderer in Renderers)
 			{
+				if (!renderer)
+				{
+					continue;
+				}
 				foreach (var submesh in renderer.Submeshes)
 				{
 					if (submesh.MeshRenderer.HasPropertyBlock())
