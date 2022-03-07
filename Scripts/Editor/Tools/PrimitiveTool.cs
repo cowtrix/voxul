@@ -76,7 +76,7 @@ namespace Voxul.Edit
 		protected override bool GetVoxelDataFromPoint(VoxelPainter painter, VoxelRenderer renderer, MeshCollider collider, Vector3 hitPoint,
 			Vector3 hitNorm, int triIndex, out HashSet<VoxelCoordinate> selection, out EVoxelDirection hitDir)
 		{
-			if (Event.current.alt)
+			if (Event.current.control && !Event.current.shift)
 			{
 				m_cursor?.gameObject.SetActive(false);
 				return base.GetVoxelDataFromPoint(painter, renderer, collider, hitPoint, hitNorm, triIndex, out selection, out hitDir);

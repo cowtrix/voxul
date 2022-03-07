@@ -239,6 +239,7 @@ namespace Voxul
 					SetMaterials(submesh, OpaqueMaterial, TransparentMaterial);
 				}
 			}
+			Submeshes = Submeshes.Distinct().ToList();
 			for (var i = Submeshes.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)
 			{
 				var r = Submeshes[i];

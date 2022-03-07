@@ -124,6 +124,10 @@ namespace Voxul.Edit
 
 		protected override void DrawSpecificGUI()
 		{
+			if (Enabled)
+			{
+				Tools.current = Tool.Custom;
+			}
 			EditorGUILayout.LabelField("Painter", EditorStyles.whiteLargeLabel);
 			EditorGUILayout.BeginVertical("Box");
 			GUI.enabled = Enabled;
@@ -203,8 +207,6 @@ namespace Voxul.Edit
 			}
 
 			var tran = Renderer.transform;
-
-			Tools.current = Tool.Custom;
 			Handles.color = new Color(1, 1, 1, .1f);
 			Handles.DrawLine(tran.position - tran.up * 100, tran.position + tran.up * 100);
 			Handles.DrawLine(tran.position - tran.right * 100, tran.position + tran.right * 100);

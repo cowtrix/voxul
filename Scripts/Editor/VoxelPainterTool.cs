@@ -9,11 +9,17 @@ using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
+	public static class VoxelBrushGUI
+	{
+		public static VoxelBrush DrawGUI(VoxelBrush brush)
+		{
+			return brush;
+		}
+	}
 
 	internal abstract class VoxelPainterTool
 	{
 		public abstract GUIContent Icon { get; }
-
 		public eMirrorMode MirrorMode
 		{
 			get
@@ -194,7 +200,7 @@ namespace Voxul.Edit
 				}
 			}
 
-			if (currentEvent.alt)
+			if (currentEvent.control && !currentEvent.shift)
 			{
 				if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 				{
@@ -236,19 +242,19 @@ namespace Voxul.Edit
 		{
 			Handles.BeginGUI();
 			var screenViewRect = SceneView.currentDrawingSceneView.position;
-			var statusWidth = 160f;
+			var statusWidth = 200f;
 			var rect = new Rect(screenViewRect.width / 2 - statusWidth / 2, 5, statusWidth, 25);
-			if (currentEvent.alt)
+			if (currentEvent.control && !currentEvent.shift)
 			{
 				GUI.Label(rect,
-					"PICKING\nRelease ALT to stop"
+					$"PICKING\nRelease [CTRL] to stop"
 					, "Box");
 				return;
 			}
 			else
 			{
 				GUI.Label(rect,
-				"ALT to change to picker", "Box");
+				$"[CTRL] to change to picker", "Box");
 			}
 
 			var settingsRect = new Rect(5, voxelPainter.ToolsPanelHeight + 15, 100, GetToolWindowHeight());
