@@ -13,7 +13,7 @@ namespace Voxul
 		public ERenderMode RenderMode;
 		public ENormalMode NormalMode;
 		public SurfaceData Default;
-		public DirectionOverride[] Overrides;
+		public List<DirectionOverride> Overrides;
 
 		public SurfaceData GetSurface(EVoxelDirection dir)
 		{
@@ -44,7 +44,7 @@ namespace Voxul
 			return new VoxelMaterial
 			{
 				Default = Default,
-				Overrides = Overrides?.ToArray(),
+				Overrides = Overrides?.ToList(),
 				RenderMode = RenderMode,
 				NormalMode = NormalMode,
 				MaterialMode = MaterialMode,
@@ -68,7 +68,7 @@ namespace Voxul
 			hashCode = hashCode * -1521134295 + RenderMode.GetHashCode();
 			hashCode = hashCode * -1521134295 + NormalMode.GetHashCode();
 			hashCode = hashCode * -1521134295 + Default.GetHashCode();
-			hashCode = hashCode * -1521134295 + EqualityComparer<DirectionOverride[]>.Default.GetHashCode(Overrides);
+			hashCode = hashCode * -1521134295 + EqualityComparer<List<DirectionOverride>>.Default.GetHashCode(Overrides);
 			return hashCode;
 		}
 	}

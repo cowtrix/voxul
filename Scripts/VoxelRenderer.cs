@@ -3,19 +3,51 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Profiling;
 using UnityEngine.Serialization;
+using Voxul.LevelOfDetail;
 using Voxul.Meshing;
 using Voxul.Utilities;
 
 namespace Voxul
 {
 	[SelectionBase]
-	public class VoxelRenderer : MonoBehaviour, ISerializationCallbackReceiver
+	public class VoxelRenderer : MonoBehaviour
 	{
 		public enum eSnapMode
 		{
 			None, Local, Global
+		}
+
+		[Serializable]
+		public class RenderLODSettings
+		{
+			public enum eLODMode
+			{
+				None,
+				Retarget,
+				Cast,
+			}
+
+			[Serializable]
+			public class LODLevel
+			{
+				public VoxelRenderer Renderer;
+				[Range(0, 1)]
+				public float ScreenTransitionWidth;
+				[Range(VoxelCoordinate.MIN_LAYER, VoxelCoordinate.MAX_LAYER)]
+				public sbyte MaxLayer;
+				public float MaterialMergeDistance;
+				public float FillRequirement = .5f;
+				public eLODMode Mode;
+				public bool Collider;
+			}
+
+			public List<LODLevel> LODs = new List<LODLevel>();
+			[Range(0, 1)]
+			public float PrimaryScreenTransitionWidth = .05f;
+			public bool GenerateLODGroup = true;
 		}
 
 		public VoxelMesh Mesh;
@@ -26,23 +58,23 @@ namespace Voxul
 		public Material TransparentMaterial;
 
 		public bool GenerateCollider = true;
-		[HideInInspector]
-		[Obsolete("Replaced by SnapMode")]
-		public bool SnapToGrid;
 		public eSnapMode SnapMode;
 		[Range(VoxelCoordinate.MIN_LAYER, VoxelCoordinate.MAX_LAYER)]
 		public sbyte SnapLayer = 0;
 
 		[Header("Rendering")]
 		public EThreadingMode ThreadingMode;
-
 		public float MaxCoroutineUpdateTime = 0.5f;
+		public bool BatchingEnabled = true;
+		public UnityEvent OnMeshRebuilt;
 
-		protected bool m_isDirty;
+		public RenderLODSettings LODSettings;
 
+		// private fields
 		[SerializeField]
 		[HideInInspector]
 		protected VoxelMeshWorker m_voxWorker;
+		protected bool m_isDirty;
 
 		protected virtual VoxelMeshWorker GetVoxelMeshWorker()
 		{
@@ -62,26 +94,6 @@ namespace Voxul
 		public List<VoxelRendererSubmesh> Submeshes = new List<VoxelRendererSubmesh>();
 
 		public Bounds Bounds => Submeshes.Select(b => b.Bounds).EncapsulateAll();
-
-		/*protected virtual void Update()
-		{
-			if (SnapMode != eSnapMode.None)
-			{
-				var scale = VoxelCoordinate.LayerToScale(SnapLayer);
-				if (SnapMode == eSnapMode.Local)
-				{
-					transform.localPosition = transform.localPosition.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
-				}
-				else if (SnapMode == eSnapMode.Global)
-				{
-					transform.position = transform.position.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
-				}
-			}
-			if (m_isDirty || Mesh?.Hash != m_lastMeshHash)
-			{
-				Invalidate(false, false);
-			}
-		}*/
 
 		private void Reset()
 		{
@@ -169,8 +181,8 @@ namespace Voxul
 			SetupComponents(forceCollider || GenerateCollider);
 
 			Mesh.CurrentWorker = GetVoxelMeshWorker();
-			Mesh.CurrentWorker.OnCompleted -= OnMeshRebuilt;
-			Mesh.CurrentWorker.OnCompleted += OnMeshRebuilt;
+			Mesh.CurrentWorker.OnCompleted -= MeshRebuilt;
+			Mesh.CurrentWorker.OnCompleted += MeshRebuilt;
 			Mesh.CurrentWorker.VoxelMesh = Mesh;
 			Mesh.CurrentWorker.GenerateMesh(ThreadingMode, force);
 
@@ -179,7 +191,7 @@ namespace Voxul
 			Profiler.EndSample();
 		}
 
-		protected virtual void OnMeshRebuilt(VoxelMeshWorker worker, VoxelMesh voxelMesh)
+		protected virtual void MeshRebuilt(VoxelMeshWorker worker, VoxelMesh voxelMesh)
 		{
 			if (!this)
 			{
@@ -218,7 +230,7 @@ namespace Voxul
 				}
 				submesh.SetupComponents(this, GenerateCollider);
 				submesh.MeshFilter.sharedMesh = unityMesh;
-				if (GenerateCollider)
+				if (GenerateCollider && unityMesh.vertexCount > 0)
 				{
 					voxulLogger.Debug($"Set MeshCollider mesh");
 					unityMesh.MarkDynamic();
@@ -266,6 +278,111 @@ namespace Voxul
 			UnityEditor.EditorUtility.SetDirty(gameObject);
 			UnityEditor.EditorUtility.SetDirty(Mesh);
 #endif
+			GenerateLODs();
+			OnMeshRebuilt?.Invoke();
+		}
+
+		private void GenerateLODs()
+		{
+			if (LODSettings == null || LODSettings.LODs == null || !LODSettings.LODs.Any())
+			{
+				return;
+			}
+			LODGroup lodGroup = null;
+			if (LODSettings.GenerateLODGroup)
+			{
+				lodGroup = gameObject.GetOrAddComponent<LODGroup>();
+				var lods = new LOD[LODSettings.LODs.Count + 1];
+				lods[0] = new LOD { renderers = Submeshes.Select(r => r.MeshRenderer).ToArray(), screenRelativeTransitionHeight = LODSettings.PrimaryScreenTransitionWidth };
+				for (var i = 1; i < lods.Length; ++i)
+				{
+					const float margin = .000001f;
+					var l = lods[i];
+					l.screenRelativeTransitionHeight = (LODSettings.LODs.Count * margin) - (i * margin);
+					lods[i] = l;
+				}
+				lodGroup.SetLODs(lods);
+			}
+			for (int i = 0; i < LODSettings.LODs.Count; i++)
+			{
+				RenderLODSettings.LODLevel lod = LODSettings.LODs[i];
+				if (!lod.Renderer)
+				{
+					lod.Renderer = new GameObject($"LOD_{i}")
+						.AddComponent<VoxelRenderer>();
+				}
+				lod.Renderer.GenerateCollider = lod.Collider;
+				lod.Renderer.gameObject.isStatic = gameObject.isStatic;
+				lod.Renderer.gameObject.layer = gameObject.layer;
+				if (!lod.Renderer.Mesh)
+				{
+					lod.Renderer.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
+					lod.Renderer.Mesh.name = $"{Mesh.name}_LOD_{i}";
+					lod.Renderer.transform.SetParent(transform);
+					lod.Renderer.transform.Reset();
+#if UNITY_EDITOR
+					var currentPath = UnityEditor.AssetDatabase.GetAssetPath(Mesh);
+					if (!string.IsNullOrEmpty(currentPath))
+					{
+						UnityEditor.AssetDatabase.AddObjectToAsset(lod.Renderer.Mesh, currentPath);
+					}
+#endif
+				}
+				IEnumerable<Voxel> voxels;
+				switch (lod.Mode)
+				{
+					case RenderLODSettings.eLODMode.None:
+						voxels = Mesh.Voxels.Values;
+						break;
+					case RenderLODSettings.eLODMode.Retarget:
+						voxels = LevelOfDetailBuilder.RetargetToLayer(Mesh.Voxels.Values, lod.MaxLayer, lod.FillRequirement);
+						break;
+					default:
+						throw new Exception($"Mode {lod.Mode} not supported.");
+				}
+				voxels = LevelOfDetailBuilder.MergeMaterials(voxels.ToDictionary(v => v.Coordinate, v => v), lod.MaterialMergeDistance);
+				lod.Renderer.Mesh.Voxels = new VoxelMapping(voxels);
+				lod.Renderer.Mesh.Invalidate();
+
+				if (LODSettings.GenerateLODGroup)
+				{
+					if (lod.Renderer.OnMeshRebuilt == null)
+					{
+						lod.Renderer.OnMeshRebuilt = new UnityEvent();
+					}
+					lod.Renderer.OnMeshRebuilt.RemoveAllListeners();
+					var lodIndex = i + 1;
+					lod.Renderer.OnMeshRebuilt.AddListener(() => lod.Renderer.UpdateLOD(lodGroup, lodIndex, lod.ScreenTransitionWidth));
+				}
+				lod.Renderer.Invalidate(true, false);
+			}
+		}
+
+		private void UpdateLOD(LODGroup lodGroup, int lodIndex, float screenTransitionWidth)
+		{
+			var lods = lodGroup.GetLODs();
+			for (var i = 0; i < lods.Length; ++i)
+			{
+				const float margin = .0001f;
+				if (i == lodIndex)
+				{
+					continue;
+				}
+				var l = lods[i];
+
+				if (i > lodIndex && l.screenRelativeTransitionHeight >= screenTransitionWidth)
+				{
+					l.screenRelativeTransitionHeight = screenTransitionWidth - margin * lodIndex;
+				}
+				else if (i < lodIndex && l.screenRelativeTransitionHeight <= screenTransitionWidth)
+				{
+					l.screenRelativeTransitionHeight = screenTransitionWidth + margin * lodIndex;
+				}
+
+				lods[i] = l;
+			}
+			lods[lodIndex] = new LOD { renderers = Submeshes.Select(s => s.MeshRenderer).ToArray(), screenRelativeTransitionHeight = screenTransitionWidth };
+			lodGroup.SetLODs(lods);
 		}
 
 		private void SetMaterials(VoxelRendererSubmesh submesh, Material opaque, Material transparent)
@@ -297,19 +414,6 @@ namespace Voxul
 				}
 			}
 			return null;
-		}
-
-		public void OnBeforeSerialize()
-		{
-		}
-
-		public void OnAfterDeserialize()
-		{
-			if (SnapToGrid)
-			{
-				SnapToGrid = false;
-				SnapMode = eSnapMode.Local;
-			}
 		}
 	}
 }

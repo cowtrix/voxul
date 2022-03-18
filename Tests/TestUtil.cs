@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Linq;
 using Voxul.Meshing;
+using System.Collections.Generic;
 
 namespace Voxul.Test
 {
@@ -46,7 +47,7 @@ namespace Voxul.Test
             new VoxelMaterial
             {
                 Default = RandomSurf,
-                Overrides = new DirectionOverride[]
+                Overrides = new List<DirectionOverride>
                 {
                    new DirectionOverride
 				   {

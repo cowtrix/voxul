@@ -124,13 +124,13 @@ namespace Voxul.Edit
 					var surface = CurrentBrush.GetSurface(dir).Generate(UnityEngine.Random.value);
 					if (vox.Material.Overrides == null)
 					{
-						vox.Material.Overrides = new DirectionOverride[0];
+						vox.Material.Overrides = new List<DirectionOverride>();
 					}
 					vox.Material.Overrides = vox.Material.Overrides.Where(o => o.Direction != dir).Append(new DirectionOverride
 					{
 						Direction = dir,
 						Surface = surface,
-					}).ToArray();
+					}).ToList();
 				}
 				renderer.Mesh.Voxels[brushCoord] = vox;
 			}

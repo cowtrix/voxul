@@ -139,7 +139,7 @@ namespace Voxul
 				{
 					Direction = o.Direction,
 					Surface = o.Surface.Generate(value)
-				}).ToArray(),
+				}).ToList(),
 			};
 		}
 

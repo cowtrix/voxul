@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Voxul.Utilities;
 
 namespace Voxul
 {
 	[ExecuteAlways]
-	public abstract class VoxelRendererPropertyModifier : MonoBehaviour
+	public abstract class VoxelRendererPropertyModifier : ExtendedMonoBehaviour
 	{
 		public bool IncludeChildren = true;
 		public IEnumerable<VoxelRenderer> Renderers
@@ -18,14 +19,14 @@ namespace Voxul
 				}
 				m_renderers = new List<VoxelRenderer>();
 				var lod = GetComponent<LODGroup>();
-				if (lod)
+				if (lod && IncludeChildren)
 				{
 					foreach(var l in lod.GetLODs())
 					{
 						foreach(var r in l.renderers)
 						{
 							var vr = r?.GetComponent<VoxelRenderer>();
-							if (vr)
+							if (vr && !m_renderers.Contains(vr))
 							{
 								m_renderers.Add(vr);
 							}
@@ -35,14 +36,14 @@ namespace Voxul
 				else
 				{
 					var thisComp = GetComponent<VoxelRenderer>();
-					if (thisComp)
+					if (thisComp && !m_renderers.Contains(thisComp))
 					{
 						m_renderers.Add(thisComp);
 					}
 				}
 				if (IncludeChildren)
 				{
-					m_renderers.AddRange(GetComponentsInChildren<VoxelRenderer>());
+					m_renderers.AddRange(GetComponentsInChildren<VoxelRenderer>().Where(r => !r.GetComponent<VoxelColorTint>()));
 				}
 				return m_renderers;
 			}

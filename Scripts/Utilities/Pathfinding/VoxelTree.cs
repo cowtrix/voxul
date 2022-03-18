@@ -57,7 +57,7 @@ namespace Voxul.Utilities
 				}
 			}
 
-			public abstract T GetAverageMaterial(Func<IEnumerable<T>, T> avgFunc);
+			public abstract T GetAverageMaterial(Func<IEnumerable<T>, float, T> avgFunc, float minMaterialDistance);
 		}
 
 		public class LeafNode : Node
@@ -69,7 +69,7 @@ namespace Voxul.Utilities
 				Value = value;
 			}
 
-			public override T GetAverageMaterial(Func<IEnumerable<T>, T> avgFunc) => Value;
+			public override T GetAverageMaterial(Func<IEnumerable<T>, float, T> avgFunc, float minMaterialDistance) => Value;
 		}
 
 		public class Partition : Node
@@ -78,9 +78,9 @@ namespace Voxul.Utilities
 			{
 			}
 
-			public override T GetAverageMaterial(Func<IEnumerable<T>, T> avgFunc)
+			public override T GetAverageMaterial(Func<IEnumerable<T>, float, T> avgFunc, float minMaterialDistance)
 			{
-				return avgFunc.Invoke(GetAllDescendants().Select(kvp => kvp.Item2));
+				return avgFunc.Invoke(GetAllDescendants().Select(kvp => kvp.Item2), minMaterialDistance);
 			}
 		}
 		public sbyte MinLayer { get; }
@@ -100,7 +100,7 @@ namespace Voxul.Utilities
 			}
 		}
 
-		protected abstract T GetAverage(IEnumerable<T> vals);
+		protected abstract T GetAverage(IEnumerable<T> vals, float minMaterialDistance);
 
 		public bool TryGetValue(VoxelCoordinate coord, out T value)
 		{
@@ -161,7 +161,7 @@ namespace Voxul.Utilities
 			}
 
 			sbyte currentLayer = MinLayer;
-			var startingCoord = coord.ChangeLayer(0);
+			var startingCoord = coord.ChangeLayer(MinLayer);
 			if (coord == startingCoord)
 			{
 				m_root.Children[coord] = new LeafNode(coord, value);
@@ -197,7 +197,7 @@ namespace Voxul.Utilities
 			}
 		}
 
-		public IEnumerable<(VoxelCoordinate, T)> IterateLayer(sbyte layer)
+		public IEnumerable<(VoxelCoordinate, T)> IterateLayer(sbyte layer, float fillAmount, float minMaterialDistance)
 		{
 			Queue<Node> nodes = new Queue<Node>();
 			nodes.Enqueue(m_root);
@@ -207,15 +207,11 @@ namespace Voxul.Utilities
 				var n = nodes.Dequeue();
 				foreach (var child in n.Children)
 				{
-					if (child.Key.Layer >= layer)
+					if (child.Key.Layer >= layer && child.Value.Children.Count / 9f > fillAmount)
 					{
-						T val = child.Value.GetAverageMaterial(GetAverage);
+						T val = child.Value.GetAverageMaterial(GetAverage, minMaterialDistance);
 						var coord = child.Key;
 						yield return (coord, val);
-					}
-					else if (child.Key.Layer < layer)
-					{
-
 					}
 				}
 			}

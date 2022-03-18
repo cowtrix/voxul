@@ -14,6 +14,24 @@ namespace Voxul
 		/// </summary>
 		public static readonly EVoxelDirection[] Directions = Enum.GetValues(typeof(EVoxelDirection)).Cast<EVoxelDirection>().ToArray();
 
+		public static bool PointIsOnVoxelGrid(this Vector3 point, sbyte layer)
+		{
+			var voxelCoordinate = VoxelCoordinate.FromVector3(point, layer);
+			return voxelCoordinate.ToVector3() == point;
+		}
+
+		public static bool PointIsOnVoxelGrid(this Vector3 point)
+		{
+			for(var layer = VoxelCoordinate.MIN_LAYER; layer < VoxelCoordinate.MAX_LAYER; layer++)
+			{
+				if (point.PointIsOnVoxelGrid(layer))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
 		public static Vector3Int ToRawVector3Int(this VoxelCoordinate vec) => new Vector3Int(vec.X, vec.Y, vec.Z);
 
 		public static Vector2 SwizzleForDir(this Vector3Int vec, EVoxelDirection dir, out float discard) =>
@@ -111,11 +129,11 @@ namespace Voxul
 			};
 		}
 
-		public static VoxelMaterial Average(this IEnumerable<VoxelMaterial> materials)
+		public static VoxelMaterial Average(this IEnumerable<VoxelMaterial> materials, float minMaterialDistance)
 		{
 			var mat = new VoxelMaterial
 			{
-				Overrides = new DirectionOverride[6],
+				Overrides = new List<DirectionOverride>(),
 				MaterialMode = EMaterialMode.Opaque,
 				RenderMode = ERenderMode.Block,
 			};
@@ -124,7 +142,14 @@ namespace Voxul
 				EVoxelDirection dir = VoxelExtensions.Directions[i];
 				var allSurfaces = materials.GetAllSurfacesWithDirection(dir);
 				var averageSurface = allSurfaces.AverageSurfaces();
-				mat.Overrides[i] = new DirectionOverride { Direction = dir, Surface = averageSurface };
+				if (i == 0)
+				{
+					mat.Default = averageSurface;
+				}
+				else if(VoxelExtensions.DistanceBetweenSurfaces( mat.Default, averageSurface) < minMaterialDistance)
+				{
+					mat.Overrides.Add(new DirectionOverride { Direction = dir, Surface = averageSurface });
+				}
 			}
 			return mat;
 		}
@@ -263,7 +288,7 @@ namespace Voxul
 			return voxels.Select(v =>
 			{
 				v.Material = v.Material.Copy();
-				for (int i = 0; i < v.Material.Overrides?.Length; i++)
+				for (int i = 0; i < v.Material.Overrides?.Count; i++)
 				{
 					var o = v.Material.Overrides[i];
 					var oAxis = o.Direction.ToString()[0];
@@ -418,6 +443,19 @@ namespace Voxul
 		public static float ManhattenDistance(this VoxelCoordinate coord1, VoxelCoordinate coord)
 		{
 			return coord.ToVector3().ManhattenDistance(coord1.ToVector3());
+		}
+
+		public static float DistanceBetweenSurfaces(SurfaceData surface1, SurfaceData surface2)
+		{
+			var s1Albedo = surface1.Albedo;
+			var s2Albedo = surface2.Albedo;
+			var albedoDistance = Vector4.Distance(new Vector4(s1Albedo.r, s1Albedo.g, s1Albedo.b, s1Albedo.a), new Vector4(s2Albedo.r, s2Albedo.g, s2Albedo.b, s2Albedo.a));
+
+			var metallicDistance = Mathf.Abs(surface1.Metallic - surface2.Metallic);
+			var smoothnessDistance = Mathf.Abs(surface1.Smoothness - surface2.Smoothness);
+			var texFadeDistance = Mathf.Abs(surface1.TextureFade - surface2.TextureFade);
+
+			return albedoDistance + metallicDistance + smoothnessDistance + texFadeDistance;
 		}
 	}
 }

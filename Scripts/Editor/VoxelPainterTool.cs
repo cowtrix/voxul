@@ -67,7 +67,7 @@ namespace Voxul.Edit
 					m_asset.Material = EditorPrefUtility.GetPref("VoxelPainter_Brush", DefaultBrush);
 				}
 				return m_asset.Material;
-				return EditorPrefUtility.GetPref<VoxelBrush>($"VoxelPainter_Brush", DefaultBrush);
+				//return EditorPrefUtility.GetPref<VoxelBrush>($"VoxelPainter_Brush", DefaultBrush);
 			}
 			set
 			{

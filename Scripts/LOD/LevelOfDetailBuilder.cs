@@ -17,70 +17,76 @@ namespace Voxul.LevelOfDetail
 		{
 		}
 
-		protected override VoxelMaterial GetAverage(IEnumerable<VoxelMaterial> vals)
+		protected override VoxelMaterial GetAverage(IEnumerable<VoxelMaterial> vals, float minMaterialDistance)
 		{
-            return vals.Average();
+			return vals.Average(minMaterialDistance);
 		}
 	}
 
 	public static class LevelOfDetailBuilder
-    {
-        
-
-        public static IEnumerable<Voxel> RetargetToLayer(IEnumerable<Voxel> data, sbyte layer, float fillReq = .5f)
+	{
+		public static IEnumerable<Voxel> RetargetToLayer(IEnumerable<Voxel> data, sbyte layer, float fillReq = .5f, float minMaterialDistance = .25f)
 		{
-            var bounds = data.GetBounds();
-            var step = VoxelCoordinate.LayerToScale(layer);
-            var tree = new VoxelMaterialTree(layer, data.ToDictionary(kvp => kvp.Coordinate, kvp => kvp.Material));
+			var bounds = data.GetBounds();
+			var step = VoxelCoordinate.LayerToScale(layer);
+			var tree = new VoxelMaterialTree(layer, data.ToDictionary(kvp => kvp.Coordinate, kvp => kvp.Material));
 
-            foreach(var coord in tree.IterateLayer(layer))
+			foreach (var coord in tree.IterateLayer(layer, fillReq, minMaterialDistance))
 			{
-                yield return new Voxel
-                {
-                    Coordinate = coord.Item1,
-                    Material = coord.Item2,
-                };
-            }
-
-            /*for(var x = bounds.min.x + step/2f; x <= bounds.max.x - step/2f; x += step)
-			{
-                for (var y = bounds.min.x + step / 2f; y <= bounds.max.x - step / 2f; y += step)
-                {
-                    for (var z = bounds.min.x + step / 2f; z <= bounds.max.x - step / 2f; z += step)
-                    {
-                        var stepPoint = new Vector3(x, y, z);
-                        var stepCoord = VoxelCoordinate.FromVector3(stepPoint, layer);
-                        if(tree.TryGetValue(stepCoord, out VoxelTree<VoxelMaterial>.Node n))
-						{
-                            if(n is VoxelTree<VoxelMaterial>.LeafNode leaf)
-							{
-                                yield return new Voxel
-                                {
-                                    Coordinate = stepCoord,
-                                    Material = leaf.Value,
-                                };
-                            }
-							else
-							{
-                                var allChildren = n.GetAllDescendants().ToList();
-                                var ratio = VoxelCoordinate.LayerRatio;
-								if (!allChildren.Any() || allChildren.Count < ratio * ratio * ratio * fillReq)
-								{
-                                    continue;
-								}
-                                var mat = allChildren.Select(c => c.Item2).Average();
-                                yield return new Voxel
-                                {
-                                    Coordinate = stepCoord,
-                                    Material = mat,
-                                };
-                            }
-						}
-                    }
-                }
-            }*/
+				yield return new Voxel
+				{
+					Coordinate = coord.Item1,
+					Material = coord.Item2,
+				};
+			}
 		}
 
-        
-    }
+		public static IEnumerable<Voxel> MergeMaterials(IDictionary<VoxelCoordinate, Voxel> data, float minMaterialMergeDistance)
+		{
+			const int maxIterations = 20;
+			int iterationCounter = 0;
+			bool improvementFound;
+			do
+			{
+				improvementFound = false;
+				UnityEngine.Random.InitState(data.GetHashCode() * iterationCounter);
+				foreach (var vox in data.Values.OrderBy(v => UnityEngine.Random.value).ToList())
+				{
+					var material = vox.Material.Copy();
+					foreach (var neighbourCoord in vox.Coordinate.GetNeighbours())
+					{
+						if (!data.TryGetValue(neighbourCoord, out var neighbourVox))
+						{
+							continue;
+						}
+						foreach (var neighbourSurface in neighbourVox.Material.GetSurfaces())
+						{
+							var thisSurface = material.GetSurface(neighbourSurface.Item1);
+							var otherDir = neighbourSurface.Item1;
+							var otherSurface = neighbourSurface.Item2;
+							var distance = VoxelExtensions.DistanceBetweenSurfaces(thisSurface, otherSurface);
+							if (distance < minMaterialMergeDistance && distance > .001f)
+							{
+								var existingIndex = material.Overrides.FindIndex(s => s.Direction == neighbourSurface.Item1);
+								var directionOverride = new DirectionOverride { Direction = neighbourSurface.Item1, Surface = otherSurface };
+								if (existingIndex >= 0)
+								{
+									material.Overrides[existingIndex] = directionOverride;
+								}
+								else
+								{
+									material.Overrides.Add(directionOverride);
+								}
+								improvementFound = true;
+							}
+						}
+					}
+					data[vox.Coordinate] = new Voxel(vox.Coordinate, material);
+				}
+				iterationCounter++;
+			}
+			while (improvementFound && iterationCounter < maxIterations);
+			return data.Values;
+		}
+	}
 }

@@ -70,18 +70,22 @@ namespace Voxul.Meshing
 			m_handler.Start(force, mode);
 		}
 
-		public IEnumerator DecomposeToFaces(List<KeyValuePair<VoxelCoordinate, Voxel>> allVoxels, CancellationToken token, EThreadingMode mode,
-			Guid thisJobGuid, VoxelPointMapping pointMapping, int voxelCount)
+		public static IEnumerator DecomposeToFaces(List<KeyValuePair<VoxelCoordinate, Voxel>> allVoxels,
+			List<IntermediateVoxelMeshData> intermediateVoxelMeshData,
+			CancellationToken token, EThreadingMode mode,
+			Guid thisJobGuid, VoxelPointMapping pointMapping,
+			IEnumerable<VoxelOptimiserBase> optimisers,
+			int voxelOffset = 0, float maxCoroutineTime = 1f)
 		{
 			// Iterate through all voxels and transform into face data
 			var sw = Stopwatch.StartNew();
 			int vertexCounter = 0;
-			while (voxelCount < allVoxels.Count)
+			while (voxelOffset < allVoxels.Count)
 			{
 				var data = new IntermediateVoxelMeshData();
 				data.Initialise(allVoxels, pointMapping);
-				IntermediateData.Add(data);
-				int startVoxCount = voxelCount;
+				intermediateVoxelMeshData.Add(data);
+				int startVoxCount = voxelOffset;
 				foreach (var vox in allVoxels.Skip(startVoxCount))
 				{
 					if (token.IsCancellationRequested)
@@ -125,13 +129,13 @@ namespace Voxul.Meshing
 																		 EVoxelDirection.ZPos, EVoxelDirection.ZNeg);
 							break;
 					}
-					if (mode == EThreadingMode.Coroutine && sw.Elapsed.TotalSeconds > m_maxCoroutineUpdateTime)
+					if (mode == EThreadingMode.Coroutine && sw.Elapsed.TotalSeconds > maxCoroutineTime)
 					{
 						// If we've spent the maximum amount of time in this frame, yield
 						sw.Restart();
 						yield return null;
 					}
-					voxelCount++;
+					voxelOffset++;
 					vertexCounter += vox.Value.Material.RenderMode.EstimateVertexCount();
 					/*if (vertexCounter >= 65535)
 					{
@@ -140,7 +144,7 @@ namespace Voxul.Meshing
 						break;
 					}*/
 				}
-				foreach (var opt in VoxelMesh.Optimisers?.Data?
+				foreach (var opt in optimisers?
 					.Where(o => o != null && o.Enabled))
 				{
 					opt.OnPreFaceStep(data);
@@ -166,7 +170,7 @@ namespace Voxul.Meshing
 					.ToList();
 				pointMapping = new VoxelPointMapping(VoxelMesh.PointMapping);
 			}
-			var iter = DecomposeToFaces(allVoxels, token, mode, thisJobGuid, pointMapping, voxelCount);
+			var iter = DecomposeToFaces(allVoxels, IntermediateData, token, mode, thisJobGuid, pointMapping, VoxelMesh.Optimisers.Data, voxelCount, m_maxCoroutineUpdateTime);
 			while (iter.MoveNext())
 			{
 				yield return iter.Current;

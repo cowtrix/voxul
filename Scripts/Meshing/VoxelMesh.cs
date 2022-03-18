@@ -80,7 +80,7 @@ namespace Voxul.Meshing
 				if (mat.MaterialMode == EMaterialMode.Opaque)
 				{
 					mat.Default.Albedo = mat.Default.Albedo.WithAlpha(1);
-					for (int i = 0; i < mat.Overrides.Length; i++)
+					for (int i = 0; i < mat.Overrides.Count; i++)
 					{
 						DirectionOverride ov = mat.Overrides[i];
 						ov.Surface.Albedo = ov.Surface.Albedo.WithAlpha(1);
