@@ -41,16 +41,63 @@ namespace Voxul.LevelOfDetail
 			}
 		}
 
-		public static IEnumerable<Voxel> MergeMaterials(IDictionary<VoxelCoordinate, Voxel> data, float minMaterialMergeDistance)
+		public static IEnumerable<Voxel> Cast(IEnumerable<Voxel> data, sbyte layer, float fillReq = .5f, float minMaterialDistance = .25f)
 		{
+			var bounds = data.GetBounds();
+			var step = VoxelCoordinate.LayerToScale(layer);
+			var lookup = data.ToDictionary(v => v.Coordinate, v => v);
+			foreach (var dir in VoxelExtensions.Directions)
+			{
+				var min = bounds.min.SwizzleForDir(dir, out _);
+				var max = bounds.max.SwizzleForDir(dir, out _);
+				bounds.size.SwizzleForDir(dir, out var depthSize);
+				var depthVector = VoxelCoordinate.DirectionToVector3(dir);
+
+				for (var x = min.x; x < max.x; x += step)
+				{
+					for (var y = min.y; y < max.y; y += step)
+					{
+						// Cast in direction to get voxel at point
+						var point = new Vector2(x, y).ReverseSwizzleForDir(depthSize, dir);
+						var ray = new Ray(point, -depthVector.normalized);
+						if(VoxelExtensions.RaycastLocal(lookup.Keys, ray, depthSize * 2, out var hit))
+						{
+							yield return lookup[hit];
+						}
+					}
+				}
+			}
+		}
+
+		public static IEnumerable<Voxel> StripVoxels(IEnumerable<Voxel> data)
+		{
+			foreach(var v in data)
+			{
+				var mat = v.Material.Copy();
+				if(mat.MaterialMode == EMaterialMode.Transparent)
+				{
+					mat.MaterialMode = EMaterialMode.Opaque;
+				}
+				yield return new Voxel(v.Coordinate, mat);
+			}
+		}
+
+		public static IEnumerable<Voxel> MergeMaterials(IEnumerable<Voxel> voxels, float minMaterialMergeDistance)
+		{
+			var data = new Dictionary<VoxelCoordinate, Voxel>();
+			foreach(var v in voxels)
+			{
+				data[v.Coordinate] = v;
+			}
+
 			const int maxIterations = 20;
 			int iterationCounter = 0;
 			bool improvementFound;
 			do
 			{
 				improvementFound = false;
-				UnityEngine.Random.InitState(data.GetHashCode() * iterationCounter);
-				foreach (var vox in data.Values.OrderBy(v => UnityEngine.Random.value).ToList())
+				var rnd = new System.Random(data.GetHashCode() * iterationCounter);
+				foreach (var vox in data.Values.OrderBy(v => rnd.Next()).ToList())
 				{
 					var material = vox.Material.Copy();
 					foreach (var neighbourCoord in vox.Coordinate.GetNeighbours())

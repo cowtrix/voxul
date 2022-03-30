@@ -57,7 +57,7 @@ namespace Voxul.Utilities
 				}
 			}
 
-			public abstract T GetAverageMaterial(Func<IEnumerable<T>, float, T> avgFunc, float minMaterialDistance);
+			public abstract T GetAverageValue(Func<IEnumerable<T>, float, T> avgFunc, float minMaterialDistance);
 		}
 
 		public class LeafNode : Node
@@ -69,7 +69,7 @@ namespace Voxul.Utilities
 				Value = value;
 			}
 
-			public override T GetAverageMaterial(Func<IEnumerable<T>, float, T> avgFunc, float minMaterialDistance) => Value;
+			public override T GetAverageValue(Func<IEnumerable<T>, float, T> avgFunc, float minMaterialDistance) => Value;
 		}
 
 		public class Partition : Node
@@ -78,7 +78,7 @@ namespace Voxul.Utilities
 			{
 			}
 
-			public override T GetAverageMaterial(Func<IEnumerable<T>, float, T> avgFunc, float minMaterialDistance)
+			public override T GetAverageValue(Func<IEnumerable<T>, float, T> avgFunc, float minMaterialDistance)
 			{
 				return avgFunc.Invoke(GetAllDescendants().Select(kvp => kvp.Item2), minMaterialDistance);
 			}
@@ -207,9 +207,9 @@ namespace Voxul.Utilities
 				var n = nodes.Dequeue();
 				foreach (var child in n.Children)
 				{
-					if (child.Key.Layer >= layer && child.Value.Children.Count / 9f > fillAmount)
+					if (child.Key.Layer == layer || child.Value.Children.Count / 9f > fillAmount)
 					{
-						T val = child.Value.GetAverageMaterial(GetAverage, minMaterialDistance);
+						T val = child.Value.GetAverageValue(GetAverage, minMaterialDistance);
 						var coord = child.Key;
 						yield return (coord, val);
 					}

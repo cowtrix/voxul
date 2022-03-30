@@ -140,13 +140,13 @@ namespace Voxul
 			for (int i = 0; i < VoxelExtensions.Directions.Length; i++)
 			{
 				EVoxelDirection dir = VoxelExtensions.Directions[i];
-				var allSurfaces = materials.GetAllSurfacesWithDirection(dir);
+				var allSurfaces = materials.GetAllSurfacesWithDirection(dir).ToList();
 				var averageSurface = allSurfaces.AverageSurfaces();
 				if (i == 0)
 				{
 					mat.Default = averageSurface;
 				}
-				else if(VoxelExtensions.DistanceBetweenSurfaces( mat.Default, averageSurface) < minMaterialDistance)
+				else if(VoxelExtensions.DistanceBetweenSurfaces( mat.Default, averageSurface) > minMaterialDistance)
 				{
 					mat.Overrides.Add(new DirectionOverride { Direction = dir, Surface = averageSurface });
 				}

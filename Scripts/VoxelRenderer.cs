@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Profiling;
@@ -13,7 +14,7 @@ using Voxul.Utilities;
 namespace Voxul
 {
 	[SelectionBase]
-	public class VoxelRenderer : MonoBehaviour
+	public class VoxelRenderer : ExtendedMonoBehaviour
 	{
 		public enum eSnapMode
 		{
@@ -108,7 +109,7 @@ namespace Voxul
 
 		public void SetDirty() => m_isDirty = true;
 
-		[ContextMenu("Clear")]
+		[ContextMenu("Delete All Voxels")]
 		public void ClearMesh()
 		{
 			if (!Util.PromptEditor($"Clear Mesh {this.Mesh}?", "Are you sure you want to clear this mesh and delete all of its data permanently?", "Yes, I'm sure"))
@@ -141,6 +142,13 @@ namespace Voxul
 			Submeshes.Clear();
 		}
 
+		[ContextMenu("Force Invalidate")]
+		public void ForceInvalidate()
+		{
+			Mesh?.Invalidate();
+			Invalidate(true, false);
+		}
+
 		protected virtual void OnClear() { }
 
 		public void SetupComponents(bool forceCollider)
@@ -153,15 +161,13 @@ namespace Voxul
 			}
 		}
 
-		[ContextMenu("Force Redraw")]
-		public void ForceRedraw()
-		{
-			Mesh?.Invalidate();
-			Invalidate(true, false);
-		}
-
 		public virtual void Invalidate(bool force, bool forceCollider)
 		{
+			if (!UnityMainThreadDispatcher.IsOnMainThread)
+			{
+				UnityMainThreadDispatcher.Enqueue(() => this.Invalidate(force, forceCollider));
+				return;
+			}
 			m_isDirty = false;
 			if (!Mesh)
 			{
@@ -301,7 +307,10 @@ namespace Voxul
 					l.screenRelativeTransitionHeight = (LODSettings.LODs.Count * margin) - (i * margin);
 					lods[i] = l;
 				}
-				lodGroup.SetLODs(lods);
+				if(lods.Length != lodGroup.GetLODs().Length)
+				{
+					lodGroup.SetLODs(lods);
+				}
 			}
 			for (int i = 0; i < LODSettings.LODs.Count; i++)
 			{
@@ -328,33 +337,48 @@ namespace Voxul
 					}
 #endif
 				}
-				IEnumerable<Voxel> voxels;
-				switch (lod.Mode)
+				var lodIndex = i + 1;
+				var t = new Task(() =>
 				{
-					case RenderLODSettings.eLODMode.None:
-						voxels = Mesh.Voxels.Values;
-						break;
-					case RenderLODSettings.eLODMode.Retarget:
-						voxels = LevelOfDetailBuilder.RetargetToLayer(Mesh.Voxels.Values, lod.MaxLayer, lod.FillRequirement);
-						break;
-					default:
-						throw new Exception($"Mode {lod.Mode} not supported.");
-				}
-				voxels = LevelOfDetailBuilder.MergeMaterials(voxels.ToDictionary(v => v.Coordinate, v => v), lod.MaterialMergeDistance);
-				lod.Renderer.Mesh.Voxels = new VoxelMapping(voxels);
-				lod.Renderer.Mesh.Invalidate();
-
-				if (LODSettings.GenerateLODGroup)
-				{
-					if (lod.Renderer.OnMeshRebuilt == null)
+					try
 					{
-						lod.Renderer.OnMeshRebuilt = new UnityEvent();
+						IEnumerable<Voxel> voxels;
+						switch (lod.Mode)
+						{
+							case RenderLODSettings.eLODMode.None:
+								voxels = Mesh.Voxels.Values;
+								break;
+							case RenderLODSettings.eLODMode.Retarget:
+								voxels = LevelOfDetailBuilder.RetargetToLayer(Mesh.Voxels.Values, lod.MaxLayer, lod.FillRequirement);
+								break;
+							case RenderLODSettings.eLODMode.Cast:
+								voxels = LevelOfDetailBuilder.Cast(Mesh.Voxels.Values, lod.MaxLayer, lod.FillRequirement, lod.MaterialMergeDistance);
+								break;
+							default:
+								throw new Exception($"Mode {lod.Mode} not supported.");
+						}
+						voxels = LevelOfDetailBuilder.MergeMaterials(voxels, lod.MaterialMergeDistance);
+						voxels = LevelOfDetailBuilder.StripVoxels(voxels);
+						lod.Renderer.Mesh.Voxels = new VoxelMapping(voxels);
+						lod.Renderer.Mesh.Invalidate();
+
+						if (LODSettings.GenerateLODGroup)
+						{
+							if (lod.Renderer.OnMeshRebuilt == null)
+							{
+								lod.Renderer.OnMeshRebuilt = new UnityEvent();
+							}
+							lod.Renderer.OnMeshRebuilt.RemoveAllListeners();
+							lod.Renderer.OnMeshRebuilt.AddListener(() => UnityMainThreadDispatcher.Enqueue(() => lod.Renderer.UpdateLOD(lodGroup, lodIndex, lod.ScreenTransitionWidth)));
+						}
+						lod.Renderer.Invalidate(true, false);
 					}
-					lod.Renderer.OnMeshRebuilt.RemoveAllListeners();
-					var lodIndex = i + 1;
-					lod.Renderer.OnMeshRebuilt.AddListener(() => lod.Renderer.UpdateLOD(lodGroup, lodIndex, lod.ScreenTransitionWidth));
-				}
-				lod.Renderer.Invalidate(true, false);
+					catch(Exception e)
+					{
+						voxulLogger.Exception(e);
+					}
+				});
+				t.Start();
 			}
 		}
 
@@ -380,6 +404,10 @@ namespace Voxul
 				}
 
 				lods[i] = l;
+			}
+			if(lodIndex >= lods.Length)
+			{
+				Debug.LogError("e");
 			}
 			lods[lodIndex] = new LOD { renderers = Submeshes.Select(s => s.MeshRenderer).ToArray(), screenRelativeTransitionHeight = screenTransitionWidth };
 			lodGroup.SetLODs(lods);

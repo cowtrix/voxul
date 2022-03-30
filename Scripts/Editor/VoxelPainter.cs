@@ -189,7 +189,7 @@ namespace Voxul.Edit
 				return;
 			}
 
-			if (Renderer.SnapMode != VoxelRenderer.eSnapMode.None)
+			if (Renderer.SnapMode != VoxelRenderer.eSnapMode.None && Tools.current != Tool.Rotate)
 			{
 				var scale = VoxelCoordinate.LayerToScale(Renderer.SnapLayer);
 				if (Renderer.SnapMode == VoxelRenderer.eSnapMode.Local)

@@ -84,7 +84,7 @@ namespace Voxul
 				value = Mathf.Clamp01(value);
 				return new SurfaceData
 				{
-					Albedo = Albedo.ToGradient().Evaluate(value),
+					Albedo = Albedo.Evaluate(value),
 					Metallic = Mathf.Lerp(Metallic.x, Metallic.y, value),
 					Smoothness = Mathf.Lerp(Smoothness.x, Smoothness.y, value),
 					UVMode = UVMode,

@@ -70,6 +70,10 @@ namespace Voxul
 
 		private void OnDestroy()
 		{
+			if (Application.isPlaying)
+			{
+				return;
+			}
 			MeshFilter.SafeDestroy();
 			MeshRenderer.SafeDestroy();
 			MeshCollider.SafeDestroy();

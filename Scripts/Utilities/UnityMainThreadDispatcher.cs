@@ -17,6 +17,16 @@ namespace Voxul.Utilities
 		//private static SemaphoreSlim m_executionQueueLock = new SemaphoreSlim(1, 1);
 		private static UnityMainThreadDispatcher m_runtimeExecutor;
 
+		public static bool IsOnMainThread
+		{
+			get
+			{
+				var t = System.Threading.Thread.CurrentThread;
+				return t.ManagedThreadId == 1;
+			}
+		}
+
+
 		public Coroutine Coroutine;
 
 		/// <summary>

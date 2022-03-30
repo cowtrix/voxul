@@ -263,9 +263,9 @@ namespace Voxul.Utilities
 			return new Vector3(w.x, w.y, z);
 		}
 
-		public static Vector3 Flatten(this Vector3 obj)
+		public static Vector3 Flatten(this Vector3 obj, float y = 0)
 		{
-			return new Vector3(obj.x, 0, obj.z);
+			return new Vector3(obj.x, y, obj.z);
 		}
 
 		public static Vector2 RemoveNans(this Vector2 n)

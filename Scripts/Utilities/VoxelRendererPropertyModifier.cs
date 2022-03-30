@@ -19,7 +19,7 @@ namespace Voxul
 				}
 				m_renderers = new List<VoxelRenderer>();
 				var lod = GetComponent<LODGroup>();
-				if (lod && IncludeChildren)
+				if (lod)
 				{
 					foreach(var l in lod.GetLODs())
 					{
@@ -77,6 +77,10 @@ namespace Voxul
 			}
 		}
 
+		[ContextMenu("Refresh Renderers")]
+		public void RefreshRenderers() => m_renderers = null;
+
+		[ContextMenu("Invalidate")]
 		public void Invalidate()
 		{
 			if (!enabled)
