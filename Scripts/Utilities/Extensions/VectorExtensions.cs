@@ -28,6 +28,17 @@ namespace Voxul.Utilities
 			};
 		}
 
+		public static float Berp(float start, float end, float value)
+		{
+			value = Mathf.Clamp01(value);
+			value = (Mathf.Sin(value * Mathf.PI * (0.2f + 2.5f * value * value * value)) * Mathf.Pow(1f - value, 2.2f) + value) * (1f + (1.2f * (1f - value)));
+			return start + (end - start) * value;
+		}
+
+		public static Vector3 Berp(Vector3 from, Vector3 to, float t)
+		{
+			return new Vector3(Berp(from.x, to.x, t), Berp(from.y, to.y, t), Berp(from.z, to.z, t));
+		}
 
 		public static bool Approximately(this Vector3 a, Vector3 b)
 		{

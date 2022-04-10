@@ -1,5 +1,5 @@
 {
-    "name": "Tests_Editor",
+    "name": "Voxul_Editor",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",

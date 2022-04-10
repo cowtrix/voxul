@@ -1,5 +1,5 @@
 {
-    "name": "Tests_Playmode",
+    "name": "Voxul_Playmode",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
