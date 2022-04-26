@@ -21,6 +21,14 @@ namespace Voxul.Edit
 			var isGradientKey = $"SerializableGradientEditor_{property.propertyPath}";
 			var isGradient = EditorPrefs.HasKey(isGradientKey);
 			var obj = (SerializableGradient)property.GetTargetObjectOfProperty();
+			if(obj.alphaKeys == null)
+            {
+				obj.alphaKeys = new SerializableGradient.AlphaKey[0];
+            }
+			if(obj.colorKeys == null)
+            {
+				obj.colorKeys = new SerializableGradient.ColorKey[0];
+            }
 
 			var toggleGradientModeRect = new Rect(position.x + position.width - 20, position.y, 20, 20);
 			GUI.color = isGradient ? Color.green : Color.white;

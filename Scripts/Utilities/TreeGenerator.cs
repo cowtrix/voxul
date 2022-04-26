@@ -36,7 +36,7 @@ namespace Voxul
 			var leafDirs = new[] { EVoxelDirection.YNeg,
 				EVoxelDirection.YPos, EVoxelDirection.XNeg, EVoxelDirection.XPos, EVoxelDirection.ZNeg, EVoxelDirection.ZPos,
 				EVoxelDirection.YPos, EVoxelDirection.XNeg, EVoxelDirection.XPos, EVoxelDirection.ZNeg, EVoxelDirection.ZPos };
-
+			var rnd = new System.Random();
 			var branches = new Queue<(EGenerationMode, VoxelCoordinate)>();
 			branches.Enqueue(default);
 			while (branches.Any() && renderer.Mesh.Voxels.Count < MaxVoxels)
@@ -48,10 +48,10 @@ namespace Voxul
 					case EGenerationMode.Trunk:
 						{
 							// Roll branch
-							if (Random.value < BranchProbability)
+							if (rnd.NextDouble() < BranchProbability)
 							{
 								var branchPos = current.Item2 + VoxelCoordinate.DirectionToCoordinate(branchDirs.Random(), current.Item2.Layer);
-								if (Random.value < LeafProbability)
+								if (rnd.NextDouble() < LeafProbability)
 								{
 									branches.Enqueue((EGenerationMode.Leaf, branchPos));
 								}
@@ -63,26 +63,26 @@ namespace Voxul
 						}
 						{
 							// Grow branch
-							var nextDir = Random.value > Gravity ? gravDir : branchDirs.Random();
-							if (Random.value > Growth.Evaluate(renderer.Mesh.Voxels.Count / (float)MaxVoxels))
+							var nextDir = rnd.NextDouble() > Gravity ? gravDir : branchDirs.Random();
+							if (rnd.NextDouble() > Growth.Evaluate(renderer.Mesh.Voxels.Count / (float)MaxVoxels))
 							{
 								continue;
 							}
 							var nextCoord = current.Item2 + VoxelCoordinate.DirectionToCoordinate(nextDir, current.Item2.Layer);
 							branches.Enqueue((EGenerationMode.Trunk, nextCoord));
 						}
-						renderer.Mesh.Voxels.AddSafe(new Voxel(current.Item2, BranchMaterial.Generate(Random.value)));
+						renderer.Mesh.Voxels.AddSafe(new Voxel(current.Item2, BranchMaterial.Generate((float)rnd.NextDouble())));
 						break;
 					case EGenerationMode.Leaf:
 						foreach (var dir in leafDirs)
 						{
-							if (Random.value > LeafProbability)
+							if (rnd.NextDouble() > LeafProbability)
 							{
 								continue;
 							}
 							branches.Enqueue((EGenerationMode.Leaf, current.Item2 + VoxelCoordinate.DirectionToCoordinate(dir, current.Item2.Layer)));
 						}
-						renderer.Mesh.Voxels.AddSafe(new Voxel(current.Item2, LeafMaterial.Generate(Random.value)));
+						renderer.Mesh.Voxels.AddSafe(new Voxel(current.Item2, LeafMaterial.Generate((float)rnd.NextDouble())));
 						break;
 				}
 

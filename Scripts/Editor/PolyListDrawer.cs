@@ -68,7 +68,7 @@ namespace Voxul.Edit
 			list.elementHeightCallback += index =>
 			{
 				var element = list.serializedProperty.GetArrayElementAtIndex(index); //The element in the list
-				return element.isExpanded ? EditorGUI.GetPropertyHeight(element) : EditorGUIUtility.singleLineHeight;
+				return element != null && element.isExpanded ? EditorGUI.GetPropertyHeight(element) : EditorGUIUtility.singleLineHeight;
 			};
 			list.onAddCallback = (ReorderableList l) => {
 				var index = l.serializedProperty.arraySize;

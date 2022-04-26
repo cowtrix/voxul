@@ -207,7 +207,7 @@ namespace Voxul.Utilities
 				var n = nodes.Dequeue();
 				foreach (var child in n.Children)
 				{
-					if (child.Key.Layer == layer || child.Value.Children.Count / 9f > fillAmount)
+					if ((child.Value is LeafNode && child.Key.Layer == layer) || child.Value.Children.Count / 9f > fillAmount)
 					{
 						T val = child.Value.GetAverageValue(GetAverage, minMaterialDistance);
 						var coord = child.Key;

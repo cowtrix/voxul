@@ -12,5 +12,11 @@ namespace Voxul.Utilities
 			eulerAngles.z = Mathf.Round(eulerAngles.z / 90) * 90;
 			return Quaternion.Euler(eulerAngles);
 		}
+
+		public static Quaternion Flatten(this Quaternion qt)
+        {
+			var eu = qt.eulerAngles;
+			return Quaternion.Euler(0, eu.y, eu.z);
+        }
 	}
 }

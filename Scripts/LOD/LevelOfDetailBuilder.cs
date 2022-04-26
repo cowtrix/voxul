@@ -114,6 +114,10 @@ namespace Voxul.LevelOfDetail
 							var distance = VoxelExtensions.DistanceBetweenSurfaces(thisSurface, otherSurface);
 							if (distance < minMaterialMergeDistance && distance > .001f)
 							{
+								if(material.Overrides == null)
+                                {
+									material.Overrides = new List<DirectionOverride>();
+                                }
 								var existingIndex = material.Overrides.FindIndex(s => s.Direction == neighbourSurface.Item1);
 								var directionOverride = new DirectionOverride { Direction = neighbourSurface.Item1, Surface = otherSurface };
 								if (existingIndex >= 0)

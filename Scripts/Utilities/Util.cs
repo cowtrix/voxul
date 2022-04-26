@@ -48,7 +48,8 @@ namespace Voxul.Utilities
 			{
 				return array[0];
 			}
-			return array[UnityEngine.Random.Range(0, array.Count())];
+			var rnd = new System.Random();
+			return array[rnd.Next(0, array.Count())];
 		}
 
 		public static IEnumerable<T> Distinct<T>(this IEnumerable<T> collection, Func<T, object> selector)
