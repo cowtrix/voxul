@@ -25,6 +25,11 @@ namespace Voxul
 					{
 						foreach(var r in l.renderers)
 						{
+							var vt = r?.GetComponent<VoxelColorTint>();
+                            if (vt && vt != this)
+                            {
+								continue;
+                            }
 							var vr = r?.GetComponent<VoxelRenderer>();
 							if (vr && !m_renderers.Contains(vr))
 							{
@@ -78,7 +83,11 @@ namespace Voxul
 		}
 
 		[ContextMenu("Refresh Renderers")]
-		public void RefreshRenderers() => m_renderers = null;
+		public void RefreshRenderers()
+		{
+			m_renderers = null;
+			Invalidate();
+		}
 
 		[ContextMenu("Invalidate")]
 		public void Invalidate()

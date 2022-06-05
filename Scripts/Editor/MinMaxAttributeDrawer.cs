@@ -29,11 +29,20 @@ namespace Voxul.Utilities
 				float maxLimit = minMax.MaxLimit;
 
 				position = EditorGUI.PrefixLabel(position, label);
-				vec2.x = EditorGUI.FloatField(new Rect(new Vector2(position.x, position.y), new Vector2(25, position.height)), vec2.x);
-				EditorGUI.MinMaxSlider(new Rect(new Vector2(position.x + 25, position.y), new Vector2(position.width - 50, position.height)), ref minValue, ref maxValue, minLimit, maxLimit);
-				vec2.y = EditorGUI.FloatField(new Rect(new Vector2(position.xMax - 25, position.y), new Vector2(25, position.height)), vec2.y);
+				minValue = EditorGUI.FloatField(new Rect(new Vector2(position.x - 30, position.y), new Vector2(70, position.height - 2)), vec2.x);
+				EditorGUI.MinMaxSlider(new Rect(new Vector2(position.x + 25, position.y), new Vector2(position.width - 100, position.height)), ref minValue, ref maxValue, minLimit, maxLimit);
+				maxValue = EditorGUI.FloatField(new Rect(new Vector2(position.xMax - 80, position.y), new Vector2(70, position.height - 2)), vec2.y);
 
 				var vec = Vector2.zero; // save the results into the property!
+
+				if(minValue > maxValue)
+                {
+					maxValue = minValue;
+                }
+				if(maxValue < minValue)
+                {
+					minValue = maxValue;
+                }
 				vec.x = minValue;
 				vec.y = maxValue;
 
