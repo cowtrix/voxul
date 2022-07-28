@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿#if UNITY_EDITOR
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -354,3 +355,4 @@ namespace Voxul.Edit
 		}
 	}
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿#if UNITY_EDITOR
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Edit;
@@ -89,3 +90,4 @@ namespace Voxul.LevelOfDetail
 		}
 	}
 }
+#endif

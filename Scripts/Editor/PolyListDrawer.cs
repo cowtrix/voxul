@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 using Voxul.Utilities;
 using UnityEditorInternal;
@@ -121,3 +122,4 @@ namespace Voxul.Edit
 
 	}
 }
+#endif
