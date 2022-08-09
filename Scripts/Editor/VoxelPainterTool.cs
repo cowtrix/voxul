@@ -325,7 +325,13 @@ namespace Voxul.Edit
 				m_asset.Material = CurrentBrush;
 			}
 			GUILayout.BeginVertical("Box");
+			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label("Presets");
+            if (GUILayout.Button("Refresh"))
+            {
+				RefreshBrushes();
+            }
+			EditorGUILayout.EndHorizontal();
 			var selIndex = GUILayout.SelectionGrid(-1,
 				m_brushes.Select(b => new GUIContent(Path.GetFileNameWithoutExtension(b))).ToArray(), 3);
 			if (selIndex >= 0)
@@ -345,6 +351,11 @@ namespace Voxul.Edit
 
 		public virtual void OnEnable()
 		{
+			RefreshBrushes();
+		}
+
+		public void RefreshBrushes()
+        {
 			m_brushes = AssetDatabase.FindAssets($"t: {nameof(VoxelBrushAsset)}")
 				.Select(b => AssetDatabase.GUIDToAssetPath(b))
 				.ToList();

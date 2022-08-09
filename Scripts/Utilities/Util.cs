@@ -153,6 +153,11 @@ namespace Voxul.Utilities
             return array[rnd.Next(0, array.Count())];
         }
 
+        public static T Random<T>(this IEnumerable<T> array)
+        {
+            return array.OrderBy(_ => UnityEngine.Random.value).First();
+        }
+
         public static IEnumerable<T> Distinct<T>(this IEnumerable<T> collection, Func<T, object> selector)
         {
             var history = new HashSet<object>();

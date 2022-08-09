@@ -75,7 +75,7 @@ namespace Voxul.Edit
 			{
 				startIndex = Mathf.Max(0, Mesh.Voxels.Count - PageSize);
 			}
-			EditorGUILayout.BeginScrollView(state.VoxelsScroll);
+			state.VoxelsScroll = EditorGUILayout.BeginScrollView(state.VoxelsScroll);
 
 			EditorGUILayout.LabelField("Voxels:", Mesh.Voxels.Count.ToString());
 			var chunk = Mesh.Voxels
@@ -108,7 +108,7 @@ namespace Voxul.Edit
 
 		void DrawSubmeshTab(GUIState state)
 		{
-			EditorGUILayout.BeginScrollView(state.SubmeshScroll);
+			state.SubmeshScroll = EditorGUILayout.BeginScrollView(state.SubmeshScroll);
 			EditorGUILayout.LabelField("Submeshes", EditorStyles.boldLabel);
 			foreach (var submesh in Mesh.UnityMeshInstances)
 			{

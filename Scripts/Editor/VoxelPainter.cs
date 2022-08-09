@@ -84,7 +84,7 @@ namespace Voxul.Edit
 
 		public float ToolsPanelHeight { get; private set; }
 		public HashSet<Rect> Deadzones = new HashSet<Rect>();
-		public IEnumerable<VoxelCoordinate> CurrentSelection => m_selection;
+		public IReadOnlyList<VoxelCoordinate> CurrentSelection => m_selection.ToList().AsReadOnly();
 		private HashSet<VoxelCoordinate> m_selection = new HashSet<VoxelCoordinate>();
 		private bool m_selectionDirty = true;
 

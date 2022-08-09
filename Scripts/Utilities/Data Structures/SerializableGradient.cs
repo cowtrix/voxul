@@ -75,12 +75,12 @@ namespace Voxul.Utilities
 		{
 			AlphaKey lastAlphaKey = alphaKeys[0];
 			float alpha = lastAlphaKey.Alpha;
-			for (int i = 0; i < alphaKeys.Length; i++)
+			for (int i = 1; i < alphaKeys.Length; i++)
 			{
 				var k = alphaKeys[i];
 				if(k.Time >= value)
 				{
-					var fracTime = (value - lastAlphaKey.Time) / (k.Time - lastAlphaKey.Time);
+					var fracTime = Mathf.Clamp01((value - lastAlphaKey.Time) / (k.Time - lastAlphaKey.Time));
 					alpha = Mathf.Lerp(lastAlphaKey.Alpha, k.Alpha, fracTime);
 				}
 				lastAlphaKey = k;
@@ -88,12 +88,12 @@ namespace Voxul.Utilities
 
 			ColorKey lastColorKey = colorKeys[0];
 			Color color = lastColorKey.Color;
-			for (int i = 0; i < colorKeys.Length; i++)
+			for (int i = 1; i < colorKeys.Length; i++)
 			{
 				var k = colorKeys[i];
 				if (k.Time >= value)
 				{
-					var fracTime = (value - lastColorKey.Time) / (k.Time - lastColorKey.Time);
+					var fracTime = Mathf.Clamp01((value - lastColorKey.Time) / (k.Time - lastColorKey.Time));
 					color = Color.Lerp(lastColorKey.Color, k.Color, fracTime);
 				}
 				lastColorKey = k;
