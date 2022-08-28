@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿#if UNITY_EDITOR
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -324,7 +325,13 @@ namespace Voxul.Edit
 				m_asset.Material = CurrentBrush;
 			}
 			GUILayout.BeginVertical("Box");
+			EditorGUILayout.BeginHorizontal();
 			GUILayout.Label("Presets");
+            if (GUILayout.Button("Refresh"))
+            {
+				RefreshBrushes();
+            }
+			EditorGUILayout.EndHorizontal();
 			var selIndex = GUILayout.SelectionGrid(-1,
 				m_brushes.Select(b => new GUIContent(Path.GetFileNameWithoutExtension(b))).ToArray(), 3);
 			if (selIndex >= 0)
@@ -344,6 +351,11 @@ namespace Voxul.Edit
 
 		public virtual void OnEnable()
 		{
+			RefreshBrushes();
+		}
+
+		public void RefreshBrushes()
+        {
 			m_brushes = AssetDatabase.FindAssets($"t: {nameof(VoxelBrushAsset)}")
 				.Select(b => AssetDatabase.GUIDToAssetPath(b))
 				.ToList();
@@ -354,3 +366,4 @@ namespace Voxul.Edit
 		}
 	}
 }
+#endif

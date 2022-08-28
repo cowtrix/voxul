@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 using Voxul.Utilities;
 
@@ -74,3 +75,4 @@ namespace Voxul.Edit
 		protected abstract void DrawSpecificGUI();
 	}
 }
+#endif

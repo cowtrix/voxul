@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -131,8 +132,12 @@ namespace Voxul.Edit
 				var creationList = new HashSet<VoxelCoordinate>(selection);
 				if (currentEvent.control && currentEvent.shift)
 				{
-					var bounds = voxelPainter.CurrentSelection.GetBounds();
-					bounds.Encapsulate(selection.GetBounds());
+					var bounds = selection.GetBounds();
+                    if (voxelPainter.CurrentSelection.Any())
+                    {
+						bounds = voxelPainter.CurrentSelection.GetBounds();
+						bounds.Encapsulate(selection.GetBounds());
+					}
 					foreach (VoxelCoordinate coord in bounds.GetVoxelCoordinates(CurrentLayer))
 					{
 						creationList.Add(coord);
@@ -190,3 +195,4 @@ namespace Voxul.Edit
 	}
 
 }
+#endif

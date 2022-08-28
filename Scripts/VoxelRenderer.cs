@@ -158,6 +158,7 @@ namespace Voxul
 			foreach (var r in Submeshes)
 			{
 				r.SetupComponents(this, GenerateCollider || forceCollider);
+				SetMaterials(r, OpaqueMaterial, TransparentMaterial);
 			}
 		}
 

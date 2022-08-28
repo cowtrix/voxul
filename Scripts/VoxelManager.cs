@@ -21,6 +21,7 @@ namespace Voxul
 		{
 			var path = $"{RESOURCES_FOLDER}/{nameof(VoxelManager)}";
 			var vm = Resources.Load<VoxelManager>(path);
+#if UNITY_EDITOR
 			if (!vm)
 			{
 				var rscPath = $"{Application.dataPath}/Resources/{RESOURCES_FOLDER}";
@@ -33,6 +34,7 @@ namespace Voxul
 				UnityEditor.AssetDatabase.Refresh();
 				vm = Resources.Load<VoxelManager>(path);
 			}
+#endif
 			return vm;
 		}
 
