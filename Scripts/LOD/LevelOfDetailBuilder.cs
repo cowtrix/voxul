@@ -3,27 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Voxul.Utilities;
 
 namespace Voxul.LevelOfDetail
 {
-	public class VoxelMaterialTree : VoxelTree<VoxelMaterial>
-	{
-		public VoxelMaterialTree(sbyte maxLayer) : base(maxLayer)
-		{
-		}
 
-		public VoxelMaterialTree(sbyte maxLayer, IDictionary<VoxelCoordinate, VoxelMaterial> data) : base(maxLayer, data)
-		{
-		}
-
-		protected override VoxelMaterial GetAverage(IEnumerable<VoxelMaterial> vals, float minMaterialDistance)
-		{
-			return vals.Average(minMaterialDistance);
-		}
-	}
-
-	public static class LevelOfDetailBuilder
+    public static class LevelOfDetailBuilder
 	{
 		public static IEnumerable<Voxel> RetargetToLayer(IEnumerable<Voxel> data, sbyte layer, float fillReq = .5f, float minMaterialDistance = .25f)
 		{

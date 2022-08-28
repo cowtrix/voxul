@@ -39,6 +39,9 @@ namespace Voxul.Meshing
 	[CreateAssetMenu]
 	public class VoxelMesh : ScriptableObject
 	{
+		public sbyte MaxLayer => Voxels.Max(v => v.Key.Layer);
+		public sbyte MinLayer => Voxels.Min(v => v.Key.Layer);
+
 		/// <summary>
 		/// The voxel worker transforms the VoxelMapping data into the UnityMeshInstances data.
 		/// </summary>
@@ -65,6 +68,17 @@ namespace Voxul.Meshing
 		public bool OptimiseMesh;
 		public bool OverrideOptimisers;
 		public VoxelMeshOptimiserList OptimiserOverrides = new VoxelMeshOptimiserList();
+
+		private VoxelCoordinateTree<Voxel> m_quickLookup;
+
+		public VoxelCoordinateTree<Voxel> GetQuickLookup()
+        {
+			if(m_quickLookup == null)
+            {
+				m_quickLookup = new VoxelTree(MinLayer, Voxels);
+            }
+			return m_quickLookup;
+        }
 
 		public void CleanMesh()
 		{
@@ -96,6 +110,7 @@ namespace Voxul.Meshing
 		public void Invalidate()
 		{
 			Hash = Guid.NewGuid().ToString();
+			m_quickLookup = null;
 		}
 	}
 }

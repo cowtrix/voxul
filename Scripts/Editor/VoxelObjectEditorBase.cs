@@ -4,7 +4,7 @@ using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
-	public abstract class VoxelObjectEditorBase<T> : Editor where T:VoxelRenderer
+	public abstract class VoxelObjectEditorBase<T> : ExtendedMonobehaviourEditor where T:VoxelRenderer
 	{
 		protected int Tab
 		{
@@ -38,11 +38,12 @@ namespace Voxul.Edit
 			Tab = GUILayout.Toolbar(Tab, Tabs);
 			if (Tab == 1 || serializedObject.isEditingMultipleObjects)
 			{
+				Enabled = false;
 				base.OnInspectorGUI();
 				return;
 			}
 
-			Enabled = EditorGUILayout.Toggle("Painting Enabled", Enabled);
+			Enabled = EditorGUILayout.Toggle("voxul_PaintingEnabled", Enabled);
 
 			if (!Renderer.Mesh)
 			{
