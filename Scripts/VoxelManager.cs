@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Voxul.Meshing;
 using Voxul.Utilities;
 
@@ -43,11 +44,8 @@ namespace Voxul
 		public EThreadingMode DefaultThreadingMode = EThreadingMode.Task;
 		public float DefaultMaxCoroutineUpdateTime = 1 / 60f;
 
-		[HideInInspector]
 		public Material DefaultMaterial;
-		[HideInInspector]
 		public Material DefaultMaterialTransparent;
-		[HideInInspector]
 		public Texture2DArray BaseTextureArray;
 
 		[Range(2, 10)]
@@ -71,10 +69,21 @@ namespace Voxul
 
 		public void OnValidate()
 		{
+            if (!GraphicsSettings.currentRenderPipeline)
+            {
+				Debug.LogError("Scriptable Render Pipeline not found - Voxul does not work with in-built RP. Please install URP/HDRP from Package Manager.");
+				return;
+            }
 			voxulLogger.InvalidateLogLevel();
 			if (!DefaultMaterial || DefaultMaterial == null)
 			{
-				DefaultMaterial = new Material(Shader.Find("voxul/DefaultVoxel"));
+				var shader = Shader.Find("voxul/DefaultVoxel");
+                if (!shader)
+                {
+					Debug.LogError("Couldn't find shader voxul/DefaultVoxul. Do you have ShaderGraph installed?");
+					return;
+                }
+				DefaultMaterial = new Material(shader);
 #if UNITY_EDITOR
 				UnityEditor.AssetDatabase.AddObjectToAsset(DefaultMaterial, GetVoxelManagerPath());
 				Debug.Log(UnityEditor.AssetDatabase.GetAssetPath(DefaultMaterial));
