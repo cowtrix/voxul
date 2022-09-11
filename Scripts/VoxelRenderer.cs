@@ -155,10 +155,22 @@ namespace Voxul
 		{
 			Submeshes = new List<VoxelRendererSubmesh>(GetComponentsInChildren<VoxelRendererSubmesh>()
 				.Where(r => r.Parent == this));
-			foreach (var r in Submeshes)
+			foreach (var submesh in Submeshes)
 			{
-				r.SetupComponents(this, GenerateCollider || forceCollider);
-				SetMaterials(r, OpaqueMaterial, TransparentMaterial);
+				submesh.SetupComponents(this, GenerateCollider || forceCollider);
+				if (!CustomMaterials)
+				{
+					var vm = VoxelManager.Instance;
+					if (!vm.DefaultMaterial || !vm.DefaultMaterialTransparent)
+					{
+						vm.OnValidate();
+					}
+					SetMaterials(submesh, VoxelManager.Instance.DefaultMaterial, VoxelManager.Instance.DefaultMaterialTransparent);
+				}
+				else
+				{
+					SetMaterials(submesh, OpaqueMaterial, TransparentMaterial);
+				}
 			}
 		}
 

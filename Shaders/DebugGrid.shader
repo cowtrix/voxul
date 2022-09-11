@@ -10,7 +10,7 @@ Shader "voxul/DebugGrid"
         ZWrite Off
         Cull Off
         Blend SrcAlpha OneMinusSrcAlpha
-        //Offset 0, -999999
+        Offset -1, -1
 
         Pass
         {
@@ -42,7 +42,7 @@ Shader "voxul/DebugGrid"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex + v.normal * .01);
+                o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;

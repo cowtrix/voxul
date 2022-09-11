@@ -50,6 +50,7 @@ namespace Voxul.Edit
 				m_tempVoxelData.Invalidate();
 				m_dirty = true;
 			}
+			Update();
 		}
 
 		public void Update()

@@ -34,7 +34,7 @@ namespace Voxul.Edit
 
 		private double m_lastAdd;
 		[SerializeField]
-		private VoxelRenderer m_cursor;
+		private VoxelRenderer m_previewMesh;
 
 		public sbyte CurrentLayer
 		{
@@ -50,25 +50,25 @@ namespace Voxul.Edit
 
 		public override void OnEnable()
 		{
-			if (!m_cursor)
+			if (!m_previewMesh)
 			{
-				m_cursor = new GameObject("AddTool_Cursor").AddComponent<VoxelRenderer>();
-				m_cursor.gameObject.hideFlags = HideFlags.HideAndDontSave;
-				m_cursor.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
-				m_cursor.GenerateCollider = false;
-				m_cursor.enabled = false;
-				m_cursor.SetupComponents(false);
-				m_cursor.gameObject.AddComponent<AutoDestroyer>();
+				m_previewMesh = new GameObject("AddTool_Cursor").AddComponent<VoxelRenderer>();
+				m_previewMesh.gameObject.hideFlags = HideFlags.HideAndDontSave;
+				m_previewMesh.Mesh = ScriptableObject.CreateInstance<VoxelMesh>();
+				m_previewMesh.GenerateCollider = false;
+				m_previewMesh.enabled = false;
+				m_previewMesh.SetupComponents(false);
+				m_previewMesh.gameObject.AddComponent<AutoDestroyer>();
 			}
 			base.OnEnable();
 		}
 
 		public override void OnDisable()
 		{
-			if (m_cursor)
+			if (m_previewMesh)
 			{
-				m_cursor.gameObject.SafeDestroy();
-				m_cursor = null;
+				m_previewMesh.gameObject.SafeDestroy();
+				m_previewMesh = null;
 			}
 			base.OnDisable();
 		}
@@ -80,7 +80,7 @@ namespace Voxul.Edit
 		{
 			if (Event.current.control && !Event.current.shift)
 			{
-				m_cursor?.gameObject.SetActive(false);
+				m_previewMesh?.gameObject.SetActive(false);
 				return base.GetVoxelDataFromPoint(painter, renderer, collider, hitPoint, hitNorm, triIndex, out selection, out hitDir);
 			}
 
@@ -99,23 +99,24 @@ namespace Voxul.Edit
 
 		private void DoMeshCursorPreview(VoxelRenderer renderer, IEnumerable<VoxelCoordinate> selection)
 		{
-			if (!m_cursor || !m_cursor.Mesh)
+			if (!m_previewMesh || !m_previewMesh.Mesh)
 			{
 				OnEnable();
 			}
-			m_cursor.gameObject.SetActive(true);
-			m_cursor.GetComponent<AutoDestroyer>().KeepAlive();
-			m_cursor.transform.ApplyTRSMatrix(renderer.transform.localToWorldMatrix);
-			if (!m_cursor.Mesh.Voxels.Keys.SequenceEqual(selection))
+			m_previewMesh.gameObject.SetActive(true);
+			m_previewMesh.SetupComponents(false);
+			m_previewMesh.GetComponent<AutoDestroyer>().KeepAlive();
+			m_previewMesh.transform.ApplyTRSMatrix(renderer.transform.localToWorldMatrix);
+			if (!m_previewMesh.Mesh.Voxels.Keys.SequenceEqual(selection))
 			{
-				m_cursor.Mesh.Voxels.Clear();
+				m_previewMesh.Mesh.Voxels.Clear();
 				foreach (var s in selection)
 				{
 					UnityEngine.Random.InitState(s.GetHashCode());
-					m_cursor.Mesh.Voxels.AddSafe(new Voxel { Coordinate = s, Material = CurrentBrush.Generate(UnityEngine.Random.value) });
+					m_previewMesh.Mesh.Voxels.AddSafe(new Voxel { Coordinate = s, Material = CurrentBrush.Generate(UnityEngine.Random.value) });
 				}
-				m_cursor.Mesh.Invalidate();
-				m_cursor.Invalidate(true, false);
+				m_previewMesh.Mesh.Invalidate();
+				m_previewMesh.Invalidate(true, false);
 			}
 		}
 
@@ -144,9 +145,9 @@ namespace Voxul.Edit
 					}
 				}
 				voxelPainter.SetSelection(CreateVoxel(creationList, renderer).ToList());
-				if (m_cursor)
+				if (m_previewMesh)
 				{
-					m_cursor.gameObject.SafeDestroy();
+					m_previewMesh.gameObject.SafeDestroy();
 				}
 				UseEvent(currentEvent);
 				return true;
