@@ -97,7 +97,11 @@ namespace Voxul
 			}
 			else if (m_workingTexture.width != fontTexture.width || m_workingTexture.height != fontTexture.height)
 			{
+#if UNITY_2021_1_OR_NEWER
 				m_workingTexture.Reinitialize(fontTexture.width, fontTexture.height);
+#else
+				m_workingTexture.Resize(fontTexture.width, fontTexture.height);
+#endif
 			}
 			if (m_workingTextureAlpha == null || m_workingTextureAlpha.GetLength(0) != m_workingTexture.width || m_workingTextureAlpha.GetLength(1) != m_workingTexture.height)
 			{
