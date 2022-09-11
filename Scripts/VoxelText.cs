@@ -153,7 +153,7 @@ namespace Voxul
 		/// </summary>
 		/// <param name="force"></param>
 		/// <param name="forceCollider"></param>
-		public override void Invalidate(bool force, bool forceCollider)
+		public override void Invalidate(bool force, bool forceCollider, bool forceDispatch = false)
 		{
 			m_isDirty = false;
 			UnityMainThreadDispatcher.EnsureSubscribed();
@@ -169,7 +169,7 @@ namespace Voxul
 				m_textWorker = GetVoxelMeshWorker() as VoxelTextWorker;
 			}
 			m_textWorker.Configuration = Configuration;
-			base.Invalidate(force, forceCollider);
+			base.Invalidate(force, forceCollider, forceDispatch);
 		}
 
 		/// <summary>

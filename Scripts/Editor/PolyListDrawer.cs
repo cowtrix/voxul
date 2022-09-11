@@ -68,6 +68,10 @@ namespace Voxul.Edit
 			};
 			list.elementHeightCallback += index =>
 			{
+				if(index >= list.count)
+                {
+					return default;
+                }
 				var element = list.serializedProperty.GetArrayElementAtIndex(index); //The element in the list
 				return element != null && element.isExpanded ? EditorGUI.GetPropertyHeight(element) : EditorGUIUtility.singleLineHeight;
 			};

@@ -162,10 +162,11 @@ namespace Voxul
 			}
 		}
 
-		public virtual void Invalidate(bool force, bool forceCollider)
+		public virtual void Invalidate(bool force, bool forceCollider, bool forceDispatch = false)
 		{
-			if (!UnityMainThreadDispatcher.IsOnMainThread)
+			if (forceDispatch || !UnityMainThreadDispatcher.IsOnMainThread)
 			{
+				UnityMainThreadDispatcher.EnsureSubscribed();
 				UnityMainThreadDispatcher.Enqueue(() => this.Invalidate(force, forceCollider));
 				return;
 			}
@@ -174,8 +175,14 @@ namespace Voxul
 			{
 				foreach (var submesh in Submeshes)
 				{
-					submesh.MeshFilter.sharedMesh = null;
-					submesh.MeshRenderer.sharedMaterial = null;
+                    if (submesh.MeshFilter)
+					{
+						submesh.MeshFilter.sharedMesh = null;
+					}
+                    if (submesh.MeshRenderer)
+                    {
+						submesh.MeshRenderer.sharedMaterial = null;
+					}
 					if (submesh.MeshCollider)
 					{
 						submesh.MeshCollider.sharedMesh = null;
@@ -183,6 +190,11 @@ namespace Voxul
 				}
 				return;
 			}
+
+			if(m_lastMeshHash == Mesh.Hash && !force)
+            {
+				return;
+            }
 
 			Profiler.BeginSample("Invalidate");
 			SetupComponents(forceCollider || GenerateCollider);

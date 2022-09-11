@@ -13,7 +13,7 @@ namespace Voxul
         public Sprite Sprite;
         public sbyte Layer;
 		
-		public override void Invalidate(bool force, bool forceCollider)
+		public override void Invalidate(bool force, bool forceCollider, bool forceDispatch = false)
 		{
 			if (!Sprite || !Mesh)
 			{
@@ -58,7 +58,7 @@ namespace Voxul
 				}
 			}
 			Mesh.Invalidate();
-			base.Invalidate(force, forceCollider);
+			base.Invalidate(force, forceCollider, forceDispatch);
 		}
 	}
 }

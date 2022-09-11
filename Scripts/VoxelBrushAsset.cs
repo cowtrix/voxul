@@ -49,7 +49,7 @@ namespace Voxul
 		public SurfaceData Surface;
 	}
 
-	[CreateAssetMenu]
+	[CreateAssetMenu(menuName ="voxul/Voxul Material Brush")]
 	public class VoxelBrushAsset : ScriptableObject
 	{
 		public VoxelBrush Material;

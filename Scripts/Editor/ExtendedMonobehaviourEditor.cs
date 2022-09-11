@@ -16,7 +16,7 @@ namespace Voxul
 		public override void OnInspectorGUI()
 		{
 			var methods = target.GetType().GetMethods()
-				.Select(m => (m.GetCustomAttribute<ContextMenu>(), m))
+				.Select(m => (m.GetCustomAttributes<ContextMenu>().FirstOrDefault(), m))
 				.Where(m => m.Item1 != null);
 			foreach (var m in methods)
 			{

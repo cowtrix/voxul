@@ -34,7 +34,8 @@ namespace Voxul
 				return;
 			}
 			Parent = r;
-			gameObject.hideFlags = gameObject == Parent.gameObject ? Parent.hideFlags : HideFlags.HideInHierarchy;
+			gameObject.hideFlags = gameObject == Parent.gameObject ? Parent.gameObject.hideFlags : HideFlags.HideInHierarchy;
+			this.hideFlags = Parent.hideFlags;
 			if (gameObject != Parent.gameObject)
 			{
 				gameObject.transform.localPosition = Vector3.zero;
@@ -49,6 +50,8 @@ namespace Voxul
 			{
 				MeshRenderer = gameObject.GetOrAddComponent<MeshRenderer>();
 			}
+			MeshFilter.hideFlags = Parent.hideFlags;
+			MeshRenderer.hideFlags = Parent.hideFlags;
 			if (collider)
 			{
 				if (!MeshCollider)

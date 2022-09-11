@@ -36,7 +36,7 @@ namespace Voxul.Meshing
 	/// This is the asset object representing a voxel mesh. It contains the voxel information itself,
 	/// as well as the bake data if the Voxel Mesh has been invalidated yet.
 	/// </summary>
-	[CreateAssetMenu]
+	[CreateAssetMenu(menuName ="voxul/Voxul Mesh")]
 	public class VoxelMesh : ScriptableObject
 	{
 		public sbyte MaxLayer => Voxels.Max(v => v.Key.Layer);

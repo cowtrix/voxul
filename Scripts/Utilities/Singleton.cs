@@ -58,12 +58,12 @@ namespace Voxul.Utilities
                             _instance = item;
                         }
                     }
-                    if (list.Length == 0)
+                    if (list.Length == 0 && Application.isPlaying)
                     {
                         Debug.LogError(string.Format("FindObjectsOfType({0}) returned no instances!", typeof(T)));
                     }
 
-                    if (_instance == null)
+                    if (_instance == null && Application.isPlaying)
                     {
                         /*GameObject singleton = new GameObject();
                         _instance = singleton.AddComponent<T>();
