@@ -43,7 +43,7 @@ namespace Voxul.Test
 		private IEnumerator CanRebakeVoxelMeshInMode(Utilities.EThreadingMode mode)
 		{
 			var completeEventFired = false;
-			void CurrentWorker_OnCompleted(VoxelMeshWorker worker, VoxelMesh mesh)
+			void CurrentWorker_OnCompleted(VoxelMesh mesh)
 			{
 				completeEventFired = true;
 			}

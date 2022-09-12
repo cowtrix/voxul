@@ -7,7 +7,7 @@ using Voxul.Utilities;
 
 namespace Voxul.Meshing
 {
-	public delegate void VoxelRebuildMeshEvent(VoxelMeshWorker worker, VoxelMesh mesh);
+	public delegate void VoxelRebuildMeshEvent(VoxelMesh mesh);
 
 	[Serializable]
 	public class MeshVoxelData
@@ -46,7 +46,7 @@ namespace Voxul.Meshing
 		/// The voxel worker transforms the VoxelMapping data into the UnityMeshInstances data.
 		/// </summary>
 		public VoxelMeshWorker CurrentWorker;
-
+		public bool GenerateLightmaps;
 		public List<MeshVoxelData> UnityMeshInstances = new List<MeshVoxelData>();
 
 		[HideInInspector]

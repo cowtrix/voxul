@@ -145,7 +145,7 @@ namespace Voxul
 		[ContextMenu("Force Invalidate")]
 		public void ForceInvalidate()
 		{
-			Mesh?.Invalidate();
+			Mesh.Invalidate();
 			Invalidate(true, false);
 		}
 
@@ -208,12 +208,19 @@ namespace Voxul
 				return;
             }
 
+			if(m_lastMeshHash == Mesh.Hash)
+            {
+				ApplyVoxelMesh(Mesh);
+				this.TrySetDirty();
+				return;
+			}
+
 			Profiler.BeginSample("Invalidate");
 			SetupComponents(forceCollider || GenerateCollider);
 
 			Mesh.CurrentWorker = GetVoxelMeshWorker();
-			Mesh.CurrentWorker.OnCompleted -= MeshRebuilt;
-			Mesh.CurrentWorker.OnCompleted += MeshRebuilt;
+			Mesh.CurrentWorker.OnCompleted -= ApplyVoxelMesh;
+			Mesh.CurrentWorker.OnCompleted += ApplyVoxelMesh;
 			Mesh.CurrentWorker.VoxelMesh = Mesh;
 			Mesh.CurrentWorker.GenerateMesh(ThreadingMode, force);
 
@@ -222,7 +229,8 @@ namespace Voxul
 			Profiler.EndSample();
 		}
 
-		protected virtual void MeshRebuilt(VoxelMeshWorker worker, VoxelMesh voxelMesh)
+		protected virtual void ApplyVoxelMesh
+			(VoxelMesh voxelMesh)
 		{
 			if (!this)
 			{
@@ -299,6 +307,19 @@ namespace Voxul
 					}
 				}
 				Submeshes.RemoveAt(i);
+			}
+			if(Submeshes.Count == 0)
+            {
+				var mf = GetComponent<MeshFilter>();
+                if (mf)
+                {
+					mf.SafeDestroy();
+                }
+				var mr = GetComponent<MeshRenderer>();
+				if (mr)
+				{
+					mr.SafeDestroy();
+				}
 			}
 			m_lastMeshHash = Mesh.Hash;
 #if UNITY_EDITOR

@@ -41,6 +41,10 @@ namespace Voxul.Edit
 			{
 				Enabled = false;
 				base.OnInspectorGUI();
+                if (Renderer.Mesh)
+                {
+					Renderer.Mesh.GenerateLightmaps = EditorGUILayout.Toggle("Generate Lightmaps", Renderer.Mesh.GenerateLightmaps);
+                }
 				return;
 			}
 

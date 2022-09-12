@@ -6,7 +6,7 @@ Shader "voxul/DebugGrid"
     }
     SubShader
     {
-        Tags { "RenderType"="AlphaTest" }
+        Tags { "RenderType"="Transparent" }
         ZWrite Off
         Cull Off
         Blend SrcAlpha OneMinusSrcAlpha

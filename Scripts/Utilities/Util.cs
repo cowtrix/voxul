@@ -138,7 +138,6 @@ namespace Voxul.Utilities
             return list;
         }
 
-
         public static T Random<T>(this IList<T> array)
         {
             if (array.Count == 0)
@@ -292,4 +291,5 @@ namespace Voxul.Utilities
             return tex;
         }
     }
+
 }

@@ -24,14 +24,17 @@ namespace Voxul.Meshing
 		public List<Color> Color1;
 		public List<Vector2> UV1;	// Texture
 		public List<Vector2> UV2;	// Lightmap
-		public List<Vector4> UV3;	// Auxilary data
+		public List<Vector4> UV3;   // Auxilary data
 
-		/// <summary>
-		/// Copy data from voxels and initialize data structures if null.
-		/// </summary>
-		/// <param name="voxels"></param>
-		public void Initialise(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels, VoxelPointMapping pointOffsets)
+		public bool GenerateLightmaps;
+
+        /// <summary>
+        /// Copy data from voxels and initialize data structures if null.
+        /// </summary>
+        /// <param name="voxels"></param>
+        public void Initialise(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels, VoxelPointMapping pointOffsets, bool generateLightmaps)
 		{
+			GenerateLightmaps = generateLightmaps;
 			Voxels = new VoxelMapping(voxels);
 			PointOffsets = pointOffsets;
 			Faces = Faces ?? new Dictionary<VoxelFaceCoordinate, VoxelFace>();
