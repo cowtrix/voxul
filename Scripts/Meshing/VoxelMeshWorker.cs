@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Voxul;
 using Voxul.Utilities;
-#if UNITY_2021_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
 using Voxul.Utilities.RectanglePacker;
 #endif
 namespace Voxul.Meshing
@@ -86,7 +86,7 @@ namespace Voxul.Meshing
             while (voxelOffset < allVoxels.Count)
             {
                 var data = new IntermediateVoxelMeshData();
-#if UNITY_2021_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
                 data.Initialise(allVoxels, pointMapping, generateLightmaps);
 #else
                 data.Initialise(allVoxels, pointMapping);
@@ -337,7 +337,7 @@ namespace Voxul.Meshing
 
             int counter = 0;
 
-#if UNITY_2021_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
             const int lightmapPadding = 32;
             Dictionary<int, PackingRectangle> lightmapRects = null;
             PackingRectangle packingBounds = default;
@@ -427,7 +427,7 @@ namespace Voxul.Meshing
                 // Color data
                 data.Color1.AddRange(Enumerable.Repeat(surface.Albedo, 4));
 
-#if UNITY_2021_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
                 // uv2 lightmap UVs
                 if (data.GenerateLightmaps && lightmapRects != null)
                 {

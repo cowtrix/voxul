@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-#if UNITY_2021_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
 namespace Voxul.Utilities.RectanglePacker
 {
     public static class RectanglePacker

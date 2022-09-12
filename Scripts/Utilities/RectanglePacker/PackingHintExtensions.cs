@@ -1,6 +1,6 @@
 ﻿using System;
 
-#if UNITY_2021_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
 namespace Voxul.Utilities.RectanglePacker
 {
     /// <summary>

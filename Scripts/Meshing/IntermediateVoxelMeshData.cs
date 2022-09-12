@@ -26,7 +26,7 @@ namespace Voxul.Meshing
         public List<Vector2> UV2;   // Lightmap
         public List<Vector4> UV3;   // Auxilary data
 
-#if UNITY_2021_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
 		public bool GenerateLightmaps;
 #endif
 
@@ -35,7 +35,7 @@ namespace Voxul.Meshing
         /// </summary>
         /// <param name="voxels"></param>
         public void Initialise(IEnumerable<KeyValuePair<VoxelCoordinate, Voxel>> voxels, VoxelPointMapping pointOffsets
-#if UNITY_2021_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
 			, bool generateLightmaps)
 		{
 			GenerateLightmaps = generateLightmaps;

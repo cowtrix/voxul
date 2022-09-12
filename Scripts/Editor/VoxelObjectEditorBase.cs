@@ -41,7 +41,7 @@ namespace Voxul.Edit
 			{
 				Enabled = false;
 				base.OnInspectorGUI();
-#if UNITY_2021_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
 				if (Renderer.Mesh)
                 {
 					Renderer.Mesh.GenerateLightmaps = EditorGUILayout.Toggle("Generate Lightmaps", Renderer.Mesh.GenerateLightmaps);
