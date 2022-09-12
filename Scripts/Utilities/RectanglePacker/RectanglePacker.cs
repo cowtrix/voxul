@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-#if UNITY_EDITOR
-#endif
 
+#if UNITY_2021_OR_NEWER
 namespace Voxul.Utilities.RectanglePacker
 {
     public static class RectanglePacker
@@ -443,3 +442,4 @@ namespace Voxul.Utilities.RectanglePacker
     }
 
 }
+#endif

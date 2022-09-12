@@ -1,7 +1,6 @@
 ﻿using System;
-#if UNITY_EDITOR
-#endif
 
+#if UNITY_2021_OR_NEWER
 namespace Voxul.Utilities.RectanglePacker
 {
     /// <summary>
@@ -96,3 +95,4 @@ namespace Voxul.Utilities.RectanglePacker
     }
 
 }
+#endif

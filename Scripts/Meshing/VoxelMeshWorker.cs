@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Voxul;
 using Voxul.Utilities;
+#if UNITY_2021_OR_NEWER
 using Voxul.Utilities.RectanglePacker;
-
+#endif
 namespace Voxul.Meshing
 {
     /// <summary>
@@ -85,7 +86,11 @@ namespace Voxul.Meshing
             while (voxelOffset < allVoxels.Count)
             {
                 var data = new IntermediateVoxelMeshData();
+#if UNITY_2021_OR_NEWER
                 data.Initialise(allVoxels, pointMapping, generateLightmaps);
+#else
+                data.Initialise(allVoxels, pointMapping);
+#endif
                 intermediateVoxelMeshData.Add(data);
                 int startVoxCount = voxelOffset;
                 foreach (var vox in allVoxels.Skip(startVoxCount))
@@ -332,6 +337,7 @@ namespace Voxul.Meshing
 
             int counter = 0;
 
+#if UNITY_2021_OR_NEWER
             const int lightmapPadding = 32;
             Dictionary<int, PackingRectangle> lightmapRects = null;
             PackingRectangle packingBounds = default;
@@ -353,6 +359,7 @@ namespace Voxul.Meshing
                     }),
                     out packingBounds, padding: lightmapPadding);
             }
+#endif
 
             foreach (var voxelFace in data.Faces)
             {
@@ -420,6 +427,7 @@ namespace Voxul.Meshing
                 // Color data
                 data.Color1.AddRange(Enumerable.Repeat(surface.Albedo, 4));
 
+#if UNITY_2021_OR_NEWER
                 // uv2 lightmap UVs
                 if (data.GenerateLightmaps && lightmapRects != null)
                 {
@@ -441,6 +449,13 @@ namespace Voxul.Meshing
                     data.UV2.Add(new Vector2(normalizedRect.xMin, normalizedRect.yMin));
                     data.UV2.Add(new Vector2(normalizedRect.xMin, normalizedRect.yMax));
                 }
+#else
+                data.UV2.Add(new Vector2(1, 1));
+                data.UV2.Add(new Vector2(1, 0));
+                data.UV2.Add(new Vector2(0, 0));
+                data.UV2.Add(new Vector2(0, 1));
+
+#endif
 
                 // UV3 extra data
                 var auxData = new Vector4(surface.Smoothness, surface.Texture.Index, surface.Metallic, 1 - surface.TextureFade)
