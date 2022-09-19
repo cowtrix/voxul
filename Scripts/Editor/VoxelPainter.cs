@@ -9,7 +9,6 @@ using Voxul.Utilities;
 
 namespace Voxul.Edit
 {
-
 	internal enum EPaintingTool
 	{
 		Select,
@@ -52,6 +51,24 @@ namespace Voxul.Edit
 			foreach (var r in FindObjectsOfType<VoxelRenderer>())
 			{
 				r.enabled = false;
+#if UNITY_EDITOR
+				UnityEditor.EditorUtility.SetDirty(r);
+#endif
+			}
+		}
+
+		[MenuItem("Tools/Voxul/Enable Lightmap Generation In Scene")]
+		public static void EnableLightmaps()
+		{
+			foreach (var r in FindObjectsOfType<VoxelRenderer>())
+			{
+                if (!r.gameObject.isStatic || !r.Mesh)
+                {
+					continue;
+                }
+				r.Mesh.GenerateLightmaps = true;
+				r.Mesh.Invalidate();
+				r.Invalidate(true, false);
 #if UNITY_EDITOR
 				UnityEditor.EditorUtility.SetDirty(r);
 #endif

@@ -12,6 +12,7 @@ namespace Voxul
 		public sbyte SnapLayer = 0;
 		public bool OverrideChildren;
 
+		public Vector3 Offset;
 		private Vector3 m_lastPosition;
 
 		protected VoxelRenderer[] Children => GetComponentsInChildren<VoxelRenderer>(true);
@@ -35,7 +36,7 @@ namespace Voxul
 				var scale = VoxelCoordinate.LayerToScale(SnapLayer);
 				if (SnapMode == eSnapMode.Local)
 				{
-					transform.localPosition = transform.localPosition.RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio);
+					transform.localPosition = (transform.localPosition - Offset).RoundToIncrement(scale / (float)VoxelCoordinate.LayerRatio) + Offset;
 				}
 				else if (SnapMode == eSnapMode.Global)
 				{

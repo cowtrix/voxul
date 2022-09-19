@@ -135,6 +135,7 @@ namespace Voxul.Edit
 				}
 				renderer.Mesh.Voxels[brushCoord] = vox;
 			}
+			renderer.Mesh.Invalidate();
 			renderer.Invalidate(true, true);
 			return true;
 		}

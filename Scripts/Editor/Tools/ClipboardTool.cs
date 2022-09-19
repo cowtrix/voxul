@@ -107,7 +107,7 @@ namespace Voxul.Edit
 						voxelPainter.Renderer.Mesh.Voxels.Remove(v.Coordinate);
 					}
 					voxelPainter.Renderer.Mesh.Invalidate();
-					Offset = Vector3.zero;
+					Offset = Vector3.zero;              
 					return true;
 				}
 				else if (GUILayout.Button("Copy Selection To New Voxel Object"))
@@ -142,6 +142,7 @@ namespace Voxul.Edit
 					voxelPainter.Renderer.Mesh.Invalidate();
 					voxelPainter.SetSelection(null);
 					newObj.Mesh.Invalidate();
+					voxelPainter.Renderer.Mesh.Invalidate();
 					Offset = Vector3.zero;
 					return true;
 				}
@@ -240,6 +241,7 @@ namespace Voxul.Edit
 						{
 							voxelPainter.Renderer.Mesh.Voxels.SetSafe(newVox);
 						}
+						voxelPainter.Renderer.Mesh.Invalidate();
 					}
 					return true;
 				}
