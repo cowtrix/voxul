@@ -100,6 +100,7 @@ namespace Voxul
 					Metallic = Metallic,
 					Smoothness = Smoothness,
 					UVMode = UVMode,
+					TextureFade = TextureFade,
 				};
 			}
 		}

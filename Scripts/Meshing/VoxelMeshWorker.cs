@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Codice.Client.BaseCommands;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -103,6 +104,14 @@ namespace Voxul.Meshing
                     if (vox.Key != vox.Value.Coordinate)
                     {
                         throw new Exception($"Voxel {vox.Key} had incorrect key in data");
+                    }
+                    if (vox.Key.Layer < data.MinLayer)
+                    {
+                        data.MinLayer = vox.Key.Layer;
+                    }
+                    if (vox.Key.Layer > data.MaxLayer)
+                    {
+                        data.MaxLayer = vox.Key.Layer;
                     }
                     switch (vox.Value.Material.RenderMode)
                     {
@@ -272,9 +281,15 @@ namespace Voxul.Meshing
 
         public static void GenerateFaces_CenteredPlane(Voxel vox, IntermediateVoxelMeshData data, params EVoxelDirection[] dirs)
         {
+            var map = new List<VoxelFaceCoordinate>();
             for (int i = 0; i < dirs.Length; i++)
             {
                 var dir = dirs[i];
+                var surface = vox.Material.GetSurface(dir);
+                if (surface.Skip)
+                {
+                    continue;
+                }
                 var vec3int = new Vector3Int(vox.Coordinate.X, vox.Coordinate.Y, vox.Coordinate.Z);
                 var swizzle = vec3int.SwizzleForDir(dir, out var depthFloat).RoundToVector2Int();
                 var faceCoord = new VoxelFaceCoordinate
@@ -288,20 +303,28 @@ namespace Voxul.Meshing
                 };
                 var face = new VoxelFace
                 {
-                    Surface = vox.Material.GetSurface(dir),
+                    Surface = surface,
                     MaterialMode = vox.Material.MaterialMode,
                     RenderMode = vox.Material.RenderMode,
                     NormalMode = vox.Material.NormalMode,
                 };
                 data.Faces.Add(faceCoord, face);
+                map.Add(faceCoord);
             }
+            data.CoordinateFaceMapping[vox.Coordinate] = map;
         }
 
         public static void GenerateFaces_Cube(Voxel vox, IntermediateVoxelMeshData data)
         {
+            var map = new List<VoxelFaceCoordinate>();
             for (int i = 0; i < VoxelExtensions.Directions.Length; i++)
             {
                 EVoxelDirection dir = VoxelExtensions.Directions[i];
+                var surface = vox.Material.GetSurface(dir);
+                if (surface.Skip)
+                {
+                    continue;
+                }
                 var vec3int = new Vector3Int(vox.Coordinate.X, vox.Coordinate.Y, vox.Coordinate.Z);
                 var swizzle = vec3int.SwizzleForDir(dir, out var depthFloat).RoundToVector2Int();
                 var faceCoord = new VoxelFaceCoordinate
@@ -315,13 +338,15 @@ namespace Voxul.Meshing
                 };
                 var face = new VoxelFace
                 {
-                    Surface = vox.Material.GetSurface(dir),
+                    Surface = surface,
                     MaterialMode = vox.Material.MaterialMode,
                     RenderMode = vox.Material.RenderMode,
                     NormalMode = vox.Material.NormalMode,
                 };
                 data.Faces.Add(faceCoord, face);
+                map.Add(faceCoord);
             }
+            data.CoordinateFaceMapping[vox.Coordinate] = map;
         }
 
         public static void ConvertFacesToMesh(IntermediateVoxelMeshData data)

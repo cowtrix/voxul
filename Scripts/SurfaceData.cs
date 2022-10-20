@@ -17,6 +17,7 @@ namespace Voxul
 		public EUVMode UVMode;
 		[Range(0, 1)]
 		public float TextureFade;
+		public bool Skip;
 
 		public override bool Equals(object obj)
 		{
@@ -26,6 +27,7 @@ namespace Voxul
 				   Smoothness == data.Smoothness &&
 				   EqualityComparer<TextureIndex>.Default.Equals(Texture, data.Texture) &&
 				   UVMode == data.UVMode &&
+				   Skip == data.Skip &&
 				   TextureFade == data.TextureFade;
 		}
 
@@ -38,7 +40,8 @@ namespace Voxul
 			hashCode = hashCode * -1521134295 + Texture.GetHashCode();
 			hashCode = hashCode * -1521134295 + UVMode.GetHashCode();
 			hashCode = hashCode * -1521134295 + TextureFade.GetHashCode();
-			return hashCode;
+            hashCode = hashCode * -1521134295 + Skip.GetHashCode();
+            return hashCode;
 		}
 
 		public static bool operator ==(SurfaceData left, SurfaceData right)

@@ -457,5 +457,25 @@ namespace Voxul
 
 			return albedoDistance + metallicDistance + smoothnessDistance + texFadeDistance;
 		}
-	}
+
+        public static Voxel? GetVoxel(this IDictionary<VoxelCoordinate, Voxel> voxels, Vector3 localPosition, sbyte minLayer, sbyte maxLayer)
+        {
+            for (var layer = minLayer; layer <= maxLayer; ++layer)
+            {
+                var coord = VoxelCoordinate.FromVector3(localPosition, layer);
+                if (voxels.TryGetValue(coord, out var vox))
+                {
+                    return vox;
+                }
+            }
+            /*foreach (var v in voxels)
+            {
+                if (v.Key.ToBounds().Contains(localPosition))
+                {
+                    return v.Value;
+                }
+            }*/
+            return null;
+        }
+    }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Voxul.Edit;
+using Voxul.Meshing;
 using Voxul.Utilities;
 
 namespace Voxul.Edit
@@ -19,7 +20,8 @@ namespace Voxul.Edit
 		Clipboard,
 		Warp,
 		Primitive,
-	}
+        Erase,
+    }
 
 	internal enum eMirrorMode
 	{
@@ -39,9 +41,18 @@ namespace Voxul.Edit
 		[MenuItem("Tools/Voxul/Rebake All Renderers in Scene")]
 		public static void RebakeAll()
 		{
+			var history = new HashSet<VoxelMesh>();
 			foreach(var r in FindObjectsOfType<VoxelRenderer>())
 			{
-				r.Invalidate(true, false);
+				if (history.Contains(r.Mesh))
+				{
+                    r.Invalidate(false, false);
+                }
+				else
+				{
+                    r.Invalidate(true, false);
+                }
+				history.Add(r.Mesh);
 			}
 		}
 
@@ -83,6 +94,7 @@ namespace Voxul.Edit
 			{ EPaintingTool.Subdivide, new SubdivideTool() },
 			{ EPaintingTool.Paint, new PaintTool() },
 			{ EPaintingTool.Clipboard, new ClipboardTool() },
+			{ EPaintingTool.Erase, new EraseTool() },
 			//{ EPaintingTool.Warp, new WarpTool() },
 			//{ EPaintingTool.Primitive, new PrimitiveTool() },
 		};

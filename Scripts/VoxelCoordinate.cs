@@ -9,6 +9,7 @@ namespace Voxul
 	[Serializable]
 	public struct VoxelCoordinate
 	{
+		private static Dictionary<VoxelCoordinate, Bounds> m_boundsCache = new Dictionary<VoxelCoordinate, Bounds>();
 		public const sbyte MAX_LAYER = 5;
 		public const sbyte MIN_LAYER = -5;
 
@@ -150,7 +151,7 @@ namespace Voxul
 		public Vector3 ToVector3()
 		{
 			var scale = GetScale();
-			return new Vector3(X, Y, Z) * scale;// - Vector3.one * .5f * scale;
+			return new Vector3(X, Y, Z) * scale;
 		}
 
 		public static VoxelCoordinate FromVector3(Vector3 point, sbyte layer)
@@ -168,7 +169,15 @@ namespace Voxul
 
 		public float GetScale() => LayerToScale(Layer);
 
-		public Bounds ToBounds() => new Bounds(ToVector3(), GetScale() * Vector3.one);
+		public Bounds ToBounds()
+		{
+			if (!m_boundsCache.TryGetValue(this, out var bounds))
+			{
+                bounds = new Bounds(ToVector3(), GetScale() * Vector3.one);
+				m_boundsCache[this] = bounds;
+            }
+			return bounds;
+		}
 
 		public override bool Equals(object obj)
 		{

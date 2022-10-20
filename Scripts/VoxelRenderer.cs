@@ -250,6 +250,7 @@ namespace Voxul
             {
                 var data = voxelMesh.UnityMeshInstances[i];
                 var unityMesh = data.UnityMesh;
+                unityMesh.MarkDynamic();
 
                 VoxelRendererSubmesh submesh;
                 if (Submeshes.Count < voxelMesh.UnityMeshInstances.Count)
@@ -293,7 +294,7 @@ namespace Voxul
                     SetMaterials(submesh, OpaqueMaterial, TransparentMaterial);
                 }
             }
-            Submeshes = Submeshes.Distinct().ToList();
+            //Submeshes = Submeshes.Distinct().ToList();
             for (var i = Submeshes.Count - 1; i >= Mesh.UnityMeshInstances.Count; --i)
             {
                 var r = Submeshes[i];
@@ -487,15 +488,7 @@ namespace Voxul
             var localNormal = transform.worldToLocalMatrix.MultiplyVector(worldNormal)
                 .ClosestAxisNormal();
             localCoord -= localNormal * .001f;
-
-            foreach (var v in Mesh.Voxels)
-            {
-                if (v.Key.ToBounds().Contains(localCoord))
-                {
-                    return v.Value;
-                }
-            }
-            return null;
+            return Mesh.Voxels.GetVoxel(localCoord, Mesh.MinLayer, Mesh.MaxLayer);
         }
     }
 }

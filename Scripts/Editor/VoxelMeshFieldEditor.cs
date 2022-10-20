@@ -88,7 +88,6 @@ namespace Voxul.Edit
 				{
 					AssetDatabase.CreateAsset(newMesh, path);
 					AssetDatabase.SaveAssets();
-					AssetDatabase.Refresh();
 				}
 			}
 			else if (GUI.Button(GetRow(ref row), "Clone Mesh"))

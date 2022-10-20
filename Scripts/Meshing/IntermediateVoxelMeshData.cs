@@ -15,6 +15,7 @@ namespace Voxul.Meshing
         public VoxelPointMapping PointOffsets;
 
         // Intermediate face data
+        public Dictionary<VoxelCoordinate, List<VoxelFaceCoordinate>> CoordinateFaceMapping = new Dictionary<VoxelCoordinate, List<VoxelFaceCoordinate>>();
         public Dictionary<VoxelFaceCoordinate, VoxelFace> Faces;
 
         // Output
@@ -25,9 +26,12 @@ namespace Voxul.Meshing
         public List<Vector2> UV1;   // Texture
         public List<Vector2> UV2;   // Lightmap
         public List<Vector4> UV3;   // Auxilary data
+        public sbyte MinLayer;
+        public sbyte MaxLayer;
+
 
 #if UNITY_2021_1_OR_NEWER
-		public bool GenerateLightmaps;
+        public bool GenerateLightmaps;
 #endif
 
         /// <summary>
@@ -47,6 +51,8 @@ namespace Voxul.Meshing
             PointOffsets = pointOffsets;
             Faces = Faces ?? new Dictionary<VoxelFaceCoordinate, VoxelFace>();
             Faces.Clear();
+            CoordinateFaceMapping = CoordinateFaceMapping ?? new Dictionary<VoxelCoordinate, List<VoxelFaceCoordinate>>();
+            CoordinateFaceMapping.Clear();
             Vertices = Vertices ?? new List<Vector3>(Voxels.Count * 8);
             Vertices.Clear();
             Normals = Normals ?? new List<Vector3>(Vertices.Count);
@@ -61,6 +67,9 @@ namespace Voxul.Meshing
             UV2.Clear();
             UV3 = UV3 ?? new List<Vector4>(Vertices.Count);
             UV3.Clear();
+
+            MinLayer = sbyte.MaxValue;
+            MaxLayer = sbyte.MinValue;
         }
 
         /// <summary>
@@ -115,6 +124,9 @@ namespace Voxul.Meshing
             UV3 = null;
             Color1 = null;
             Triangles = null;
+            CoordinateFaceMapping = null;
+            MinLayer = sbyte.MinValue;
+            MaxLayer = sbyte.MaxValue;
         }
     }
 }

@@ -107,12 +107,21 @@ namespace Voxul.Utilities
 
         public static void RotateTowardsPosition(this Transform t, Vector3 worldPos, float maxAngle, Quaternion extraRotation)
         {
-            var diff = worldPos - t.position;
+            t.rotation = RotateTowardsPosition(t.rotation, t.position, worldPos, maxAngle, extraRotation);
+        }
+
+        public static Quaternion RotateTowardsPosition(this Quaternion rootRotation, Vector3 rootPosition, Vector3 targetPosition, float maxAngle, Quaternion extraRotation)
+        {
+            var diff = targetPosition - rootPosition;
             var rot = Quaternion.LookRotation(diff.normalized);
             var spinAngle = rot.eulerAngles.y;
             var tiltAngle = rot.eulerAngles.x;
-            //t.rotation = Quaternion.Euler(Vector3.MoveTowards(t.rotation.eulerAngles, new Vector3(tiltAngle, spinAngle, 0), maxAngle));
-            t.rotation = extraRotation * Quaternion.RotateTowards(t.rotation, Quaternion.Euler(tiltAngle, spinAngle, 0), maxAngle);
+            return extraRotation * Quaternion.RotateTowards(Quaternion.Inverse(extraRotation) * rootRotation, Quaternion.Euler(tiltAngle, spinAngle, 0), maxAngle);
+        }
+
+        public static void RotateTowardsPosition(this Rigidbody rb, Vector3 worldPos, float maxAngle, Quaternion extraRotation)
+        {
+            rb.rotation = RotateTowardsPosition(rb.rotation, rb.position, worldPos, maxAngle, extraRotation);
         }
     }
 }

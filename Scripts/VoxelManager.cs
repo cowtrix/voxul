@@ -29,10 +29,10 @@ namespace Voxul
 				if (!Directory.Exists(rscPath))
 				{
 					Directory.CreateDirectory(rscPath);
-					UnityEditor.AssetDatabase.Refresh();
+					//UnityEditor.AssetDatabase.Refresh();
 				}
 				UnityEditor.AssetDatabase.CreateAsset(CreateInstance<VoxelManager>(), GetVoxelManagerPath());
-				UnityEditor.AssetDatabase.Refresh();
+				//UnityEditor.AssetDatabase.Refresh();
 				vm = Resources.Load<VoxelManager>(path);
 			}
 #endif
@@ -123,7 +123,7 @@ namespace Voxul
 				try
 				{
 					UnityEditor.AssetDatabase.CreateAsset(newArray, tmpPath);
-					UnityEditor.AssetDatabase.Refresh();
+					//UnityEditor.AssetDatabase.Refresh();
 					File.WriteAllBytes(currentPath, File.ReadAllBytes(tmpPath));
 					UnityEditor.AssetDatabase.DeleteAsset(tmpPath);
 					UnityEditor.AssetDatabase.ImportAsset(currentPath);
