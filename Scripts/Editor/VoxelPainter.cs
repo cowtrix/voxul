@@ -18,9 +18,9 @@ namespace Voxul.Edit
 		Subdivide,
 		Paint,
 		Clipboard,
-		Warp,
-		Primitive,
         Erase,
+        Warp,
+		Primitive,
     }
 
 	internal enum eMirrorMode

@@ -88,7 +88,7 @@ namespace Voxul.Edit
 
         protected override void DrawToolLayoutGUI(Rect rect, Event currentEvent, VoxelPainter voxelPainter)
         {
-            base.DrawToolLayoutGUI(rect, currentEvent, voxelPainter);
+            //base.DrawToolLayoutGUI(rect, currentEvent, voxelPainter);
         }
 
         private bool EraseVoxelSurface(IEnumerable<VoxelCoordinate> coords, VoxelRenderer renderer, EVoxelDirection dir, Event currentEvent)
