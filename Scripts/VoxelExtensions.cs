@@ -477,5 +477,17 @@ namespace Voxul
             }*/
             return null;
         }
+
+		public static IEnumerable<VoxelCoordinate> LineToVoxelCoordinates(Vector3 start, Vector3 end, sbyte layer)
+		{
+			var t = 0f;
+			var d = (start - end).magnitude;
+			var step = VoxelCoordinate.LayerToScale(layer);
+			while(t < d)
+			{
+				yield return VoxelCoordinate.FromVector3(Vector3.Lerp(start, end, t / d), layer);
+                t += step;
+			}
+        }
     }
 }

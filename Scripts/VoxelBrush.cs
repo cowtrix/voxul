@@ -26,8 +26,9 @@ namespace Voxul
 			public Vector2 Smoothness;
 			[MinMax(0, 1)]
 			public Vector2 TextureFade;
+            public TextureIndex TextureIndex;
 
-			public static SerializableGradient DefaultGradient => new SerializableGradient
+            public static SerializableGradient DefaultGradient => new SerializableGradient
 			{
 				alphaKeys = new SerializableGradient.AlphaKey[]
 					{
@@ -77,6 +78,7 @@ namespace Voxul
 					}
 				};
 				TextureFade = new Vector2(surface.TextureFade, surface.TextureFade);
+				TextureIndex = surface.Texture;
 			}
 
 			public SurfaceData Generate(float value)
@@ -89,6 +91,7 @@ namespace Voxul
 					Smoothness = Mathf.Lerp(Smoothness.x, Smoothness.y, value),
 					UVMode = UVMode,
 					TextureFade = Mathf.Lerp(TextureFade.x, TextureFade.y, value),
+					Texture = TextureIndex,
 				};
 			}
 
@@ -101,13 +104,15 @@ namespace Voxul
 					Smoothness = Smoothness,
 					UVMode = UVMode,
 					TextureFade = TextureFade,
-				};
+                    TextureIndex = TextureIndex,
+                };
 			}
 		}
 
 		public EMaterialMode MaterialMode;
 		public ERenderMode RenderMode;
 		public ENormalMode NormalMode;
+		public TextureIndex TextureIndex;
 
 		public SurfaceBrush Default;
 		public BrushDirectionOverride[] Overrides;
@@ -170,6 +175,7 @@ namespace Voxul
 				RenderMode = RenderMode,
 				NormalMode = NormalMode,
 				MaterialMode = MaterialMode,
+				TextureIndex = TextureIndex,
 			};
 		}
 	}

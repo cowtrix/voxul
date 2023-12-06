@@ -318,7 +318,11 @@ namespace Voxul.Edit
 
 		public void OnDisable()
 		{
-			m_tools[CurrentTool]?.OnDisable();
+			if (!m_tools.ContainsKey(CurrentTool))
+			{
+				CurrentTool = default;
+			}
+            m_tools[CurrentTool]?.OnDisable();
 			SceneView.duringSceneGui -= DuringSceneGUI;
 		}
 	}

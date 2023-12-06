@@ -145,8 +145,11 @@ namespace Voxul
         [ContextMenu("Force Invalidate")]
         public void ForceInvalidate()
         {
-            Mesh.Invalidate();
-            Invalidate(true, false);
+            if (Mesh)
+            {
+                Mesh.Invalidate();
+                Invalidate(true, false);
+            }
         }
 
         protected virtual void OnClear() { }

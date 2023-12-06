@@ -28,7 +28,10 @@ namespace Voxul
 		/// 
 		/// </summary>
 		public static int LayerRatio => VoxelManager.Instance.LayerRatio;
-		[Range(MIN_LAYER, MAX_LAYER)]
+
+		public float Length => this.ToVector3().magnitude;
+
+        [Range(MIN_LAYER, MAX_LAYER)]
 		public sbyte Layer;
 		public int X, Y, Z;
 

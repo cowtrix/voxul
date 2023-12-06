@@ -54,7 +54,6 @@ namespace Voxul.Edit
 				}
 			}
 		};
-
 		protected virtual bool DrawSceneGUIWithNoSelection => false;
 
 		protected static VoxelBrushAsset m_asset;
@@ -81,8 +80,8 @@ namespace Voxul.Edit
 				EditorPrefUtility.SetPref<VoxelBrush>($"VoxelPainter_Brush", value);
 			}
 		}
-
 		protected abstract EPaintingTool ToolID { get; }
+		protected VoxelCoordinate? LastCoordinate;
 
 		protected virtual bool GetVoxelDataFromPoint(
 			VoxelPainter voxelPainter,
@@ -167,13 +166,33 @@ namespace Voxul.Edit
 			}
 			Handles.DrawWireCube(hitPoint, Vector3.one * .02f);
 			Handles.DrawLine(hitPoint, hitPoint + hitNorm * .2f);
+
 			if (!GetVoxelDataFromPoint(voxelPainter, renderer, collider, hitPoint, hitNorm, triIndex,
 					out var selection, out var hitDir) && !DrawSceneGUIWithNoSelection)
 			{
 				return false;
 			}
 
-			if (selection != null)
+            if (currentEvent.isMouse && currentEvent.button == 0 && LastCoordinate.HasValue && selection != null && selection.Any())
+			{
+				var b = selection.GetBounds();
+				b.Encapsulate(LastCoordinate.Value.ToBounds());
+                foreach (var vox in VoxelExtensions.GetVoxelCoordinates(b, selection.First().Layer))
+				{
+					selection.Add(vox);
+				}
+            }
+
+            if (currentEvent.isMouse && currentEvent.button == 0 && currentEvent.type == EventType.MouseDown && selection != null)
+            {
+                LastCoordinate = selection.FirstOrDefault();
+            }
+            else if (currentEvent.isMouse && currentEvent.button == 0 && currentEvent.type == EventType.MouseUp)
+            {
+                LastCoordinate = null;
+            }
+
+            if (selection != null)
 			{
 				for (int i = 0; i < selection.Count; i++)
 				{
@@ -203,7 +222,9 @@ namespace Voxul.Edit
 
 			if (currentEvent.control && !currentEvent.shift)
 			{
-				if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
+				LastCoordinate = null;
+
+                if (currentEvent.type == EventType.MouseUp && currentEvent.button == 0)
 				{
 					var vox = selection.FirstOrDefault();
 					var voxMat = voxelPainter.Renderer.Mesh.Voxels[vox].Material;
@@ -227,7 +248,8 @@ namespace Voxul.Edit
 
 			if (DrawSceneGUIInternal(voxelPainter, renderer, currentEvent, selection, hitDir, hitPoint))
 			{
-				renderer.Mesh.Hash = System.Guid.NewGuid().ToString();
+                LastCoordinate = null;
+                renderer.Mesh.Hash = System.Guid.NewGuid().ToString();
 				EditorUtility.SetDirty(renderer.Mesh);
 				return true;
 			}

@@ -30,7 +30,8 @@ namespace Voxul.Meshing
                     var dirVec = VoxelCoordinate.DirectionToCoordinate(faceCoord.Direction, faceCoord.Layer);
                     var coord = vox.Key + dirVec;
                     var neighbour = data.Voxels.GetVoxel(coord.ToVector3(), data.MinLayer, faceCoord.Layer);
-                    if (neighbour.HasValue && neighbour.Value.Material.RenderMode == ERenderMode.Block)
+                    if (neighbour.HasValue && neighbour.Value.Material.RenderMode == ERenderMode.Block && 
+                        (neighbour.Value.Material.MaterialMode == faceSurf.MaterialMode || (faceSurf.MaterialMode == EMaterialMode.Transparent && neighbour.Value.Material.MaterialMode == EMaterialMode.Opaque)))
                     {
                         toRemove.Add(faceCoord);
                     }
