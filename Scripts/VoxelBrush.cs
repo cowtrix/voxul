@@ -112,7 +112,6 @@ namespace Voxul
 		public EMaterialMode MaterialMode;
 		public ERenderMode RenderMode;
 		public ENormalMode NormalMode;
-		public TextureIndex TextureIndex;
 
 		public SurfaceBrush Default;
 		public BrushDirectionOverride[] Overrides;
@@ -175,7 +174,6 @@ namespace Voxul
 				RenderMode = RenderMode,
 				NormalMode = NormalMode,
 				MaterialMode = MaterialMode,
-				TextureIndex = TextureIndex,
 			};
 		}
 	}

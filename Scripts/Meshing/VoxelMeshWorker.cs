@@ -400,10 +400,13 @@ namespace Voxul.Meshing
                 var min = new VoxelCoordinate(voxelFace.Key.Min.ReverseSwizzleForDir(voxelFace.Key.Depth, voxelFace.Key.Direction), voxelFace.Key.Layer);
                 var max = new VoxelCoordinate(voxelFace.Key.Max.ReverseSwizzleForDir(voxelFace.Key.Depth, voxelFace.Key.Direction), voxelFace.Key.Layer);
                 var planeSize = ((voxelFace.Key.Max + Vector2.one * .5f) - (voxelFace.Key.Min - Vector2.one * .5f)) * layerScale;
+                //planeSize.x /= (voxelFace.Key.Width + 1);
+                //planeSize.y /= (voxelFace.Key.Height + 1);
                 if (voxelFace.Key.Direction != EVoxelDirection.ZNeg && voxelFace.Key.Direction != EVoxelDirection.ZPos)
                 {
                     planeSize = new Vector2(planeSize.y, planeSize.x);
                 }
+
 
                 var bounds = min.ToBounds();
                 bounds.Encapsulate(max.ToBounds());
@@ -484,10 +487,27 @@ namespace Voxul.Meshing
                     .RemoveNans();
                 data.UV3.AddRange(Enumerable.Repeat(auxData, 4));
 
-                Vector2 _00_CORDINATES = new Vector2(1f, 1f);
-                Vector2 _10_CORDINATES = new Vector2(0f, 1f);
-                Vector2 _01_CORDINATES = new Vector2(1f, 0f);
+                float uvW = (voxelFace.Key.Height + 1);
+                float uvH = (voxelFace.Key.Width + 1);
+                if (voxelFace.Key.Direction != EVoxelDirection.ZNeg && voxelFace.Key.Direction != EVoxelDirection.ZPos)
+                {
+                    var t = uvH;
+                    uvH = uvW;
+                    uvW = t;
+                }
+
+                if (voxelFace.Value.Surface.UVMode == EUVMode.LocalScaled)
+                {
+                    uvW *= VoxelCoordinate.LayerToScale(voxelFace.Key.Layer);
+                    uvH *= VoxelCoordinate.LayerToScale(voxelFace.Key.Layer);
+                }
+
+                Vector2 _00_CORDINATES = new Vector2(uvH, uvW);
+                Vector2 _10_CORDINATES = new Vector2(0f, uvW);
+                Vector2 _01_CORDINATES = new Vector2(uvH, 0f);
                 Vector2 _11_CORDINATES = new Vector2(0f, 0f);
+
+                
                 var uvMode = surface.UVMode;
                 switch (uvMode)
                 {
@@ -495,7 +515,7 @@ namespace Voxul.Meshing
                         data.UV1.AddRange(_11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES);
                         break;
                     case EUVMode.LocalScaled:
-                        data.UV1.AddRange(_11_CORDINATES * planeSize.x, _01_CORDINATES * planeSize.x, _00_CORDINATES * planeSize.x, _10_CORDINATES * planeSize.x);
+                        data.UV1.AddRange(_11_CORDINATES, _01_CORDINATES, _00_CORDINATES, _10_CORDINATES);
                         break;
                     case EUVMode.Global:
                         switch (voxelFace.Key.Direction)

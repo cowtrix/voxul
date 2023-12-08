@@ -147,6 +147,7 @@ namespace Voxul
         {
             if (Mesh)
             {
+                SetupComponents(this.GenerateCollider);
                 Mesh.Invalidate();
                 Invalidate(true, false);
             }
