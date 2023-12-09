@@ -26,7 +26,8 @@ This project consists of both a runtime framework for handling and rendering vox
 
 ![05](https://github.com/cowtrix/voxul/assets/5094696/08424b5e-d598-4be8-aca9-fbb70e1226ea)
 ![02](https://github.com/cowtrix/voxul/assets/5094696/27c7f0d0-98d2-4a3f-88a1-c14ef8c612b5)
-![05](https://github.com/cowtrix/voxul/assets/5094696/e06dc3b4-3c92-4742-9aea-5104bb969dd8)
+![06](https://github.com/cowtrix/voxul/assets/5094696/f1516238-8161-4fbf-ab1f-753c210c4edd)
+![03](https://github.com/cowtrix/voxul/assets/5094696/ed26fa01-dedd-4252-a92c-4e459169fd3c)
 
 ## Getting Started
 
