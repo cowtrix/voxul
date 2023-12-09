@@ -9,8 +9,8 @@ using Voxul.Utilities;
 
 namespace Voxul
 {
-	public class VoxelManager : ScriptableObject
-	{
+	public class VoxelManager : ScriptableObject, ISpriteSheetProvider
+    {
 		public const string RESOURCES_FOLDER = "voxul";
 
 		public static VoxelManager Instance => m_instance.Value;
@@ -43,20 +43,12 @@ namespace Voxul
 		public voxulLogger.ELogLevel LogLevel;
 		public EThreadingMode DefaultThreadingMode = EThreadingMode.Task;
 		public float DefaultMaxCoroutineUpdateTime = 1 / 60f;
-
+		public SpriteSheet DefaultSpriteSheet;
 		public Material DefaultMaterial;
 		public Material DefaultMaterialTransparent;
-		public Texture2DArray BaseTextureArray;
 
 		[Range(2, 10)]
 		public int LayerRatio = 3;
-		[Range(8, 1024)]
-		public int SpriteResolution = 32;
-
-		public List<Texture2D> Sprites = new List<Texture2D>();
-		[HideInInspector]
-		[SerializeField]
-		private List<Texture2D> m_spriteCache = new List<Texture2D>();
 
 		public VoxelMeshOptimiserList DefaultOptimisers = new VoxelMeshOptimiserList
 		{
@@ -98,78 +90,20 @@ namespace Voxul
 				UnityEditor.EditorUtility.SetDirty(this);
 #endif
 			}
-			RegenerateSpritesheet();
 		}
 
-		[ContextMenu("Regenerate Spritesheet")]
-		public void RegenerateSpritesheet()
-		{
-			if (Sprites.SequenceEqual(m_spriteCache))
+        public SpriteSheet GetSpriteSheet()
+        {
+			if (!DefaultSpriteSheet)
 			{
-				return;
-			}
-			m_spriteCache.Clear();
-			m_spriteCache.AddRange(Sprites);
+				DefaultSpriteSheet = ScriptableObject.CreateInstance<SpriteSheet>();
+				DefaultSpriteSheet.name = "Default Spritesheet";
 #if UNITY_EDITOR
-			var texArray = BaseTextureArray;
-			var newArray = GenerateArray(Sprites, TextureFormat.ARGB32, SpriteResolution);
-			if (newArray != null)
-			{
-				newArray.filterMode = FilterMode.Point;
-				newArray.wrapMode = TextureWrapMode.Repeat;
-				var currentPath = texArray ? UnityEditor.AssetDatabase.GetAssetPath(texArray) : $"Assets/Resources/{RESOURCES_FOLDER}/spritesheet.asset";
-				var tmpPath = "Assets/tmp.asset";
-
-				try
-				{
-					UnityEditor.AssetDatabase.CreateAsset(newArray, tmpPath);
-					//UnityEditor.AssetDatabase.Refresh();
-					File.WriteAllBytes(currentPath, File.ReadAllBytes(tmpPath));
-					UnityEditor.AssetDatabase.DeleteAsset(tmpPath);
-					UnityEditor.AssetDatabase.ImportAsset(currentPath);
-				}
-				catch { }
-
-				BaseTextureArray = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2DArray>(currentPath);
-				DefaultMaterial.SetTexture("AlbedoSpritesheet", BaseTextureArray);
-				UnityEditor.EditorUtility.SetDirty(DefaultMaterial);
-				DefaultMaterialTransparent.SetTexture("AlbedoSpritesheet", BaseTextureArray);
-				UnityEditor.EditorUtility.SetDirty(DefaultMaterialTransparent);
-				UnityEditor.EditorUtility.SetDirty(this);
-			}
+                UnityEditor.AssetDatabase.AddObjectToAsset(DefaultSpriteSheet, GetVoxelManagerPath());
+                UnityEditor.EditorUtility.SetDirty(this);
 #endif
-		}
-
-		static Texture2D ResizeTexture(Texture2D texture2D, int targetX, int targetY)
-		{
-			RenderTexture rt = new RenderTexture(targetX, targetY, 24);
-			RenderTexture.active = rt;
-			Graphics.Blit(texture2D, rt);
-			Texture2D result = new Texture2D(targetX, targetY);
-			result.ReadPixels(new Rect(0, 0, targetX, targetY), 0, 0);
-			result.Apply();
-			return result;
-		}
-
-		static Texture2DArray GenerateArray(IList<Texture2D> textures, TextureFormat format, int size)
-		{
-			if (!textures.Any())
-			{
-				return null;
-			}
-			var texture2DArray = new Texture2DArray(size, size, textures.Count, format, false);
-			for (int i = 0; i < textures.Count; i++)
-			{
-				var tex = textures[i];
-				if (tex.height != size || tex.width != size)
-				{
-					tex = ResizeTexture(tex, size, size);
-				}
-				texture2DArray.SetPixels(tex.GetPixels(), i);
-			}
-
-			texture2DArray.Apply();
-			return texture2DArray;
-		}
-	}
+            }
+			return DefaultSpriteSheet;
+        }
+    }
 }

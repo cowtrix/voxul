@@ -25,21 +25,21 @@ namespace Voxul.Edit
 	{
 		private Editor m_cachedBrushEditor;
 		private bool m_cachedEditorNeedsRefresh = true;
-		private T m_lastObj;
+		public T LastValue;
 		
-		public void DrawGUI(T obj)
+		public void DrawGUI(UnityEngine.Object context, T obj)
 		{
-			if(m_lastObj != obj || m_cachedBrushEditor == null || !m_cachedBrushEditor || m_cachedEditorNeedsRefresh)
+			if(LastValue != obj || m_cachedBrushEditor == null || !m_cachedBrushEditor || m_cachedEditorNeedsRefresh)
 			{
 				if (m_cachedBrushEditor)
 				{
 					UnityEngine.Object.DestroyImmediate(m_cachedBrushEditor);
 				}
-				m_cachedBrushEditor = Editor.CreateEditor(obj);
+				m_cachedBrushEditor = Editor.CreateEditorWithContext(new[] { obj }, context);
 				m_cachedEditorNeedsRefresh = false;
 			}
 			m_cachedBrushEditor?.DrawDefaultInspector();
-			m_lastObj = obj;
+			LastValue = obj;
 		}
 	}
 }

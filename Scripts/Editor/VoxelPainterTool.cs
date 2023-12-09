@@ -56,34 +56,43 @@ namespace Voxul.Edit
 		};
 		protected virtual bool DrawSceneGUIWithNoSelection => false;
 
-		protected static VoxelBrushAsset m_asset;
+		protected static VoxelBrushAsset BrushAsset => UnityEditor.AssetDatabase.LoadAssetAtPath<VoxelBrushAsset>(VoxelManager.GetVoxelManagerPath());
 		protected static VoxelBrush CurrentBrush
 		{
 			get
 			{
-				if (!m_asset)
+				if (!BrushAsset)
 				{
-					m_asset = ScriptableObject.CreateInstance<VoxelBrushAsset>();
-					m_asset.Material = EditorPrefUtility.GetPref("VoxelPainter_Brush", DefaultBrush);
-				}
-				return m_asset.Material;
-				//return EditorPrefUtility.GetPref<VoxelBrush>($"VoxelPainter_Brush", DefaultBrush);
+					CreateBrushAsset();
+                }
+				return BrushAsset.Material;
 			}
 			set
 			{
-				if (!m_asset)
+				if (!BrushAsset)
 				{
-					m_asset = ScriptableObject.CreateInstance<VoxelBrushAsset>();
-				}
-				m_asset.Material = value;
-				EditorUtility.SetDirty(m_asset);
-				EditorPrefUtility.SetPref<VoxelBrush>($"VoxelPainter_Brush", value);
+					CreateBrushAsset();
+
+                }
+				BrushAsset.Material = value;
+				EditorUtility.SetDirty(BrushAsset);
 			}
 		}
 		protected abstract EPaintingTool ToolID { get; }
 		protected VoxelCoordinate? LastCoordinate;
 
-		protected virtual bool GetVoxelDataFromPoint(
+		private static VoxelBrushAsset CreateBrushAsset()
+		{
+            var brushAsset = ScriptableObject.CreateInstance<VoxelBrushAsset>();
+			brushAsset.name = "Current Brush";
+            brushAsset.Material = DefaultBrush;
+			var voxelManagerPath = VoxelManager.GetVoxelManagerPath();
+            AssetDatabase.AddObjectToAsset(brushAsset, voxelManagerPath);
+			AssetDatabase.SaveAssetIfDirty(VoxelManager.Instance);
+			return brushAsset;
+        }
+
+        protected virtual bool GetVoxelDataFromPoint(
 			VoxelPainter voxelPainter,
 			VoxelRenderer renderer,
 			MeshCollider collider,
@@ -341,10 +350,9 @@ namespace Voxul.Edit
 
 		public virtual bool DrawInspectorGUI(VoxelPainter voxelPainter)
 		{
-			if (!m_asset)
+			if (!BrushAsset)
 			{
-				m_asset = ScriptableObject.CreateInstance<VoxelBrushAsset>();
-				m_asset.Material = CurrentBrush;
+                CreateBrushAsset();
 			}
 			GUILayout.BeginVertical("Box");
 			EditorGUILayout.BeginHorizontal();
@@ -363,7 +371,7 @@ namespace Voxul.Edit
 			}
 			GUILayout.EndVertical();
 			var wrapper = NativeEditorUtility.GetWrapper<VoxelBrushAsset>();
-			wrapper.DrawGUI(m_asset);
+			wrapper.DrawGUI(voxelPainter.Renderer, BrushAsset);
 			EditorPrefUtility.SetPref("VoxelPainter_Brush", CurrentBrush);
 			return false;
 		}

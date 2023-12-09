@@ -42,6 +42,12 @@ namespace Voxul.Utilities
 			Interlocked.Increment(ref m_lock);
 			UnityMainThreadDispatcher.EnsureSubscribed();
 			m_lastMode = mode;
+#if PLATFORM_WEBGL
+			if(Application.isPlaying && mode == EThreadingMode.Task)
+			{
+				mode = EThreadingMode.Coroutine;
+			}
+#endif
 			switch (mode)
 			{
 				case EThreadingMode.SingleThreaded:

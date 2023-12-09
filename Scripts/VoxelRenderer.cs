@@ -13,8 +13,9 @@ using Voxul.Utilities;
 
 namespace Voxul
 {
+
     [SelectionBase]
-    public class VoxelRenderer : ExtendedMonoBehaviour
+    public class VoxelRenderer : ExtendedMonoBehaviour, ISpriteSheetProvider
     {
         public enum eSnapMode
         {
@@ -68,7 +69,7 @@ namespace Voxul
         public float MaxCoroutineUpdateTime = 0.5f;
         public bool BatchingEnabled = true;
         public UnityEvent OnMeshRebuilt;
-
+        public SpriteSheet SpriteSheetOverride;
         public RenderLODSettings LODSettings;
 
         // private fields
@@ -494,5 +495,7 @@ namespace Voxul
             localCoord -= localNormal * .001f;
             return Mesh.Voxels.GetVoxel(localCoord, Mesh.MinLayer, Mesh.MaxLayer);
         }
+
+        public SpriteSheet GetSpriteSheet() => SpriteSheetOverride ?? VoxelManager.Instance.GetSpriteSheet();
     }
 }
