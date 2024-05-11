@@ -22,15 +22,6 @@ namespace Voxul.Edit
             float rowHeight = position.height - 17;
             var r = property.serializedObject.context as ISpriteSheetProvider;
 
-            if(r == null)
-            {
-                EditorGUI.LabelField(
-                    new Rect(new Vector2(position.min.x, position.max.y - rowHeight), new Vector2(position.width, rowHeight)),
-                    "ERROR: No SpriteSheet provider could be found.");
-                GUIUtility.ExitGUI();
-                return;
-            }
-
             var vm = VoxelManager.Instance;
             if (vm == null)
             {
@@ -40,6 +31,8 @@ namespace Voxul.Edit
                 GUIUtility.ExitGUI();
                 return;
             }
+
+            r ??= vm;
 
             var prop = property.FindPropertyRelative("Index");
             var spriteSheet = r.GetSpriteSheet();
