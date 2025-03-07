@@ -1,3 +1,4 @@
+#if MAGICA_VOXEL
 using CsharpVoxReader;
 using CsharpVoxReader.Chunks;
 using System.Collections;
@@ -123,3 +124,4 @@ namespace Voxul.Edit.Interop
 		}
 	}
 }
+#endif

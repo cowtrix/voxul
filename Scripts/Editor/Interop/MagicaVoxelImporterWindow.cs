@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR && MAGICA_VOXEL
 using System.IO;
 using System.Linq;
 using UnityEditor;

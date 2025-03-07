@@ -74,7 +74,7 @@ namespace Voxul.Utilities
         public Color Evaluate(float value)
         {
             var alpha = 1f;
-            if (alphaKeys.Any())
+            if (alphaKeys != null && alphaKeys.Any())
             {
                 AlphaKey lastAlphaKey = alphaKeys[0];
                 alpha = lastAlphaKey.Alpha;
